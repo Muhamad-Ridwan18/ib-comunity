@@ -88,7 +88,7 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		App: AppConfig{
-			Name:     getEnv("APP_NAME", "IB Community"),
+			Name:     getEnv("APP_NAME", "Santara Pips"),
 			Env:      env,
 			Port:     getEnv("APP_PORT", "8080"),
 			URL:      getEnv("APP_URL", "http://localhost:8080"),

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: `%s · ${APP_NAME}`,
   },
   description:
-    "Private trading community. Verify your broker under our IB to unlock premium content.",
+    "Private trading community. Verify your broker with Santara Pips to unlock premium content.",
 };
 
 const themeInitScript = `

@@ -20,7 +20,7 @@ export default function ProfilePage() {
       .map((p) => p[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase() || "IB";
+      .toUpperCase() || "SP";
 
   return (
     <div className="space-y-6">

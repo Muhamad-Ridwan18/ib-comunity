@@ -67,7 +67,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
       .map((p) => p[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase() || "IB";
+      .toUpperCase() || "SP";
 
   return (
     <div className="min-h-screen bg-[var(--background)]">

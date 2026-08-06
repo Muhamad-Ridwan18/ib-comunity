@@ -1,6 +1,6 @@
-# IB Community
+# Santara Pips
 
-Private trading community platform. Access to premium modules requires broker (IB) MT5 verification.
+Private trading community platform. Access to premium modules requires Santara Pips MT5 verification.
 
 ## Stack
 

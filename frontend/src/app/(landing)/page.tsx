@@ -132,7 +132,7 @@ export default function LandingPage() {
           heroTitleA: "Belajar Trading.",
           heroTitleB: "Konsisten.",
           heroTitleC: "Profit.",
-          heroTitleD: "Bersama IB.",
+          heroTitleD: "Bersama Santara Pips.",
           heroSub:
             "Materi berkualitas, analisis harian, sinyal real-time, dan komunitas aktif untuk trader yang ingin berkembang.",
           joinNow: "Gabung Sekarang",
@@ -165,7 +165,7 @@ export default function LandingPage() {
           heroTitleA: "Learn Trading.",
           heroTitleB: "Consistent.",
           heroTitleC: "Profit.",
-          heroTitleD: "With IB.",
+          heroTitleD: "With Santara Pips.",
           heroSub:
             "Premium education, daily analysis, real-time signals, and an active community for traders who want to grow.",
           joinNow: "Join Now",
@@ -321,7 +321,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-6 flex items-center gap-3">
               <div className="flex -space-x-2">
-                {["AA", "TR", "FX", "IB", "PT"].map((a) => (
+                {["SP", "TR", "FX", "MK", "PT"].map((a) => (
                   <span
                     key={a}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--card)] bg-accent text-[10px] font-semibold text-white"
