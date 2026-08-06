@@ -46,46 +46,49 @@ export default function RegisterPage() {
   });
 
   return (
-    <div className="surface-panel relative p-7 md:p-8">
-      <div className="absolute right-5 top-5">
-        <ThemeToggle />
+    <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-7 md:p-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_100%_0%,var(--glow),transparent_55%)]" />
+      <div className="relative">
+        <div className="absolute right-0 top-0">
+          <ThemeToggle />
+        </div>
+        <h1 className="font-display pr-12 text-3xl font-semibold tracking-tight">Create account</h1>
+        <p className="mt-2 text-sm text-muted">
+          Explore the desk first. Start IB verification only when you want full member access.
+        </p>
+
+        <form onSubmit={onSubmit} className="mt-8 space-y-4">
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-muted">Full name</span>
+            <input className="field-input" autoComplete="name" {...register("full_name")} />
+            {errors.full_name ? <span className="text-[var(--danger)]">{errors.full_name.message}</span> : null}
+          </label>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-muted">Email</span>
+            <input type="email" className="field-input" autoComplete="email" {...register("email")} />
+          </label>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-muted">Password</span>
+            <PasswordInput autoComplete="new-password" {...register("password")} />
+            {errors.password ? <span className="text-[var(--danger)]">{errors.password.message}</span> : null}
+          </label>
+          {error ? (
+            <p className="rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
+              {error}
+            </p>
+          ) : null}
+          <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
+            {isSubmitting ? "Creating…" : "Create account"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-sm text-muted">
+          Already have an account?{" "}
+          <Link href={ROUTES.login} className="text-accent hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Create account</h1>
-      <p className="mt-2 text-sm text-muted">
-        Explore the desk first. Start IB verification only when you want full member access.
-      </p>
-
-      <form onSubmit={onSubmit} className="mt-8 space-y-4">
-        <label className="block space-y-1.5 text-sm">
-          <span className="text-muted">Full name</span>
-          <input className="field-input" autoComplete="name" {...register("full_name")} />
-          {errors.full_name ? <span className="text-[var(--danger)]">{errors.full_name.message}</span> : null}
-        </label>
-        <label className="block space-y-1.5 text-sm">
-          <span className="text-muted">Email</span>
-          <input type="email" className="field-input" autoComplete="email" {...register("email")} />
-        </label>
-        <label className="block space-y-1.5 text-sm">
-          <span className="text-muted">Password</span>
-          <PasswordInput autoComplete="new-password" {...register("password")} />
-          {errors.password ? <span className="text-[var(--danger)]">{errors.password.message}</span> : null}
-        </label>
-        {error ? (
-          <p className="rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
-            {error}
-          </p>
-        ) : null}
-        <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
-          {isSubmitting ? "Creating…" : "Create account"}
-        </button>
-      </form>
-
-      <p className="mt-6 text-sm text-muted">
-        Already have an account?{" "}
-        <Link href={ROUTES.login} className="text-accent hover:underline">
-          Sign in
-        </Link>
-      </p>
     </div>
   );
 }

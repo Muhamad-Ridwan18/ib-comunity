@@ -8,24 +8,45 @@ import {
   getTicket,
   type Ticket,
 } from "@/services/tickets";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
+import {
+  AdminBleed,
+  AdminEmpty,
+  AdminFilterSeg,
+  AdminListRow,
+  AdminPageHeader,
+  AdminSplit,
+  formatRelativeTime,
+} from "@/components/admin/AdminChrome";
+
+const FILTERS = [
+  { value: "", label: "All" },
+  { value: "open", label: "Open" },
+  { value: "in_progress", label: "In progress" },
+  { value: "solved", label: "Solved" },
+  { value: "closed", label: "Closed" },
+];
 
 function AdminTicketsInner() {
   const [items, setItems] = useState<Ticket[]>([]);
   const [selected, setSelected] = useState<Ticket | null>(null);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("open");
   const [reply, setReply] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
     setError(null);
+    setLoading(true);
     try {
       const res = await adminListTickets({ status: status || undefined });
       if (res.success && res.data) setItems(res.data);
       else setError(res.message || "Failed to load");
     } catch {
       setError("Failed to load tickets");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,91 +61,159 @@ function AdminTicketsInner() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader kicker="Admin" title="Tickets" description="Human support queue and replies." />
-
-      <select className="field-input max-w-xs" value={status} onChange={(e) => setStatus(e.target.value)}>
-        <option value="">All status</option>
-        <option value="open">Open</option>
-        <option value="in_progress">In progress</option>
-        <option value="solved">Solved</option>
-        <option value="closed">Closed</option>
-      </select>
-
-      {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="overflow-hidden rounded-[1.25rem] border border-[var(--border)]">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-[var(--border)] text-muted">
-              <tr>
-                <th className="px-4 py-3">Topic</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((t) => (
-                <tr
-                  key={t.id}
-                  className="cursor-pointer border-b border-[var(--border)] hover:bg-accent-soft"
-                  onClick={() => void openTicket(t.id)}
-                >
-                  <td className="px-4 py-3">{t.topic}</td>
-                  <td className="px-4 py-3">{t.name}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge label={t.status} tone={statusTone(t.status)} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        <section className="surface-panel p-5">
-          {selected ? (
-            <>
-              <h2 className="font-display text-lg font-semibold">{selected.topic}</h2>
-              <p className="mt-1 text-sm text-muted">
-                {selected.name} · @{selected.telegram_username || "—"} · {selected.email || "—"}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {["in_progress", "solved", "closed"].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs capitalize hover:border-accent/40"
-                    onClick={() =>
-                      void (async () => {
-                        await adminPatchTicketStatus(selected.id, s);
-                        await openTicket(selected.id);
-                        await load();
-                      })()
-                    }
-                  >
-                    Mark {s.replace("_", " ")}
-                  </button>
+    <AdminBleed>
+      <AdminPageHeader
+        title="Tickets"
+        description="Human support queue"
+        actions={
+          <AdminFilterSeg
+            value={status}
+            options={FILTERS}
+            onChange={(v) => {
+              setStatus(v);
+              setSelected(null);
+            }}
+          />
+        }
+      />
+      {error ? (
+        <p className="border-b border-[var(--danger)]/20 bg-[var(--danger)]/5 px-4 py-2 text-sm text-[var(--danger)] md:px-6">
+          {error}
+        </p>
+      ) : null}
+      <AdminSplit
+        list={
+          <>
+            <div className="hidden grid-cols-[1.5fr_1fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
+              <span>Topic</span>
+              <span>Member</span>
+              <span className="text-right">Status</span>
+            </div>
+            {loading ? (
+              <div className="space-y-2 p-4 md:p-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-14 animate-pulse rounded-lg bg-[var(--surface-2)]" />
                 ))}
               </div>
-              <div className="mt-4 max-h-72 space-y-2 overflow-y-auto">
+            ) : items.length === 0 ? (
+              <AdminEmpty title="No tickets" description="Inbox is empty for this filter." />
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {items.map((t) => (
+                  <li key={t.id}>
+                    <AdminListRow
+                      active={selected?.id === t.id}
+                      onClick={() => void openTicket(t.id)}
+                      className="md:grid-cols-[1.5fr_1fr_auto]"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{t.topic}</p>
+                        <p className="mt-0.5 text-[11px] text-muted">{formatRelativeTime(t.updated_at || t.created_at)}</p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm">{t.name}</p>
+                        <p className="truncate text-xs text-muted">{t.email || "—"}</p>
+                      </div>
+                      <div className="md:justify-self-end">
+                        <StatusBadge label={t.status} tone={statusTone(t.status)} />
+                      </div>
+                    </AdminListRow>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        }
+        detail={
+          !selected ? (
+            <AdminEmpty title="Select a ticket" description="Open a conversation to reply." />
+          ) : (
+            <>
+              <div className="border-b border-[var(--border)] px-5 py-4 md:px-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-display text-lg font-semibold">{selected.topic}</p>
+                    <p className="mt-1 text-sm text-muted">
+                      {selected.name}
+                      {selected.email ? ` · ${selected.email}` : ""}
+                      {selected.telegram_username ? ` · @${selected.telegram_username}` : ""}
+                    </p>
+                  </div>
+                  <StatusBadge label={selected.status} tone={statusTone(selected.status)} />
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {["in_progress", "solved", "closed"].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className="rounded-md border border-[var(--border)] px-2.5 py-1 text-[11px] font-medium capitalize text-muted transition hover:border-accent/40 hover:text-accent"
+                      onClick={() =>
+                        void (async () => {
+                          await adminPatchTicketStatus(selected.id, s);
+                          await openTicket(selected.id);
+                          await load();
+                        })()
+                      }
+                    >
+                      {s.replace("_", " ")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4 md:px-6">
+                <p className="rounded-xl bg-[var(--surface-2)] px-3 py-2 text-sm text-muted">{selected.description}</p>
                 {(selected.messages || []).map((m) => (
-                  <div key={m.id} className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm">
-                    <p className="text-xs uppercase text-muted">{m.sender_type}</p>
-                    <p className="mt-1">{m.message}</p>
+                  <div
+                    key={m.id}
+                    className={`rounded-xl border border-[var(--border)] px-3 py-2.5 text-sm ${
+                      m.sender_type === "admin" ? "border-accent/20 bg-accent-soft/40" : ""
+                    }`}
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{m.sender_type}</p>
+                    <p className="mt-1 whitespace-pre-wrap">{m.message}</p>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex gap-2">
-                <input className="field-input" value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Admin reply…" />
+              <div className="sticky bottom-0 flex gap-2 border-t border-[var(--border)] bg-[var(--card)] px-5 py-4 md:px-6">
+                <input
+                  className="field-input"
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  placeholder="Admin reply…"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      void (async () => {
+                        if (!reply.trim() || busy) return;
+                        setBusy(true);
+                        try {
+                          await addTicketMessage(selected.id, reply.trim());
+                          setReply("");
+                          await openTicket(selected.id);
+                          await load();
+                        } finally {
+                          setBusy(false);
+                        }
+                      })();
+                    }
+                  }}
+                />
                 <button
                   type="button"
+                  disabled={busy || !reply.trim()}
                   className="btn-primary shrink-0"
                   onClick={() =>
                     void (async () => {
-                      await addTicketMessage(selected.id, reply);
-                      setReply("");
-                      await openTicket(selected.id);
-                      await load();
+                      if (!reply.trim()) return;
+                      setBusy(true);
+                      try {
+                        await addTicketMessage(selected.id, reply.trim());
+                        setReply("");
+                        await openTicket(selected.id);
+                        await load();
+                      } finally {
+                        setBusy(false);
+                      }
                     })()
                   }
                 >
@@ -132,18 +221,16 @@ function AdminTicketsInner() {
                 </button>
               </div>
             </>
-          ) : (
-            <p className="text-sm text-muted">Select a ticket to reply.</p>
-          )}
-        </section>
-      </div>
-    </div>
+          )
+        }
+      />
+    </AdminBleed>
   );
 }
 
 export default function AdminTicketsPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
+    <Suspense fallback={<p className="p-6 text-sm text-muted">Loading…</p>}>
       <AdminTicketsInner />
     </Suspense>
   );

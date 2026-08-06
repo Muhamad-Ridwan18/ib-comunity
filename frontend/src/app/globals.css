@@ -89,8 +89,9 @@ body {
 }
 
 body.app-shell {
-  background-image: none;
   background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 90% 40% at 50% -10%, var(--glow), transparent 55%);
 }
 
 h1,
@@ -157,6 +158,17 @@ h3,
   }
 
   .surface-panel {
+    @apply rounded-2xl border;
+    background: var(--card);
+    border-color: var(--border);
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+  }
+
+  .dark .surface-panel {
+    box-shadow: none;
+  }
+
+  .surface-elevated {
     @apply rounded-2xl border;
     background: var(--card);
     border-color: var(--border);

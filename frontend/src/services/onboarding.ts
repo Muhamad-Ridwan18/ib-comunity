@@ -18,6 +18,8 @@ export type VerificationRequest = {
   rejection_reason?: string | null;
   reviewed_at?: string | null;
   created_at: string;
+  user_email?: string;
+  user_full_name?: string;
 };
 
 export type OnboardingProgress = {

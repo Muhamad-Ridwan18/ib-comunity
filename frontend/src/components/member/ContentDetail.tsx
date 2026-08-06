@@ -50,13 +50,13 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
 
   return (
     <div className="space-y-6">
-      <Link href={backHref} className="text-sm text-muted hover:text-accent">
+      <Link href={backHref} className="inline-flex text-sm text-muted transition hover:text-accent">
         ← Back
       </Link>
-      <div>
+      <div className="border-b border-[var(--border)] pb-5">
         <p className="section-kicker">{item.type}</p>
-        <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight md:text-4xl">{item.title}</h1>
-        {item.excerpt ? <p className="mt-3 max-w-2xl text-muted">{item.excerpt}</p> : null}
+        <h1 className="font-display mt-1.5 text-3xl font-semibold tracking-tight md:text-[2.35rem]">{item.title}</h1>
+        {item.excerpt ? <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-muted md:text-base">{item.excerpt}</p> : null}
       </div>
 
       {item.locked ? (
@@ -64,16 +64,16 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
       ) : (
         <>
           {item.type === "video" ? (
-            <div className="flex aspect-video items-center justify-center rounded-[1.35rem] border border-[var(--border)] bg-[var(--card-solid)]">
+            <div className="flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-[var(--border)] bg-[#0b1220]">
               {item.video_url ? (
-                <video controls className="h-full w-full rounded-[1.35rem]" src={item.video_url} />
+                <video controls className="h-full w-full" src={item.video_url} />
               ) : (
-                <p className="text-sm text-muted">Video URL not attached for this lesson yet.</p>
+                <p className="text-sm text-white/60">Video URL not attached for this lesson yet.</p>
               )}
             </div>
           ) : null}
           {item.body ? (
-            <article className="prose-invert max-w-none whitespace-pre-wrap rounded-[1.35rem] border border-[var(--border)] bg-[var(--card)] p-6 text-sm leading-7">
+            <article className="max-w-none whitespace-pre-wrap rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm leading-7 sm:p-8">
               {item.body}
             </article>
           ) : null}
@@ -98,7 +98,7 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
               {item.bookmarked ? "Remove bookmark" : "Bookmark"}
             </button>
           ) : (
-            <Link href={cta.href} className="text-sm text-accent">
+            <Link href={cta.href} className="text-sm font-medium text-accent hover:underline">
               {cta.label} to bookmark
             </Link>
           )}

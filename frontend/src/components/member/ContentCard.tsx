@@ -40,12 +40,15 @@ export function LockedNotice() {
   const status = useAuthStore((s) => s.user?.status);
   const cta = membershipCta(status);
   return (
-    <div className="rounded-[1.25rem] border border-accent/25 bg-accent-soft/40 p-5">
-      <p className="font-display text-lg font-semibold text-accent">Premium content locked</p>
-      <p className="mt-1 text-sm text-muted">Become a verified member to unlock this lesson.</p>
-      <Link href={cta.href} className="btn-primary mt-4 inline-flex">
-        {cta.label}
-      </Link>
+    <div className="relative overflow-hidden rounded-2xl border border-accent/20 bg-accent-soft/50 p-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_80%_at_100%_0%,var(--glow),transparent_60%)]" />
+      <div className="relative">
+        <p className="font-display text-lg font-semibold text-accent">Premium content locked</p>
+        <p className="mt-1.5 text-sm text-muted">Become a verified member to unlock this lesson.</p>
+        <Link href={cta.href} className="btn-primary mt-4 inline-flex">
+          {cta.label}
+        </Link>
+      </div>
     </div>
   );
 }

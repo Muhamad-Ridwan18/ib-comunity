@@ -84,7 +84,7 @@ export function ArticleCard({ item, hrefBase }: { item: ContentItem; hrefBase: s
   return (
     <Link
       href={`${hrefBase}/${item.slug}`}
-      className="surface-panel group flex w-72 shrink-0 flex-col overflow-hidden transition hover:-translate-y-0.5 hover:border-accent/25"
+      className="surface-panel group flex w-72 shrink-0 flex-col overflow-hidden transition hover:-translate-y-0.5 hover:border-accent/30"
     >
       <div className="h-32 dark:opacity-90" style={articleCoverStyle(item.slug, item.thumbnail_url)} />
       <div className="flex flex-1 flex-col p-4">

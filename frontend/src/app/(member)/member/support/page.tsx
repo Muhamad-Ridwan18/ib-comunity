@@ -14,6 +14,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { MemberList, MemberListRow, MemberPanel } from "@/components/member/MemberChrome";
+import { cn } from "@/lib/utils";
 
 function SupportInner() {
   const search = useSearchParams();
@@ -77,12 +79,16 @@ function SupportInner() {
 
       {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="surface-panel p-5">
-          <h2 className="font-display text-lg font-semibold">New ticket</h2>
-          <div className="mt-4 space-y-3">
+      <div className="grid gap-5 lg:grid-cols-2">
+        <MemberPanel title="New ticket">
+          <div className="space-y-3">
             <input className="field-input" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-            <input className="field-input" placeholder="Telegram" value={telegram} onChange={(e) => setTelegram(e.target.value)} />
+            <input
+              className="field-input"
+              placeholder="Telegram"
+              value={telegram}
+              onChange={(e) => setTelegram(e.target.value)}
+            />
             <input className="field-input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <input className="field-input" placeholder="Topic" value={topic} onChange={(e) => setTopic(e.target.value)} />
             <textarea
@@ -116,62 +122,77 @@ function SupportInner() {
               Submit ticket
             </button>
           </div>
-        </section>
+        </MemberPanel>
 
-        <section className="surface-panel p-5">
-          <h2 className="font-display text-lg font-semibold">My tickets</h2>
-          {loading ? <Skeleton className="mt-4 h-32" /> : null}
+        <MemberPanel title="My tickets">
+          {loading ? <Skeleton className="h-32" /> : null}
           {!loading && sorted.length === 0 ? (
             <EmptyState
-              className="mt-4 border-0 bg-transparent p-0"
+              className="border-0 bg-transparent p-0 shadow-none"
               title="No tickets yet"
-              description="Submit a ticket or escalate from the AI assistant when you need a human."
+              description="Submit a ticket when you need a human from the desk."
             />
           ) : null}
-          <ul className="mt-4 space-y-2">
-            {sorted.map((t) => (
-              <li key={t.id}>
-                <button
-                  type="button"
+          {!loading && sorted.length > 0 ? (
+            <MemberList className="border-0">
+              {sorted.map((t) => (
+                <MemberListRow
+                  key={t.id}
                   onClick={() => void openTicket(t.id)}
-                  className="flex w-full items-center justify-between rounded-xl border border-[var(--border)] px-3 py-2.5 text-left text-sm hover:border-accent/40"
+                  className={cn(selected?.id === t.id && "bg-accent-soft/50")}
                 >
-                  <span>
-                    <span className="font-medium">{t.topic}</span>
-                    <span className="mt-0.5 block text-xs text-muted">{new Date(t.updated_at).toLocaleString()}</span>
-                  </span>
-                  <StatusBadge label={t.status} tone={statusTone(t.status)} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>
+                      <span className="font-medium">{t.topic}</span>
+                      <span className="mt-0.5 block text-xs text-muted">
+                        {new Date(t.updated_at).toLocaleString()}
+                      </span>
+                    </span>
+                    <StatusBadge label={t.status} tone={statusTone(t.status)} />
+                  </div>
+                </MemberListRow>
+              ))}
+            </MemberList>
+          ) : null}
+        </MemberPanel>
       </div>
 
       {selected ? (
-        <section className="surface-panel p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-semibold">{selected.topic}</h2>
-              <div className="mt-2">
-                <StatusBadge label={selected.status} tone={statusTone(selected.status)} />
-              </div>
+        <MemberPanel
+          title={selected.topic}
+          actions={
+            <div className="flex items-center gap-3">
+              <StatusBadge label={selected.status} tone={statusTone(selected.status)} />
+              <button type="button" className="text-sm text-muted hover:text-[var(--foreground)]" onClick={() => setSelected(null)}>
+                Close
+              </button>
             </div>
-            <button type="button" className="text-sm text-muted" onClick={() => setSelected(null)}>
-              Close
-            </button>
-          </div>
-          <div className="mt-4 max-h-80 space-y-3 overflow-y-auto">
+          }
+        >
+          <div className="max-h-80 space-y-2.5 overflow-y-auto">
             {(selected.messages || []).map((m) => (
-              <div key={m.id} className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm">
-                <p className="text-xs uppercase tracking-wide text-muted">{m.sender_type}</p>
+              <div
+                key={m.id}
+                className={cn(
+                  "rounded-xl px-3.5 py-2.5 text-sm",
+                  m.sender_type === "admin" || m.sender_type === "system"
+                    ? "bg-[var(--surface-2)]"
+                    : "border border-[var(--border)]",
+                )}
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{m.sender_type}</p>
                 <p className="mt-1 leading-relaxed">{m.message}</p>
               </div>
             ))}
           </div>
           {selected.status !== "closed" ? (
             <div className="mt-4 flex gap-2">
-              <input className="field-input" placeholder="Reply…" value={reply} onChange={(e) => setReply(e.target.value)} />
+              <input
+                className="field-input"
+                placeholder="Reply…"
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+              />
               <button
                 type="button"
                 className="btn-primary shrink-0"
@@ -188,7 +209,7 @@ function SupportInner() {
               </button>
             </div>
           ) : null}
-        </section>
+        </MemberPanel>
       ) : null}
     </div>
   );

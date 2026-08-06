@@ -35,29 +35,32 @@ export default function ResetPasswordPage() {
   });
 
   return (
-    <div className="surface-panel relative p-7 md:p-8">
-      <div className="absolute right-5 top-5">
-        <ThemeToggle />
+    <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-7 md:p-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_100%_0%,var(--glow),transparent_55%)]" />
+      <div className="relative">
+        <div className="absolute right-0 top-0">
+          <ThemeToggle />
+        </div>
+        <h1 className="font-display pr-12 text-3xl font-semibold tracking-tight">Reset password</h1>
+        <form onSubmit={onSubmit} className="mt-8 space-y-4">
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-muted">Token</span>
+            <input className="field-input" {...register("token")} />
+          </label>
+          <label className="block space-y-1.5 text-sm">
+            <span className="text-muted">New password</span>
+            <PasswordInput autoComplete="new-password" {...register("new_password")} />
+          </label>
+          {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
+          {message ? <p className="text-sm text-accent">{message}</p> : null}
+          <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
+            Update password
+          </button>
+        </form>
+        <Link href={ROUTES.login} className="mt-6 inline-block text-sm text-muted hover:text-accent">
+          Back to login
+        </Link>
       </div>
-      <h1 className="font-display text-3xl font-semibold tracking-tight">Reset password</h1>
-      <form onSubmit={onSubmit} className="mt-8 space-y-4">
-        <label className="block space-y-1.5 text-sm">
-          <span className="text-muted">Token</span>
-          <input className="field-input" {...register("token")} />
-        </label>
-        <label className="block space-y-1.5 text-sm">
-          <span className="text-muted">New password</span>
-          <PasswordInput autoComplete="new-password" {...register("new_password")} />
-        </label>
-        {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-        {message ? <p className="text-sm text-accent">{message}</p> : null}
-        <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
-          Update password
-        </button>
-      </form>
-      <Link href={ROUTES.login} className="mt-6 inline-block text-sm text-muted hover:text-accent">
-        Back to login
-      </Link>
     </div>
   );
 }

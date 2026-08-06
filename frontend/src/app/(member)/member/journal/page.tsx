@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
+import { MemberList, MemberListRow, MemberPanel } from "@/components/member/MemberChrome";
 
 function isUnlocked(status?: string, role?: string) {
   return status === "verified" || role === "admin" || role === "super_admin";
@@ -67,10 +68,14 @@ export default function JournalPage() {
         description="Track setups, emotions, and outcomes — only you see these entries."
       />
 
-      <section className="surface-panel p-5">
-        <h2 className="font-display text-lg font-semibold">New entry</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <input className="field-input" type="datetime-local" value={tradedAt} onChange={(e) => setTradedAt(e.target.value)} />
+      <MemberPanel title="New entry">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input
+            className="field-input"
+            type="datetime-local"
+            value={tradedAt}
+            onChange={(e) => setTradedAt(e.target.value)}
+          />
           <input className="field-input" placeholder="Pair" value={pair} onChange={(e) => setPair(e.target.value)} />
           <select className="field-input" value={direction} onChange={(e) => setDirection(e.target.value)}>
             <option value="buy">Buy</option>
@@ -84,7 +89,12 @@ export default function JournalPage() {
           </select>
           <input className="field-input" placeholder="Entry" value={entry} onChange={(e) => setEntry(e.target.value)} />
           <input className="field-input" placeholder="Exit" value={exit} onChange={(e) => setExit(e.target.value)} />
-          <input className="field-input" placeholder="Emotion" value={emotion} onChange={(e) => setEmotion(e.target.value)} />
+          <input
+            className="field-input"
+            placeholder="Emotion"
+            value={emotion}
+            onChange={(e) => setEmotion(e.target.value)}
+          />
           <textarea
             className="field-input min-h-[88px] sm:col-span-2"
             placeholder="Notes"
@@ -118,7 +128,7 @@ export default function JournalPage() {
         >
           Save entry
         </button>
-      </section>
+      </MemberPanel>
 
       {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
       {loading ? <SkeletonRows /> : null}
@@ -126,41 +136,45 @@ export default function JournalPage() {
         <EmptyState title="No journal entries" description="Log your first trade to start building process history." />
       ) : null}
 
-      <div className="space-y-2">
-        {items.map((j) => (
-          <article key={j.id} className="surface-panel flex flex-wrap items-start justify-between gap-3 p-5">
-            <div>
-              <p className="font-display text-lg font-semibold">
-                {j.pair} · {j.direction.toUpperCase()}
-              </p>
-              <p className="mt-1 text-sm text-muted">
-                {new Date(j.traded_at).toLocaleString()}
-                {j.entry != null ? ` · Entry ${j.entry}` : ""}
-                {j.exit != null ? ` · Exit ${j.exit}` : ""}
-              </p>
-              {j.result ? (
-                <div className="mt-2">
-                  <StatusBadge label={j.result} tone={statusTone(j.result)} />
+      {!loading && items.length > 0 ? (
+        <MemberList>
+          {items.map((j) => (
+            <MemberListRow key={j.id}>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-display text-lg font-semibold">
+                    {j.pair} · {j.direction.toUpperCase()}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">
+                    {new Date(j.traded_at).toLocaleString()}
+                    {j.entry != null ? ` · Entry ${j.entry}` : ""}
+                    {j.exit != null ? ` · Exit ${j.exit}` : ""}
+                  </p>
+                  {j.result ? (
+                    <div className="mt-2">
+                      <StatusBadge label={j.result} tone={statusTone(j.result)} />
+                    </div>
+                  ) : null}
+                  {j.emotion ? <p className="mt-2 text-sm text-accent">{j.emotion}</p> : null}
+                  {j.notes ? <p className="mt-2 text-sm text-muted">{j.notes}</p> : null}
                 </div>
-              ) : null}
-              {j.emotion ? <p className="mt-2 text-sm text-accent">{j.emotion}</p> : null}
-              {j.notes ? <p className="mt-2 text-sm text-muted">{j.notes}</p> : null}
-            </div>
-            <button
-              type="button"
-              className="text-sm text-[var(--danger)]"
-              onClick={() =>
-                void (async () => {
-                  await deleteJournal(j.id);
-                  await load();
-                })()
-              }
-            >
-              Delete
-            </button>
-          </article>
-        ))}
-      </div>
+                <button
+                  type="button"
+                  className="text-sm text-[var(--danger)] transition hover:opacity-80"
+                  onClick={() =>
+                    void (async () => {
+                      await deleteJournal(j.id);
+                      await load();
+                    })()
+                  }
+                >
+                  Delete
+                </button>
+              </div>
+            </MemberListRow>
+          ))}
+        </MemberList>
+      ) : null}
     </div>
   );
 }

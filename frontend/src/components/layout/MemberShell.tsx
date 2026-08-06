@@ -68,11 +68,11 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/80 backdrop-blur-xl dark:bg-[var(--header)]">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 md:px-6">
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/85 backdrop-blur-xl dark:bg-[var(--header)]">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 md:px-6">
           <button
             type="button"
-            className="rounded-xl p-2 text-muted hover:bg-accent-soft lg:hidden"
+            className="rounded-lg p-2 text-muted hover:bg-accent-soft lg:hidden"
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
           >
@@ -81,7 +81,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
 
           <AppLogo href={ROUTES.member} />
 
-          <nav className="ml-4 hidden items-center gap-1 lg:flex">
+          <nav className="ml-2 hidden items-center gap-0.5 lg:flex">
             {nav.map((item) => {
               const active = isActive(pathname, item.href, item.exact);
               const locked = item.locked && !verified;
@@ -90,14 +90,14 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
                   key={item.href + item.label}
                   href={item.href}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition",
+                    "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition",
                     active
                       ? "bg-accent-soft font-medium text-accent"
                       : "text-muted hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]",
                   )}
                 >
                   {item.label}
-                  {locked ? <Lock className="h-3 w-3 opacity-60" /> : null}
+                  {locked ? <Lock className="h-3 w-3 opacity-50" /> : null}
                 </Link>
               );
             })}
@@ -148,7 +148,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl animate-fade px-4 py-8 md:px-6 md:py-10">{children}</main>
+      <main className="mx-auto w-full max-w-7xl animate-fade px-4 py-6 md:px-6 md:py-8">{children}</main>
 
       <Sheet
         open={mobileOpen}

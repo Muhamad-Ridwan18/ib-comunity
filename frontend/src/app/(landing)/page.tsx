@@ -171,7 +171,7 @@ export default function LandingPage() {
             <p className="section-kicker">Preview</p>
             <h2 className="section-title mt-3">Content from the desk</h2>
           </div>
-          <div className="flex gap-2">
+          <div className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-0.5">
             {(
               [
                 ["academy", "Academy"],
@@ -191,8 +191,10 @@ export default function LandingPage() {
                   setLoading(true);
                   setTab(key);
                 }}
-                className={`rounded-full px-4 py-1.5 text-sm ${
-                  tab === key ? "nav-pill-active" : "border border-[var(--border)] text-muted"
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                  tab === key
+                    ? "bg-white text-[var(--foreground)] shadow-sm dark:bg-[var(--card)]"
+                    : "text-muted hover:text-[var(--foreground)]"
                 }`}
               >
                 {label}

@@ -140,13 +140,14 @@ export default function OnboardingPage() {
           <AppLogo href={ROUTES.member} />
           <ThemeToggle />
         </div>
-        <div className="surface-panel relative overflow-hidden p-8 md:p-10">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
+        <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 md:p-10">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_70%_at_100%_0%,var(--glow),transparent_55%)]" />
+          <div className="relative">
           <p className="section-kicker">Membership</p>
-          <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+          <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight md:text-[2.35rem]">
             Become a verified member
           </h1>
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted md:text-base">
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-[0.95rem]">
             You can keep browsing the desk as a guest account. When you want academy, signals, journal, bonuses, and
             Telegram, start the IB verification steps. An admin will review your MT5 account at the end.
           </p>
@@ -169,6 +170,7 @@ export default function OnboardingPage() {
             <Link href={ROUTES.member} className="btn-ghost px-6 py-3">
               Back to desk
             </Link>
+          </div>
           </div>
         </div>
       </div>

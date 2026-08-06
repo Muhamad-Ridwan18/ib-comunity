@@ -61,6 +61,7 @@ App: `http://localhost:3000`
 - [UI](docs/ui.md)
 - [Deployment](docs/deployment.md)
 - [Deploy production (`ibcomunity.webyouneed.id`)](docs/deploy-ibcomunity.md)
+- [Admin UI/UX spec](docs/admin-ui-spec.md)
 
 ## Defaults (MVP)
 

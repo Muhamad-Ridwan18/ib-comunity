@@ -107,17 +107,16 @@ export default function MemberDashboardPage() {
   const articles = psychology.length ? psychology : academy.filter((i) => i.type === "article");
 
   return (
-    <div className="space-y-12 md:space-y-14">
-      {/* Welcome */}
-      <section className="relative overflow-hidden rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow)] md:p-8 dark:bg-[var(--card)]">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-10 md:space-y-12">
+      <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_80%_at_100%_0%,var(--glow),transparent_60%)]" />
+        <div className="relative flex flex-col gap-6 px-5 py-6 sm:px-7 sm:py-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="section-kicker">{verified ? "Member desk" : "Your desk"}</p>
-            <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+            <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight md:text-[2.35rem]">
               Welcome back, {firstName}
             </h1>
-            <p className="mt-3 text-sm leading-relaxed text-muted md:text-base">
+            <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-muted md:text-[0.95rem]">
               {verified
                 ? "Pick up a lesson, review today’s analysis, or check the latest desk signals."
                 : isBrowseOnly(user?.status)
@@ -128,18 +127,18 @@ export default function MemberDashboardPage() {
             </p>
           </div>
           {!verified ? (
-            <div className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
+            <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/80 p-4 backdrop-blur">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">
                   {isBrowseOnly(user?.status) ? "Membership" : "Verification"}
                 </span>
-                <span className="text-accent">{pct}%</span>
+                <span className="font-semibold text-accent">{pct}%</span>
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white dark:bg-[var(--card)]">
+              <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white dark:bg-[var(--card)]">
                 <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
               </div>
               <p className="mt-2 text-xs text-muted">{stepLabel || user?.status?.replaceAll("_", " ")}</p>
-              <Link href={cta.href} className="btn-primary mt-3 inline-flex">
+              <Link href={cta.href} className="btn-primary mt-3 inline-flex w-full sm:w-auto">
                 {cta.label}
               </Link>
             </div>
@@ -220,7 +219,7 @@ export default function MemberDashboardPage() {
                 {signals.map((s) => (
                   <article
                     key={s.id}
-                    className="surface-panel w-72 shrink-0 p-5 transition hover:-translate-y-0.5 hover:border-accent/25"
+                    className="w-72 shrink-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:border-accent/30"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -291,11 +290,14 @@ export default function MemberDashboardPage() {
               ) : (
                 <div className="rail-scroll">
                   {bonuses.map((b) => (
-                    <article key={b.id} className="surface-panel w-64 shrink-0 p-5">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
-                        <Sparkles className="h-5 w-5" />
+                    <article
+                      key={b.id}
+                      className="w-64 shrink-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:border-accent/30"
+                    >
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                        <Sparkles className="h-4 w-4" />
                       </div>
-                      <h3 className="mt-4 font-display text-lg font-semibold">{b.title}</h3>
+                      <h3 className="mt-4 font-display text-base font-semibold">{b.title}</h3>
                       {b.description ? <p className="mt-2 line-clamp-3 text-sm text-muted">{b.description}</p> : null}
                       {b.external_url || b.file_url ? (
                         <a
@@ -313,24 +315,28 @@ export default function MemberDashboardPage() {
               )}
             </ContentRail>
 
-            <section className="rounded-[1.75rem] border border-[var(--border)] bg-[linear-gradient(160deg,#0052ff,#003bb8)] p-6 text-white shadow-[var(--shadow)]">
+            <section className="relative overflow-hidden rounded-2xl bg-[linear-gradient(155deg,#0052ff_0%,#0039c7_100%)] p-6 text-white">
+              <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">Community</p>
-              <h2 className="font-display mt-3 text-2xl font-semibold tracking-tight">Telegram</h2>
-              <p className="mt-3 text-sm leading-relaxed text-white/80">
-                Join the private IB Community channel for desk updates and member discussion.
+              <h2 className="font-display mt-2 text-xl font-semibold tracking-tight sm:text-2xl">Telegram</h2>
+              <p className="mt-2.5 text-sm leading-relaxed text-white/80">
+                Private desk updates and member discussion after verification.
               </p>
               {verified && telegram ? (
                 <a
                   href={telegram}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-accent"
+                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-white/95"
                 >
                   <Send className="h-4 w-4" />
                   Open Telegram
                 </a>
               ) : (
-                <Link href={verified ? ROUTES.bonus : cta.href} className="btn-ghost mt-6 inline-flex border-white/30 text-white hover:bg-white/10">
+                <Link
+                  href={verified ? ROUTES.bonus : cta.href}
+                  className="mt-6 inline-flex rounded-xl border border-white/25 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                >
                   {verified ? "Open Bonus" : cta.label}
                 </Link>
               )}

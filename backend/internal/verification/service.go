@@ -19,12 +19,24 @@ var (
 type Service interface {
 	Mine(ctx context.Context, userID uuid.UUID) (map[string]any, error)
 	ResubmitHint(ctx context.Context, userID uuid.UUID) error
-	AdminList(ctx context.Context, status string, page, perPage int) ([]VerificationRequest, int64, error)
+	AdminList(ctx context.Context, status string, page, perPage int) ([]AdminListItem, int64, error)
 	AdminGet(ctx context.Context, id uuid.UUID) (*VerificationRequest, *auth.User, error)
 	Approve(ctx context.Context, id, adminID uuid.UUID) error
 	Reject(ctx context.Context, id, adminID uuid.UUID, reason string) error
 	LockUser(ctx context.Context, userID, adminID uuid.UUID) error
 	UnlockUser(ctx context.Context, userID, adminID uuid.UUID) error
+}
+
+type AdminListItem struct {
+	ID           string  `json:"id"`
+	UserID       string  `json:"user_id"`
+	MT5Account   string  `json:"mt5_account"`
+	BrokerServer string  `json:"broker_server"`
+	ProofKey     *string `json:"proof_key,omitempty"`
+	Status       string  `json:"status"`
+	CreatedAt    string  `json:"created_at"`
+	UserEmail    string  `json:"user_email"`
+	UserFullName string  `json:"user_full_name"`
 }
 
 type service struct {
@@ -77,8 +89,31 @@ func (s *service) ResubmitHint(ctx context.Context, userID uuid.UUID) error {
 	return s.users.UpdateUser(ctx, user)
 }
 
-func (s *service) AdminList(ctx context.Context, status string, page, perPage int) ([]VerificationRequest, int64, error) {
-	return s.repo.List(ctx, status, page, perPage)
+func (s *service) AdminList(ctx context.Context, status string, page, perPage int) ([]AdminListItem, int64, error) {
+	items, total, err := s.repo.List(ctx, status, page, perPage)
+	if err != nil {
+		return nil, 0, err
+	}
+	out := make([]AdminListItem, 0, len(items))
+	for _, item := range items {
+		row := AdminListItem{
+			ID:           item.ID.String(),
+			UserID:       item.UserID.String(),
+			MT5Account:   item.MT5Account,
+			BrokerServer: item.BrokerServer,
+			ProofKey:     item.ProofKey,
+			Status:       item.Status,
+			CreatedAt:    item.CreatedAt.UTC().Format(time.RFC3339),
+		}
+		if u, err := s.users.FindUserByID(ctx, item.UserID); err == nil {
+			row.UserEmail = u.Email
+			if u.Profile != nil {
+				row.UserFullName = u.Profile.FullName
+			}
+		}
+		out = append(out, row)
+	}
+	return out, total, nil
 }
 
 func (s *service) AdminGet(ctx context.Context, id uuid.UUID) (*VerificationRequest, *auth.User, error) {
