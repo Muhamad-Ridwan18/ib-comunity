@@ -71,6 +71,12 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
 
+  async function loadQuotes(signal?: AbortSignal) {
+    const res = await fetch("/api/market", { cache: "no-store", signal });
+    const json = (await res.json()) as { ok?: boolean; data?: MarketQuote[] };
+    if (json.ok && json.data) setQuotes(json.data);
+  }
+
   useEffect(() => {
     let alive = true;
     void (async () => {
@@ -104,19 +110,18 @@ export default function LandingPage() {
   }, [tab]);
 
   useEffect(() => {
-    let alive = true;
-    void (async () => {
-      try {
-        const res = await fetch("/api/market", { cache: "no-store" });
-        const json = (await res.json()) as { ok?: boolean; data?: MarketQuote[] };
-        if (!alive || !json.ok || !json.data) return;
-        setQuotes(json.data);
-      } catch {
+    const controller = new AbortController();
+    void loadQuotes(controller.signal).catch(() => {
+      /* ignore market widget failure */
+    });
+    const timer = window.setInterval(() => {
+      void loadQuotes(controller.signal).catch(() => {
         /* ignore market widget failure */
-      }
-    })();
+      });
+    }, 45_000);
     return () => {
-      alive = false;
+      controller.abort();
+      window.clearInterval(timer);
     };
   }, []);
 
@@ -150,7 +155,7 @@ export default function LandingPage() {
           testimonialTitle: "Apa Kata Member?",
           ctaTitle: "Siap masuk desk member?",
           ctaBody:
-            "Gabung IB Community, verifikasi broker, dan akses semua fitur premium untuk trading kamu.",
+            "Gabung Santara Pips, verifikasi broker, dan akses semua fitur premium untuk trading kamu.",
           ctaBtn: "Gabung Sekarang",
           marketPulse: "Pulse Market Live",
           marketLive: "Quote Live",
@@ -183,7 +188,7 @@ export default function LandingPage() {
           testimonialTitle: "What Members Say",
           ctaTitle: "Ready for the member desk?",
           ctaBody:
-            "Join IB Community, verify your broker, and unlock all premium features for your trading journey.",
+            "Join Santara Pips, verify your broker, and unlock all premium features for your trading journey.",
           ctaBtn: "Join Now",
           marketPulse: "Live Market Pulse",
           marketLive: "Live quotes",
@@ -334,7 +339,7 @@ export default function LandingPage() {
                 </p>
                 <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-500">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Twelve Data
+                  Twelve Data · 45s
                 </span>
               </div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -383,7 +388,7 @@ export default function LandingPage() {
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/40 blur-3xl" />
             <div className="relative rounded-2xl border border-white/10 bg-[#0d1833]/90 p-4 backdrop-blur">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-white/80">IB Community</p>
+                <p className="text-xs font-semibold text-white/80">Santara Pips</p>
                 <span className="rounded-md border border-white/15 px-2 py-1 text-[10px] text-white/80">
                   {dashboardLabels.overview}
                 </span>

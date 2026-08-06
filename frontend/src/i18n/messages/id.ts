@@ -2,7 +2,7 @@ import type { Messages } from "./en";
 
 export const id: Messages = {
   common: {
-    appName: "IB Community",
+    appName: "Santara Pips",
     loading: "Memuat…",
     save: "Simpan",
     cancel: "Batal",
@@ -130,7 +130,7 @@ export const id: Messages = {
     faq3q: "Jika verifikasi ditolak?",
     faq3a: "Anda akan melihat alasannya di onboarding dan bisa mengirim ulang detail MT5 serta bukti.",
     ctaTitle: "Siap masuk desk member?",
-    ctaBody: "Gabung IB Community, selesaikan verifikasi, dan buka academy, sinyal, serta Telegram privat.",
+    ctaBody: "Gabung Santara Pips, selesaikan verifikasi, dan buka academy, sinyal, serta Telegram privat.",
     footerBody:
       "Desk trading privat. Modul premium terbuka setelah verifikasi MT5 di bawah Introducing Broker kami.",
     hookTitle: "Pengenalan desk",

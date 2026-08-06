@@ -1,6 +1,6 @@
 export const en = {
   common: {
-    appName: "IB Community",
+    appName: "Santara Pips",
     loading: "Loading…",
     save: "Save",
     cancel: "Cancel",
@@ -128,7 +128,7 @@ export const en = {
     faq3q: "What if verification is rejected?",
     faq3a: "You'll see the reason in onboarding and can resubmit corrected MT5 details and proof.",
     ctaTitle: "Ready for the member desk?",
-    ctaBody: "Join IB Community, complete verification, and unlock academy, signals, and private Telegram.",
+    ctaBody: "Join Santara Pips, complete verification, and unlock academy, signals, and private Telegram.",
     footerBody:
       "Private trading desk. Premium modules unlock after MT5 verification under our Introducing Broker.",
     hookTitle: "Desk introduction",

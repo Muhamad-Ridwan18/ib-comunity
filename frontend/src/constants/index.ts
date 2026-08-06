@@ -1,4 +1,4 @@
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "IB Community";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Santara Pips";
 
 /**
  * API base URL.

@@ -18,7 +18,7 @@ export function AppLogo({ href = ROUTES.home, compact, className, markClassName 
           markClassName,
         )}
       >
-        IB
+        SP
       </span>
       {!compact ? (
         <span className="font-display text-lg font-semibold tracking-tight transition group-hover:text-accent">
