@@ -2,14 +2,9 @@
 
 import { cn } from "@/lib/utils";
 import type { OnboardingProgress } from "@/services/onboarding";
+import { useT } from "@/i18n/useT";
 
-export const ONBOARDING_LABELS = [
-  "Broker tutorial",
-  "IB registration",
-  "MT5 account",
-  "Deposit proof",
-  "Verification",
-];
+export const ONBOARDING_STEP_KEYS = ["steps.s1", "steps.s2", "steps.s3", "steps.s4", "steps.s5"] as const;
 
 function stepDone(progress: OnboardingProgress, n: number) {
   return Boolean(
@@ -22,16 +17,17 @@ function stepDone(progress: OnboardingProgress, n: number) {
 }
 
 export function StepRail({ progress }: { progress: OnboardingProgress }) {
+  const { t } = useT();
   const current = progress.current_step;
   return (
     <ol className="space-y-1">
-      {ONBOARDING_LABELS.map((label, i) => {
+      {ONBOARDING_STEP_KEYS.map((key, i) => {
         const n = i + 1;
         const done = stepDone(progress, n);
         const active = current === n;
         return (
           <li
-            key={label}
+            key={key}
             className={cn(
               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
               active && "bg-accent-soft text-accent",
@@ -49,7 +45,7 @@ export function StepRail({ progress }: { progress: OnboardingProgress }) {
             >
               {done && !active ? "✓" : n}
             </span>
-            <span className={cn(active && "font-medium")}>{label}</span>
+            <span className={cn(active && "font-medium")}>{t(key)}</span>
           </li>
         );
       })}
@@ -68,12 +64,13 @@ export function WaitingTimeline({
   rejected: boolean;
   verified: boolean;
 }) {
+  const { t } = useT();
   const stages = [
-    { key: "submitted", label: "Submitted", on: submitted || pending || rejected || verified },
-    { key: "review", label: "Under review", on: pending || verified },
+    { key: "submitted", label: t("onboarding.submitted"), on: submitted || pending || rejected || verified },
+    { key: "review", label: t("onboarding.underReview"), on: pending || verified },
     {
       key: "result",
-      label: verified ? "Approved" : rejected ? "Rejected" : "Result",
+      label: verified ? t("onboarding.approved") : rejected ? t("status.rejected") : t("onboarding.resultLabel"),
       on: verified || rejected,
     },
   ];

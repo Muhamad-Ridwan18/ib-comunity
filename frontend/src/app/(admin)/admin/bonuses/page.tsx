@@ -14,14 +14,15 @@ import {
   AdminFilterSeg,
   AdminPageHeader,
 } from "@/components/admin/AdminChrome";
-
-const FILTERS = [
-  { value: "", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
+import { useT } from "@/i18n/useT";
 
 export default function AdminBonusesPage() {
+  const { t, ts } = useT();
+  const FILTERS = [
+    { value: "", label: t("common.all") },
+    { value: "active", label: t("status.active") },
+    { value: "inactive", label: t("status.inactive") },
+  ];
   const [items, setItems] = useState<BonusItem[]>([]);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -37,9 +38,9 @@ export default function AdminBonusesPage() {
     try {
       const res = await adminListBonuses();
       if (res.success && res.data) setItems(res.data);
-      else setError(res.message || "Failed to load");
+      else setError(res.message || t("admin.loadFailed"));
     } catch {
-      setError("Failed to load bonuses");
+      setError(t("admin.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -58,8 +59,8 @@ export default function AdminBonusesPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Bonuses"
-        description={loading ? "Loading…" : `${filtered.length} resources`}
+        title={t("admin.bonusesTitle")}
+        description={loading ? t("common.loading") : t("admin.resourcesCount", { n: filtered.length })}
         actions={<AdminFilterSeg value={filter} options={FILTERS} onChange={setFilter} />}
       />
 
@@ -72,23 +73,23 @@ export default function AdminBonusesPage() {
       <div className="grid lg:grid-cols-[minmax(16rem,19rem)_minmax(0,1fr)]">
         <aside className="border-b border-[var(--border)] bg-[var(--card)] lg:border-b-0 lg:border-r">
           <div className="px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Add bonus</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.newBonus")}</p>
             <div className="mt-3 space-y-2.5">
               <input
                 className="field-input py-2 text-sm"
-                placeholder="Title"
+                placeholder={t("admin.bonusTitleField")}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
               <textarea
                 className="field-input min-h-[88px] text-sm"
-                placeholder="Description"
+                placeholder={t("admin.description")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
               <input
                 className="field-input py-2 text-sm"
-                placeholder="External URL"
+                placeholder={t("admin.externalUrl")}
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
               />
@@ -99,7 +100,7 @@ export default function AdminBonusesPage() {
                 onClick={() =>
                   void (async () => {
                     if (!title.trim()) {
-                      setError("Title required");
+                      setError(t("admin.titleRequired"));
                       return;
                     }
                     setBusy(true);
@@ -117,14 +118,14 @@ export default function AdminBonusesPage() {
                       setExternalUrl("");
                       await load();
                     } catch {
-                      setError("Failed to create bonus");
+                      setError(t("admin.createFailed"));
                     } finally {
                       setBusy(false);
                     }
                   })()
                 }
               >
-                Create
+                {t("admin.create")}
               </button>
             </div>
           </div>
@@ -132,10 +133,10 @@ export default function AdminBonusesPage() {
 
         <div className="min-w-0">
           <div className="hidden grid-cols-[1.5fr_1fr_auto_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
-            <span>Title</span>
-            <span>Link</span>
-            <span>Status</span>
-            <span className="text-right">Actions</span>
+            <span>{t("admin.bonusTitleField")}</span>
+            <span>{t("admin.link")}</span>
+            <span>{t("common.status")}</span>
+            <span className="text-right">{t("common.actions")}</span>
           </div>
 
           {loading ? (
@@ -146,8 +147,8 @@ export default function AdminBonusesPage() {
             </div>
           ) : filtered.length === 0 ? (
             <AdminEmpty
-              title="No bonuses"
-              description={filter ? `No ${filter} resources.` : "Add a member resource from the left panel."}
+              title={t("admin.noBonuses")}
+              description={filter ? t("admin.noResourcesForFilter", { filter: ts(filter) }) : t("admin.addResourceHint")}
             />
           ) : (
             <ul className="divide-y divide-[var(--border)]">
@@ -199,14 +200,14 @@ export default function AdminBonusesPage() {
                             });
                             await load();
                           } catch {
-                            setError("Update failed");
+                            setError(t("admin.updateFailed"));
                           } finally {
                             setBusy(false);
                           }
                         })()
                       }
                     >
-                      {b.is_active ? "Deactivate" : "Activate"}
+                      {b.is_active ? t("admin.deactivate") : t("admin.activate")}
                     </button>
                     <button
                       type="button"
@@ -220,14 +221,14 @@ export default function AdminBonusesPage() {
                             await adminDeleteBonus(b.id);
                             await load();
                           } catch {
-                            setError("Delete failed");
+                            setError(t("admin.deleteFailed"));
                           } finally {
                             setBusy(false);
                           }
                         })()
                       }
                     >
-                      Delete
+                      {t("common.delete")}
                     </button>
                   </div>
                 </li>

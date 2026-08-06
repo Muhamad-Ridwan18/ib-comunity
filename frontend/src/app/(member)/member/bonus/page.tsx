@@ -8,12 +8,14 @@ import { useAuthStore } from "@/store/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useT } from "@/i18n/useT";
 
 function isUnlocked(status?: string, role?: string) {
   return status === "verified" || role === "admin" || role === "super_admin";
 }
 
 export default function BonusPage() {
+  const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const unlocked = isUnlocked(user?.status, user?.role);
   const [items, setItems] = useState<BonusItem[]>([]);
@@ -35,9 +37,9 @@ export default function BonusPage() {
         if (!alive) return;
         if (bRes.success && bRes.data) setItems(bRes.data);
         if (tRes.success && tRes.data?.telegram_invite_url) setTelegram(tRes.data.telegram_invite_url);
-        if (!bRes.success) setError(bRes.message || "Failed to load bonuses");
+        if (!bRes.success) setError(bRes.message || t("member.noBonusesAdminBody"));
       } catch {
-        if (alive) setError("Failed to load bonuses");
+        if (alive) setError(t("member.noBonusesAdminBody"));
       } finally {
         if (alive) setLoading(false);
       }
@@ -45,21 +47,21 @@ export default function BonusPage() {
     return () => {
       alive = false;
     };
-  }, [unlocked]);
+  }, [unlocked, t]);
 
-  if (!unlocked) return <LockedModule title="Bonus Member" />;
+  if (!unlocked) return <LockedModule title={t("member.bonusTitle")} />;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Member perks"
-        title="Bonus"
-        description="Downloads, external resources, and private Telegram access."
+        kicker={t("member.memberPerks")}
+        title={t("member.bonusTitle")}
+        description={t("member.bonusDesc")}
         actions={
           telegram ? (
             <a href={telegram} target="_blank" rel="noreferrer" className="btn-primary inline-flex items-center gap-2">
               <Send className="h-4 w-4" />
-              Join Telegram
+              {t("member.joinTelegram")}
             </a>
           ) : null
         }
@@ -74,7 +76,7 @@ export default function BonusPage() {
       ) : null}
 
       {!loading && items.length === 0 ? (
-        <EmptyState title="No bonuses yet" description="Member resources will appear here when published by admin." />
+        <EmptyState title={t("member.noBonusesTitle")} description={t("member.noBonusesAdminBody")} />
       ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -97,7 +99,7 @@ export default function BonusPage() {
                   rel="noreferrer"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Download
+                  {t("common.download")}
                 </a>
               ) : null}
               {b.external_url ? (
@@ -108,7 +110,7 @@ export default function BonusPage() {
                   rel="noreferrer"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  Open link
+                  {t("common.openLink")}
                 </a>
               ) : null}
             </div>

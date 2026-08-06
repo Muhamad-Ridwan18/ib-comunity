@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { MemberFilterSeg, MemberList, MemberListRow } from "@/components/member/MemberChrome";
 import { mediaCoverStyle } from "@/lib/media-cover";
 import { membershipCta } from "@/lib/membership";
+import { useT } from "@/i18n/useT";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -29,6 +30,7 @@ const titles: Record<ContentModule, string> = {
 };
 
 export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; hrefBase: string }) {
+  const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const verified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
   const cta = membershipCta(user?.status);
@@ -81,21 +83,19 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker={verified ? "Unlocked" : "Preview"}
-        title={titles[module]}
+        kicker={verified ? t("member.unlocked") : t("member.preview")}
+        title={t(module === "academy" ? "nav.academy" : module === "psychology" ? "member.psychology" : module === "daily_analysis" ? "member.dailyAnalysisShort" : "member.education")}
         description={
-          verified
-            ? "Browse lessons and articles from the desk."
-            : "Premium items stay locked until you become a verified member."
+          verified ? t("member.browseVerified") : t("member.browseLocked")
         }
         actions={
           <MemberFilterSeg
             value={type}
             onChange={setType}
             options={[
-              { value: "", label: "All" },
-              { value: "video", label: "Video" },
-              { value: "article", label: "Article" },
+              { value: "", label: t("common.all") },
+              { value: "video", label: t("member.video") },
+              { value: "article", label: t("member.article") },
             ]}
           />
         }
@@ -104,7 +104,7 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
           className="field-input max-w-md"
-          placeholder="Search lessons…"
+          placeholder={t("member.searchLessons")}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -155,9 +155,9 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
           ) : null}
           {!loading && items.length === 0 ? (
             <EmptyState
-              title="No content yet"
-              description="This library is empty for the selected filters."
-              actionLabel={verified ? undefined : cta.label}
+              title={t("member.noContentTitle")}
+              description={t("member.noContentBody")}
+              actionLabel={verified ? undefined : t(cta.labelKey)}
               actionHref={verified ? undefined : cta.href}
             />
           ) : null}
@@ -187,7 +187,7 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
                         <div className="min-w-0">
                           <p className="text-[11px] uppercase tracking-wide text-muted">
                             {item.category_name || item.type}
-                            {item.locked ? " · Locked" : ""}
+                            {item.locked ? ` · ${t("member.locked")}` : ""}
                           </p>
                           <Link
                             href={`${hrefBase}/${item.slug}`}

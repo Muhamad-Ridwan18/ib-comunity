@@ -9,12 +9,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { MemberFilterSeg, MemberList, MemberListRow } from "@/components/member/MemberChrome";
+import { useT } from "@/i18n/useT";
 
 function isUnlocked(status?: string, role?: string) {
   return status === "verified" || role === "admin" || role === "super_admin";
 }
 
 export default function SignalsPage() {
+  const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const unlocked = isUnlocked(user?.status, user?.role);
   const [items, setItems] = useState<SignalItem[]>([]);
@@ -35,9 +37,9 @@ export default function SignalsPage() {
         const res = await listSignals({ status: status || undefined });
         if (!alive) return;
         if (res.success && res.data) setItems(res.data);
-        else setError(res.message || "Failed to load signals");
+        else setError(res.message || t("member.noSignalsBody"));
       } catch {
-        if (alive) setError("Failed to load signals");
+        if (alive) setError(t("member.noSignalsBody"));
       } finally {
         if (alive) setLoading(false);
       }
@@ -45,25 +47,25 @@ export default function SignalsPage() {
     return () => {
       alive = false;
     };
-  }, [unlocked, status]);
+  }, [unlocked, status, t]);
 
-  if (!unlocked) return <LockedModule title="Signals" />;
+  if (!unlocked) return <LockedModule title={t("member.signalsTitle")} />;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Live desk"
-        title="Signals"
-        description="Pair setups with entry, SL/TP, and result tracking."
+        kicker={t("member.liveDesk")}
+        title={t("member.signalsTitle")}
+        description={t("member.signalsDesc")}
         actions={
           <MemberFilterSeg
             value={status}
             onChange={setStatus}
             options={[
-              { value: "", label: "All" },
-              { value: "active", label: "Active" },
-              { value: "closed", label: "Closed" },
-              { value: "cancelled", label: "Cancelled" },
+              { value: "", label: t("common.all") },
+              { value: "active", label: t("status.active") },
+              { value: "closed", label: t("status.closed") },
+              { value: "cancelled", label: t("status.cancelled") },
             ]}
           />
         }
@@ -73,7 +75,7 @@ export default function SignalsPage() {
       {loading ? <SkeletonRows count={4} /> : null}
 
       {!loading && items.length === 0 ? (
-        <EmptyState title="No signals" description="The desk has not published setups for this filter yet." />
+        <EmptyState title={t("member.noSignalsTitle")} description={t("member.noSignalsBody")} />
       ) : null}
 
       {!loading && items.length > 0 ? (
@@ -89,7 +91,7 @@ export default function SignalsPage() {
                     </span>
                   </p>
                   <p className="mt-1 text-sm text-muted">
-                    Entry {s.entry}
+                    {t("member.entry")} {s.entry}
                     {s.sl != null ? ` · SL ${s.sl}` : ""}
                     {s.tp != null ? ` · TP ${s.tp}` : ""}
                   </p>
@@ -100,7 +102,9 @@ export default function SignalsPage() {
                 </div>
               </div>
               {s.analysis ? <p className="mt-3 text-sm leading-relaxed text-muted">{s.analysis}</p> : null}
-              <p className="mt-3 text-xs text-muted">Published {new Date(s.published_at).toLocaleString()}</p>
+              <p className="mt-3 text-xs text-muted">
+                {t("member.published", { date: new Date(s.published_at).toLocaleString() })}
+              </p>
             </MemberListRow>
           ))}
         </MemberList>

@@ -12,16 +12,9 @@ import {
   AdminEmpty,
   AdminFilterSeg,
   AdminPageHeader,
-  formatRelativeTime,
 } from "@/components/admin/AdminChrome";
 import { cn } from "@/lib/utils";
-
-const FILTERS = [
-  { value: "", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "closed", label: "Closed" },
-  { value: "cancelled", label: "Cancelled" },
-];
+import { useT } from "@/i18n/useT";
 
 function numOrNull(v: string) {
   if (!v.trim()) return null;
@@ -30,6 +23,13 @@ function numOrNull(v: string) {
 }
 
 export default function AdminSignalsPage() {
+  const { t, ts, tr } = useT();
+  const FILTERS = [
+    { value: "", label: t("common.all") },
+    { value: "active", label: t("status.active") },
+    { value: "closed", label: t("status.closed") },
+    { value: "cancelled", label: t("status.cancelled") },
+  ];
   const [items, setItems] = useState<SignalItem[]>([]);
   const [status, setStatus] = useState("active");
   const [error, setError] = useState<string | null>(null);
@@ -48,9 +48,9 @@ export default function AdminSignalsPage() {
     try {
       const res = await adminListSignals();
       if (res.success && res.data) setItems(res.data);
-      else setError(res.message || "Failed to load");
+      else setError(res.message || t("admin.loadFailed"));
     } catch {
-      setError("Failed to load signals");
+      setError(t("admin.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -68,8 +68,8 @@ export default function AdminSignalsPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Signals"
-        description={loading ? "Loading…" : `${filtered.length} setups`}
+        title={t("admin.signalsTitle")}
+        description={loading ? t("common.loading") : t("admin.setupsCount", { n: filtered.length })}
         actions={<AdminFilterSeg value={status} options={FILTERS} onChange={setStatus} />}
       />
 
@@ -82,47 +82,47 @@ export default function AdminSignalsPage() {
       <div className="grid lg:grid-cols-[minmax(16rem,19rem)_minmax(0,1fr)]">
         <aside className="border-b border-[var(--border)] bg-[var(--card)] lg:border-b-0 lg:border-r">
           <div className="px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Publish signal</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.publishSignal")}</p>
             <div className="mt-3 space-y-2.5">
               <input
                 className="field-input py-2 text-sm"
                 value={pair}
                 onChange={(e) => setPair(e.target.value)}
-                placeholder="Pair"
+                placeholder={t("admin.pair")}
               />
               <select
                 className="field-input py-2 text-sm"
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
               >
-                <option value="buy">Buy</option>
-                <option value="sell">Sell</option>
+                <option value="buy">{t("status.buy")}</option>
+                <option value="sell">{t("status.sell")}</option>
               </select>
               <input
                 className="field-input py-2 text-sm"
                 value={entry}
                 onChange={(e) => setEntry(e.target.value)}
-                placeholder="Entry"
+                placeholder={t("admin.entry")}
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
                   className="field-input py-2 text-sm"
                   value={sl}
                   onChange={(e) => setSl(e.target.value)}
-                  placeholder="SL"
+                  placeholder={t("admin.sl")}
                 />
                 <input
                   className="field-input py-2 text-sm"
                   value={tp}
                   onChange={(e) => setTp(e.target.value)}
-                  placeholder="TP"
+                  placeholder={t("admin.tp")}
                 />
               </div>
               <textarea
                 className="field-input min-h-[88px] text-sm"
                 value={analysis}
                 onChange={(e) => setAnalysis(e.target.value)}
-                placeholder="Analysis"
+                placeholder={t("admin.analysis")}
               />
               <button
                 type="button"
@@ -132,7 +132,7 @@ export default function AdminSignalsPage() {
                   void (async () => {
                     const entryNum = Number(entry);
                     if (!Number.isFinite(entryNum)) {
-                      setError("Entry must be a number");
+                      setError(t("admin.entryMustBeNumber"));
                       return;
                     }
                     setBusy(true);
@@ -150,14 +150,14 @@ export default function AdminSignalsPage() {
                       setAnalysis("");
                       await load();
                     } catch {
-                      setError("Failed to publish signal");
+                      setError(t("admin.publishFailed"));
                     } finally {
                       setBusy(false);
                     }
                   })()
                 }
               >
-                Publish
+                {t("admin.publish")}
               </button>
             </div>
           </div>
@@ -165,11 +165,11 @@ export default function AdminSignalsPage() {
 
         <div className="min-w-0">
           <div className="hidden grid-cols-[1fr_0.55fr_0.7fr_0.9fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
-            <span>Pair</span>
-            <span>Dir</span>
-            <span>Entry</span>
-            <span>Status</span>
-            <span className="text-right">Actions</span>
+            <span>{t("admin.pair")}</span>
+            <span>{t("admin.direction")}</span>
+            <span>{t("admin.entry")}</span>
+            <span>{t("common.status")}</span>
+            <span className="text-right">{t("common.actions")}</span>
           </div>
 
           {loading ? (
@@ -180,8 +180,8 @@ export default function AdminSignalsPage() {
             </div>
           ) : filtered.length === 0 ? (
             <AdminEmpty
-              title="No signals"
-              description={status ? `No ${status} setups.` : "Publish a setup from the left panel."}
+              title={t("admin.noSignals")}
+              description={status ? t("admin.noSetupsForStatus", { status: ts(status) }) : t("admin.publishFromPanel")}
             />
           ) : (
             <ul className="divide-y divide-[var(--border)]">
@@ -196,7 +196,7 @@ export default function AdminSignalsPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium font-mono">{s.pair}</p>
                     <p className="mt-0.5 text-xs text-muted">
-                      {formatRelativeTime(s.published_at || s.created_at)}
+                      {tr(s.published_at || s.created_at)}
                       {s.sl != null ? ` · SL ${s.sl}` : ""}
                       {s.tp != null ? ` · TP ${s.tp}` : ""}
                     </p>
@@ -227,14 +227,14 @@ export default function AdminSignalsPage() {
                                 await adminPatchSignalStatus(s.id, { status: "closed", result: "win" });
                                 await load();
                               } catch {
-                                setError("Close failed");
+                                setError(t("admin.actionFailed"));
                               } finally {
                                 setBusy(false);
                               }
                             })()
                           }
                         >
-                          Close win
+                          {t("admin.closeWin")}
                         </button>
                         <button
                           type="button"
@@ -248,14 +248,14 @@ export default function AdminSignalsPage() {
                                 await adminPatchSignalStatus(s.id, { status: "closed", result: "loss" });
                                 await load();
                               } catch {
-                                setError("Close failed");
+                                setError(t("admin.actionFailed"));
                               } finally {
                                 setBusy(false);
                               }
                             })()
                           }
                         >
-                          Close loss
+                          {t("admin.closeLoss")}
                         </button>
                         <button
                           type="button"
@@ -269,14 +269,14 @@ export default function AdminSignalsPage() {
                                 await adminPatchSignalStatus(s.id, { status: "cancelled" });
                                 await load();
                               } catch {
-                                setError("Cancel failed");
+                                setError(t("admin.actionFailed"));
                               } finally {
                                 setBusy(false);
                               }
                             })()
                           }
                         >
-                          Cancel
+                          {t("common.cancel")}
                         </button>
                       </>
                     ) : (

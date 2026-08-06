@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { MemberList, MemberListRow, MemberPanel } from "@/components/member/MemberChrome";
+import { useT } from "@/i18n/useT";
 
 function isUnlocked(status?: string, role?: string) {
   return status === "verified" || role === "admin" || role === "super_admin";
@@ -21,6 +22,7 @@ function numOrNull(v: string) {
 }
 
 export default function JournalPage() {
+  const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const unlocked = isUnlocked(user?.status, user?.role);
   const [items, setItems] = useState<JournalItem[]>([]);
@@ -41,9 +43,9 @@ export default function JournalPage() {
     try {
       const res = await listJournals();
       if (res.success && res.data) setItems(res.data);
-      else setError(res.message || "Failed to load journal");
+      else setError(res.message || t("member.noJournalBody"));
     } catch {
-      setError("Failed to load journal");
+      setError(t("member.noJournalBody"));
     } finally {
       setLoading(false);
     }
@@ -58,17 +60,17 @@ export default function JournalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unlocked]);
 
-  if (!unlocked) return <LockedModule title="Trading Journal" />;
+  if (!unlocked) return <LockedModule title={t("member.journalTitle")} />;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Private log"
-        title="Trading Journal"
-        description="Track setups, emotions, and outcomes — only you see these entries."
+        kicker={t("member.privateLog")}
+        title={t("member.journalTitle")}
+        description={t("member.journalDesc")}
       />
 
-      <MemberPanel title="New entry">
+      <MemberPanel title={t("member.newEntry")}>
         <div className="grid gap-3 sm:grid-cols-2">
           <input
             className="field-input"
@@ -76,28 +78,43 @@ export default function JournalPage() {
             value={tradedAt}
             onChange={(e) => setTradedAt(e.target.value)}
           />
-          <input className="field-input" placeholder="Pair" value={pair} onChange={(e) => setPair(e.target.value)} />
-          <select className="field-input" value={direction} onChange={(e) => setDirection(e.target.value)}>
-            <option value="buy">Buy</option>
-            <option value="sell">Sell</option>
-          </select>
-          <select className="field-input" value={result} onChange={(e) => setResult(e.target.value)}>
-            <option value="">Result (optional)</option>
-            <option value="win">Win</option>
-            <option value="loss">Loss</option>
-            <option value="be">BE</option>
-          </select>
-          <input className="field-input" placeholder="Entry" value={entry} onChange={(e) => setEntry(e.target.value)} />
-          <input className="field-input" placeholder="Exit" value={exit} onChange={(e) => setExit(e.target.value)} />
           <input
             className="field-input"
-            placeholder="Emotion"
+            placeholder={t("member.pair")}
+            value={pair}
+            onChange={(e) => setPair(e.target.value)}
+          />
+          <select className="field-input" value={direction} onChange={(e) => setDirection(e.target.value)}>
+            <option value="buy">{t("status.buy")}</option>
+            <option value="sell">{t("status.sell")}</option>
+          </select>
+          <select className="field-input" value={result} onChange={(e) => setResult(e.target.value)}>
+            <option value="">{t("member.resultOptional")}</option>
+            <option value="win">{t("status.win")}</option>
+            <option value="loss">{t("status.loss")}</option>
+            <option value="be">{t("status.be")}</option>
+          </select>
+          <input
+            className="field-input"
+            placeholder={t("member.entry")}
+            value={entry}
+            onChange={(e) => setEntry(e.target.value)}
+          />
+          <input
+            className="field-input"
+            placeholder={t("member.exit")}
+            value={exit}
+            onChange={(e) => setExit(e.target.value)}
+          />
+          <input
+            className="field-input"
+            placeholder={t("member.emotion")}
             value={emotion}
             onChange={(e) => setEmotion(e.target.value)}
           />
           <textarea
             className="field-input min-h-[88px] sm:col-span-2"
-            placeholder="Notes"
+            placeholder={t("member.notes")}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -126,14 +143,14 @@ export default function JournalPage() {
             })()
           }
         >
-          Save entry
+          {t("member.saveEntry")}
         </button>
       </MemberPanel>
 
       {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
       {loading ? <SkeletonRows /> : null}
       {!loading && items.length === 0 ? (
-        <EmptyState title="No journal entries" description="Log your first trade to start building process history." />
+        <EmptyState title={t("member.noJournalTitle")} description={t("member.noJournalBody")} />
       ) : null}
 
       {!loading && items.length > 0 ? (
@@ -147,8 +164,8 @@ export default function JournalPage() {
                   </p>
                   <p className="mt-1 text-sm text-muted">
                     {new Date(j.traded_at).toLocaleString()}
-                    {j.entry != null ? ` · Entry ${j.entry}` : ""}
-                    {j.exit != null ? ` · Exit ${j.exit}` : ""}
+                    {j.entry != null ? ` · ${t("member.entry")} ${j.entry}` : ""}
+                    {j.exit != null ? ` · ${t("member.exit")} ${j.exit}` : ""}
                   </p>
                   {j.result ? (
                     <div className="mt-2">
@@ -168,7 +185,7 @@ export default function JournalPage() {
                     })()
                   }
                 >
-                  Delete
+                  {t("common.delete")}
                 </button>
               </div>
             </MemberListRow>

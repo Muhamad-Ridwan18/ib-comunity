@@ -16,18 +16,18 @@ import {
   AdminListRow,
   AdminPageHeader,
   AdminSplit,
-  formatRelativeTime,
 } from "@/components/admin/AdminChrome";
-
-const FILTERS = [
-  { value: "", label: "All" },
-  { value: "open", label: "Open" },
-  { value: "in_progress", label: "In progress" },
-  { value: "solved", label: "Solved" },
-  { value: "closed", label: "Closed" },
-];
+import { useT } from "@/i18n/useT";
 
 function AdminTicketsInner() {
+  const { t, ts, tr } = useT();
+  const FILTERS = [
+    { value: "", label: t("common.all") },
+    { value: "open", label: t("status.open") },
+    { value: "in_progress", label: t("status.in_progress") },
+    { value: "solved", label: t("status.solved") },
+    { value: "closed", label: t("status.closed") },
+  ];
   const [items, setItems] = useState<Ticket[]>([]);
   const [selected, setSelected] = useState<Ticket | null>(null);
   const [status, setStatus] = useState("open");
@@ -42,9 +42,9 @@ function AdminTicketsInner() {
     try {
       const res = await adminListTickets({ status: status || undefined });
       if (res.success && res.data) setItems(res.data);
-      else setError(res.message || "Failed to load");
+      else setError(res.message || t("admin.loadFailed"));
     } catch {
-      setError("Failed to load tickets");
+      setError(t("admin.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -63,8 +63,8 @@ function AdminTicketsInner() {
   return (
     <AdminBleed>
       <AdminPageHeader
-        title="Tickets"
-        description="Human support queue"
+        title={t("admin.ticketsTitle")}
+        description={t("admin.humanSupportQueue")}
         actions={
           <AdminFilterSeg
             value={status}
@@ -85,9 +85,9 @@ function AdminTicketsInner() {
         list={
           <>
             <div className="hidden grid-cols-[1.5fr_1fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
-              <span>Topic</span>
-              <span>Member</span>
-              <span className="text-right">Status</span>
+              <span>{t("member.topic")}</span>
+              <span>{t("admin.member")}</span>
+              <span className="text-right">{t("common.status")}</span>
             </div>
             {loading ? (
               <div className="space-y-2 p-4 md:p-6">
@@ -96,26 +96,26 @@ function AdminTicketsInner() {
                 ))}
               </div>
             ) : items.length === 0 ? (
-              <AdminEmpty title="No tickets" description="Inbox is empty for this filter." />
+              <AdminEmpty title={t("admin.noTicketsShort")} description={t("admin.inboxEmptyFilter")} />
             ) : (
               <ul className="divide-y divide-[var(--border)]">
-                {items.map((t) => (
-                  <li key={t.id}>
+                {items.map((ticket) => (
+                  <li key={ticket.id}>
                     <AdminListRow
-                      active={selected?.id === t.id}
-                      onClick={() => void openTicket(t.id)}
+                      active={selected?.id === ticket.id}
+                      onClick={() => void openTicket(ticket.id)}
                       className="md:grid-cols-[1.5fr_1fr_auto]"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{t.topic}</p>
-                        <p className="mt-0.5 text-[11px] text-muted">{formatRelativeTime(t.updated_at || t.created_at)}</p>
+                        <p className="truncate text-sm font-medium">{ticket.topic}</p>
+                        <p className="mt-0.5 text-[11px] text-muted">{tr(ticket.updated_at || ticket.created_at)}</p>
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-sm">{t.name}</p>
-                        <p className="truncate text-xs text-muted">{t.email || "—"}</p>
+                        <p className="truncate text-sm">{ticket.name}</p>
+                        <p className="truncate text-xs text-muted">{ticket.email || "—"}</p>
                       </div>
                       <div className="md:justify-self-end">
-                        <StatusBadge label={t.status} tone={statusTone(t.status)} />
+                        <StatusBadge label={ticket.status} tone={statusTone(ticket.status)} />
                       </div>
                     </AdminListRow>
                   </li>
@@ -126,7 +126,7 @@ function AdminTicketsInner() {
         }
         detail={
           !selected ? (
-            <AdminEmpty title="Select a ticket" description="Open a conversation to reply." />
+            <AdminEmpty title={t("admin.selectTicket")} description={t("admin.openConversationHint")} />
           ) : (
             <>
               <div className="border-b border-[var(--border)] px-5 py-4 md:px-6">
@@ -155,7 +155,7 @@ function AdminTicketsInner() {
                         })()
                       }
                     >
-                      {s.replace("_", " ")}
+                      {ts(s)}
                     </button>
                   ))}
                 </div>
@@ -169,7 +169,7 @@ function AdminTicketsInner() {
                       m.sender_type === "admin" ? "border-accent/20 bg-accent-soft/40" : ""
                     }`}
                   >
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{m.sender_type}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{ts(m.sender_type)}</p>
                     <p className="mt-1 whitespace-pre-wrap">{m.message}</p>
                   </div>
                 ))}
@@ -179,7 +179,7 @@ function AdminTicketsInner() {
                   className="field-input"
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
-                  placeholder="Admin reply…"
+                  placeholder={t("admin.replyPlaceholder")}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -217,7 +217,7 @@ function AdminTicketsInner() {
                     })()
                   }
                 >
-                  Reply
+                  {t("admin.reply")}
                 </button>
               </div>
             </>
@@ -229,8 +229,9 @@ function AdminTicketsInner() {
 }
 
 export default function AdminTicketsPage() {
+  const { t } = useT();
   return (
-    <Suspense fallback={<p className="p-6 text-sm text-muted">Loading…</p>}>
+    <Suspense fallback={<p className="p-6 text-sm text-muted">{t("common.loading")}</p>}>
       <AdminTicketsInner />
     </Suspense>
   );

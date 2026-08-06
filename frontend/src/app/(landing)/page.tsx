@@ -8,36 +8,22 @@ import { listContents, type ContentItem } from "@/services/content";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { articleCoverStyle, mediaCoverStyle } from "@/lib/media-cover";
+import { useT } from "@/i18n/useT";
 
-const features = [
-  { icon: BookOpen, title: "Quality Material", body: "Academy lessons built for real execution." },
-  { icon: LineChart, title: "Daily Analysis", body: "Desk reads with levels and invalidation." },
-  { icon: Radio, title: "Real-time Signals", body: "Active setups with entry, SL, and TP." },
-  { icon: Users, title: "Active Community", body: "Private Telegram after IB verification." },
-];
+const featureDefs = [
+  { icon: BookOpen, titleKey: "landing.featureQuality", bodyKey: "landing.featureQualityBody" },
+  { icon: LineChart, titleKey: "landing.featureAnalysis", bodyKey: "landing.featureAnalysisBody" },
+  { icon: Radio, titleKey: "landing.featureSignals", bodyKey: "landing.featureSignalsBody" },
+  { icon: Users, titleKey: "landing.featureCommunity", bodyKey: "landing.featureCommunityBody" },
+] as const;
 
-const steps = [
-  "Watch Tutorial",
-  "Register Broker",
-  "Verify Account",
-  "Deposit",
-  "Admin Verification",
-];
+const stepKeys = ["landing.step1", "landing.step2", "landing.step3", "landing.step4", "landing.step5"] as const;
 
-const faqs = [
-  {
-    q: "Why do I need IB verification?",
-    a: "Premium modules unlock only after your MT5 account is verified under our Introducing Broker.",
-  },
-  {
-    q: "Can I browse before registering?",
-    a: "Yes. Explore public education and the hook video on this page before you join.",
-  },
-  {
-    q: "What if verification is rejected?",
-    a: "You’ll see the reason in onboarding and can resubmit corrected MT5 details and proof.",
-  },
-];
+const faqDefs = [
+  { qKey: "landing.faq1q", aKey: "landing.faq1a" },
+  { qKey: "landing.faq2q", aKey: "landing.faq2a" },
+  { qKey: "landing.faq3q", aKey: "landing.faq3a" },
+] as const;
 
 const signalPreview = [
   { pair: "XAUUSD", dir: "buy", entry: "2335.5", note: "Sweep → continuation" },
@@ -46,6 +32,7 @@ const signalPreview = [
 ];
 
 export default function LandingPage() {
+  const { t, ts } = useT();
   const [articles, setArticles] = useState<ContentItem[]>([]);
   const [hookVideo, setHookVideo] = useState<ContentItem | null>(null);
   const [tab, setTab] = useState<"academy" | "analysis" | "signal">("academy");
@@ -93,18 +80,15 @@ export default function LandingPage() {
               IB Community
             </p>
             <h1 className="mt-5 max-w-lg text-xl font-medium leading-snug tracking-tight text-[var(--foreground)] md:text-2xl">
-              Learn. Consistent. Profit with IB.
+              {t("landing.tagline")}
             </h1>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-muted">
-              Private trading desk. Finish IB onboarding, verify MT5, unlock academy, analysis, signals, and member
-              bonuses.
-            </p>
+            <p className="mt-4 max-w-md text-base leading-relaxed text-muted">{t("landing.heroBody")}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href={ROUTES.register} className="btn-primary px-6 py-3">
-                Join Now
+                {t("nav.joinNow")}
               </Link>
               <Link href="#hook" className="btn-ghost px-6 py-3">
-                Watch Video
+                {t("landing.watchVideo")}
               </Link>
             </div>
           </div>
@@ -123,9 +107,9 @@ export default function LandingPage() {
                 <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur">
                   <Play className="h-5 w-5 fill-current" />
                 </span>
-                <p className="font-display text-lg font-semibold">{hookVideo?.title || "Desk introduction"}</p>
+                <p className="font-display text-lg font-semibold">{hookVideo?.title || t("landing.hookTitle")}</p>
                 <p className="max-w-sm text-sm text-white/75">
-                  {hookVideo?.excerpt || "See why IB verification unlocks the full member desk."}
+                  {hookVideo?.excerpt || t("landing.hookBody")}
                 </p>
               </div>
             )}
@@ -135,14 +119,14 @@ export default function LandingPage() {
 
       <section className="border-b border-[var(--border)] bg-[var(--card)]" id="benefits">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f) => (
-            <div key={f.title} className="flex gap-3">
+          {featureDefs.map((f) => (
+            <div key={f.titleKey} className="flex gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
                 <f.icon className="h-5 w-5" />
               </span>
               <div>
-                <p className="font-medium">{f.title}</p>
-                <p className="mt-1 text-sm text-muted">{f.body}</p>
+                <p className="font-medium">{t(f.titleKey)}</p>
+                <p className="mt-1 text-sm text-muted">{t(f.bodyKey)}</p>
               </div>
             </div>
           ))}
@@ -150,15 +134,15 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-20" id="how">
-        <p className="section-kicker">Process</p>
-        <h2 className="section-title mt-3">How to Join?</h2>
+        <p className="section-kicker">{t("landing.processKicker")}</p>
+        <h2 className="section-title mt-3">{t("landing.processTitle")}</h2>
         <ol className="mt-10 grid gap-4 sm:grid-cols-5">
-          {steps.map((label, i) => (
-            <li key={label} className="relative text-center">
+          {stepKeys.map((key, i) => (
+            <li key={key} className="relative text-center">
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-bold text-white">
                 {i + 1}
               </span>
-              <p className="mt-3 text-sm font-medium">{label}</p>
+              <p className="mt-3 text-sm font-medium">{t(key)}</p>
             </li>
           ))}
         </ol>
@@ -168,17 +152,17 @@ export default function LandingPage() {
         <div id="signals" className="sr-only" aria-hidden />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="section-kicker">Preview</p>
-            <h2 className="section-title mt-3">Content from the desk</h2>
+            <p className="section-kicker">{t("landing.previewKicker")}</p>
+            <h2 className="section-title mt-3">{t("landing.previewTitle")}</h2>
           </div>
           <div className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-0.5">
             {(
               [
-                ["academy", "Academy"],
-                ["analysis", "Daily Analysis"],
-                ["signal", "Signal"],
+                ["academy", "landing.tabAcademy"],
+                ["analysis", "landing.tabAnalysis"],
+                ["signal", "landing.tabSignal"],
               ] as const
-            ).map(([key, label]) => (
+            ).map(([key, labelKey]) => (
               <button
                 key={key}
                 type="button"
@@ -197,7 +181,7 @@ export default function LandingPage() {
                     : "text-muted hover:text-[var(--foreground)]"
                 }`}
               >
-                {label}
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -219,21 +203,21 @@ export default function LandingPage() {
                     <div className="flex items-start justify-between">
                       <p className="font-display text-2xl font-semibold">{s.pair}</p>
                       <span className="rounded-md bg-accent-soft px-2 py-0.5 text-[11px] font-semibold uppercase text-accent">
-                        {s.dir}
+                        {ts(s.dir)}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-muted">Entry {s.entry}</p>
+                    <p className="mt-2 text-sm text-muted">{t("member.entry")} {s.entry}</p>
                     <p className="mt-3 text-sm text-muted">{s.note}</p>
-                    <p className="mt-4 text-xs font-medium text-accent">Unlocks after MT5 verification</p>
+                    <p className="mt-4 text-xs font-medium text-accent">{t("landing.unlockAfter")}</p>
                   </div>
                 </article>
               ))}
             </div>
           ) : articles.length === 0 ? (
             <EmptyState
-              title="Library warming up"
-              description="Public and member content will appear here as the desk publishes."
-              actionLabel="Join Now"
+              title={t("landing.libraryEmptyTitle")}
+              description={t("landing.libraryEmptyBody")}
+              actionLabel={t("nav.joinNow")}
               actionHref={ROUTES.register}
             />
           ) : (
@@ -242,8 +226,8 @@ export default function LandingPage() {
                 <article key={item.id} className="surface-panel overflow-hidden">
                   <div className="relative h-36" style={articleCoverStyle(item.slug, item.thumbnail_url)}>
                     <span className="absolute left-3 top-3 rounded-md bg-black/40 px-2 py-0.5 text-[10px] uppercase tracking-wide text-white">
-                      {item.type}
-                      {item.is_premium ? " · Members" : ""}
+                      {item.type === "video" ? t("member.video") : t("member.article")}
+                      {item.is_premium ? ` · ${t("member.membersOnly")}` : ""}
                     </span>
                   </div>
                   <div className="p-4">
@@ -259,18 +243,18 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16" id="faq">
-        <p className="section-kicker">FAQ</p>
-        <h2 className="section-title mt-3">Questions</h2>
+        <p className="section-kicker">{t("landing.faqKicker")}</p>
+        <h2 className="section-title mt-3">{t("landing.faqTitle")}</h2>
         <div className="mt-8 divide-y divide-[var(--border)] border-y border-[var(--border)]">
-          {faqs.map((item) => (
-            <details key={item.q} className="group py-5">
+          {faqDefs.map((item) => (
+            <details key={item.qKey} className="group py-5">
               <summary className="cursor-pointer list-none font-medium marker:content-none">
                 <span className="flex items-center justify-between gap-4">
-                  {item.q}
+                  {t(item.qKey)}
                   <span className="text-accent transition group-open:rotate-45">+</span>
                 </span>
               </summary>
-              <p className="mt-3 max-w-2xl text-sm text-muted">{item.a}</p>
+              <p className="mt-3 max-w-2xl text-sm text-muted">{t(item.aKey)}</p>
             </details>
           ))}
         </div>
@@ -280,16 +264,14 @@ export default function LandingPage() {
         <div className="relative overflow-hidden rounded-[1.75rem] border border-[var(--border)] bg-[linear-gradient(135deg,#0052ff,#003bb8)] px-6 py-14 text-center text-white md:px-16">
           <div className="pointer-events-none absolute -left-10 top-0 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <h2 className="relative font-display text-3xl font-semibold tracking-tight md:text-4xl">
-            Ready for the member desk?
+            {t("landing.ctaTitle")}
           </h2>
-          <p className="relative mx-auto mt-3 max-w-lg text-white/80">
-            Join IB Community, complete verification, and unlock academy, signals, and private Telegram.
-          </p>
+          <p className="relative mx-auto mt-3 max-w-lg text-white/80">{t("landing.ctaBody")}</p>
           <Link
             href={ROUTES.register}
             className="relative mt-8 inline-flex rounded-xl bg-white px-6 py-3 text-sm font-semibold text-accent"
           >
-            Join Now
+            {t("nav.joinNow")}
           </Link>
         </div>
       </section>

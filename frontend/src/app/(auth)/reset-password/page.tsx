@@ -9,6 +9,8 @@ import { resetPassword } from "@/services/auth";
 import { ROUTES } from "@/constants";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LocaleToggle } from "@/components/common/LocaleToggle";
+import { useT } from "@/i18n/useT";
 
 const schema = z.object({
   token: z.string().min(10),
@@ -16,6 +18,7 @@ const schema = z.object({
 });
 
 export default function ResetPasswordPage() {
+  const { t } = useT();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -30,7 +33,7 @@ export default function ResetPasswordPage() {
       const res = await resetPassword(values.token, values.new_password);
       setMessage(res.message);
     } catch {
-      setError("Invalid or expired token");
+      setError(t("auth.invalidToken"));
     }
   });
 
@@ -38,27 +41,28 @@ export default function ResetPasswordPage() {
     <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-7 md:p-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_100%_0%,var(--glow),transparent_55%)]" />
       <div className="relative">
-        <div className="absolute right-0 top-0">
+        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+          <LocaleToggle />
           <ThemeToggle />
         </div>
-        <h1 className="font-display pr-12 text-3xl font-semibold tracking-tight">Reset password</h1>
+        <h1 className="font-display pr-28 text-3xl font-semibold tracking-tight">{t("auth.resetTitle")}</h1>
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <label className="block space-y-1.5 text-sm">
-            <span className="text-muted">Token</span>
+            <span className="text-muted">{t("auth.token")}</span>
             <input className="field-input" {...register("token")} />
           </label>
           <label className="block space-y-1.5 text-sm">
-            <span className="text-muted">New password</span>
+            <span className="text-muted">{t("auth.newPassword")}</span>
             <PasswordInput autoComplete="new-password" {...register("new_password")} />
           </label>
           {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
           {message ? <p className="text-sm text-accent">{message}</p> : null}
           <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
-            Update password
+            {t("auth.updatePassword")}
           </button>
         </form>
         <Link href={ROUTES.login} className="mt-6 inline-block text-sm text-muted hover:text-accent">
-          Back to login
+          {t("auth.backToLogin")}
         </Link>
       </div>
     </div>

@@ -94,18 +94,26 @@ export function AdminBleed({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function formatRelativeTime(iso?: string | null) {
+export function formatRelativeTime(
+  iso?: string | null,
+  labels?: {
+    justNow: string;
+    minutesAgo: (n: number) => string;
+    hoursAgo: (n: number) => string;
+    daysAgo: (n: number) => string;
+  },
+) {
   if (!iso) return "—";
-  const t = new Date(iso).getTime();
-  if (Number.isNaN(t)) return "—";
-  const diff = Date.now() - t;
+  const ts = new Date(iso).getTime();
+  if (Number.isNaN(ts)) return "—";
+  const diff = Date.now() - ts;
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
+  if (m < 1) return labels?.justNow ?? "just now";
+  if (m < 60) return labels?.minutesAgo(m) ?? `${m}m ago`;
   const h = Math.floor(m / 60);
-  if (h < 48) return `${h}h ago`;
+  if (h < 48) return labels?.hoursAgo(h) ?? `${h}h ago`;
   const d = Math.floor(h / 24);
-  return `${d}d ago`;
+  return labels?.daysAgo(d) ?? `${d}d ago`;
 }
 
 export function AdminListRow({

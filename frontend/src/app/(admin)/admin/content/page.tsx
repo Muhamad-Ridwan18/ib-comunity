@@ -17,18 +17,19 @@ import {
   AdminEmpty,
   AdminFilterSeg,
   AdminPageHeader,
-  formatRelativeTime,
 } from "@/components/admin/AdminChrome";
 import { cn } from "@/lib/utils";
-
-const MODULES = [
-  { value: "academy", label: "Academy" },
-  { value: "psychology", label: "Psychology" },
-  { value: "daily_analysis", label: "Daily analysis" },
-  { value: "landing", label: "Landing" },
-];
+import { useT } from "@/i18n/useT";
 
 export default function AdminContentPage() {
+  const { t, tr } = useT();
+  const MODULES = [
+    { value: "academy", label: t("nav.academy") },
+    { value: "psychology", label: t("member.psychology") },
+    { value: "daily_analysis", label: t("member.dailyAnalysisShort") },
+    { value: "landing", label: t("admin.moduleLanding") },
+  ];
+  const moduleLabel = (value: string) => MODULES.find((m) => m.value === value)?.label || value;
   const [categories, setCategories] = useState<Category[]>([]);
   const [contents, setContents] = useState<ContentItem[]>([]);
   const [module, setModule] = useState("academy");
@@ -53,7 +54,7 @@ export default function AdminContentPage() {
       if (cRes.success && cRes.data) setCategories(cRes.data);
       if (tRes.success && tRes.data) setContents(tRes.data);
     } catch {
-      setError("Failed to load admin content");
+      setError(t("admin.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -68,8 +69,12 @@ export default function AdminContentPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Content"
-        description={loading ? "Loading…" : `${contents.length} items · ${categories.length} categories`}
+        title={t("admin.contentTitle")}
+        description={
+          loading
+            ? t("common.loading")
+            : t("admin.itemsCategories", { items: contents.length, categories: categories.length })
+        }
         actions={<AdminFilterSeg value={module} options={MODULES} onChange={setModule} />}
       />
 
@@ -82,11 +87,11 @@ export default function AdminContentPage() {
       <div className="grid lg:grid-cols-[minmax(16rem,19rem)_minmax(0,1fr)]">
         <aside className="border-b border-[var(--border)] bg-[var(--card)] lg:border-b-0 lg:border-r">
           <div className="border-b border-[var(--border)] px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Categories</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.categories")}</p>
             <div className="mt-2 flex gap-2">
               <input
                 className="field-input py-2 text-sm"
-                placeholder="New category"
+                placeholder={t("admin.newCategoryPlaceholder")}
                 value={catName}
                 onChange={(e) => setCatName(e.target.value)}
               />
@@ -103,19 +108,19 @@ export default function AdminContentPage() {
                       setCatName("");
                       await load();
                     } catch {
-                      setError("Failed to create category");
+                      setError(t("admin.createFailed"));
                     } finally {
                       setBusy(false);
                     }
                   })()
                 }
               >
-                Add
+                {t("admin.add")}
               </button>
             </div>
             <ul className="mt-3 max-h-40 divide-y divide-[var(--border)] overflow-y-auto rounded-lg border border-[var(--border)]">
               {categories.length === 0 ? (
-                <li className="px-3 py-2.5 text-xs text-muted">No categories</li>
+                <li className="px-3 py-2.5 text-xs text-muted">{t("admin.noCategories")}</li>
               ) : (
                 categories.map((c) => (
                   <li key={c.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
@@ -132,14 +137,14 @@ export default function AdminContentPage() {
                             await adminDeleteCategory(c.id);
                             await load();
                           } catch {
-                            setError("Failed to delete category");
+                            setError(t("admin.deleteFailed"));
                           } finally {
                             setBusy(false);
                           }
                         })()
                       }
                     >
-                      Delete
+                      {t("common.delete")}
                     </button>
                   </li>
                 ))
@@ -148,11 +153,11 @@ export default function AdminContentPage() {
           </div>
 
           <div className="px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Create draft</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.createDraft")}</p>
             <div className="mt-3 space-y-2.5">
               <input
                 className="field-input py-2 text-sm"
-                placeholder="Title"
+                placeholder={t("admin.contentTitleField")}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -161,15 +166,15 @@ export default function AdminContentPage() {
                 value={type}
                 onChange={(e) => setType(e.target.value as "article" | "video")}
               >
-                <option value="article">Article</option>
-                <option value="video">Video</option>
+                <option value="article">{t("member.article")}</option>
+                <option value="video">{t("member.video")}</option>
               </select>
               <select
                 className="field-input py-2 text-sm"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
               >
-                <option value="">No category</option>
+                <option value="">{t("admin.noCategoryOption")}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -178,13 +183,13 @@ export default function AdminContentPage() {
               </select>
               <textarea
                 className="field-input min-h-[100px] text-sm"
-                placeholder="Body"
+                placeholder={t("admin.body")}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
               />
               <label className="flex items-center gap-2 text-sm text-muted">
                 <input type="checkbox" checked={premium} onChange={(e) => setPremium(e.target.checked)} />
-                Premium
+                {t("status.premium")}
               </label>
               <button
                 type="button"
@@ -209,14 +214,14 @@ export default function AdminContentPage() {
                       setBody("");
                       await load();
                     } catch {
-                      setError("Failed to save draft");
+                      setError(t("admin.saveFailed"));
                     } finally {
                       setBusy(false);
                     }
                   })()
                 }
               >
-                Save draft
+                {t("admin.saveDraft")}
               </button>
             </div>
           </div>
@@ -224,11 +229,11 @@ export default function AdminContentPage() {
 
         <div className="min-w-0">
           <div className="hidden grid-cols-[1.6fr_0.6fr_0.7fr_0.7fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
-            <span>Title</span>
-            <span>Type</span>
-            <span>Access</span>
-            <span>Status</span>
-            <span className="text-right">Actions</span>
+            <span>{t("admin.contentTitleField")}</span>
+            <span>{t("admin.type")}</span>
+            <span>{t("admin.access")}</span>
+            <span>{t("common.status")}</span>
+            <span className="text-right">{t("common.actions")}</span>
           </div>
 
           {loading ? (
@@ -238,7 +243,10 @@ export default function AdminContentPage() {
               ))}
             </div>
           ) : contents.length === 0 ? (
-            <AdminEmpty title="No content" description={`Nothing in ${module.replaceAll("_", " ")} yet.`} />
+            <AdminEmpty
+              title={t("admin.noContentTitle")}
+              description={t("admin.nothingInModule", { module: moduleLabel(module) })}
+            />
           ) : (
             <ul className="divide-y divide-[var(--border)]">
               {contents.map((item) => (
@@ -249,11 +257,13 @@ export default function AdminContentPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{item.title}</p>
                     <p className="mt-0.5 truncate text-xs text-muted">
-                      {item.category_name || "Uncategorized"}
-                      {item.published_at ? ` · ${formatRelativeTime(item.published_at)}` : ""}
+                      {item.category_name || t("admin.uncategorized")}
+                      {item.published_at ? ` · ${tr(item.published_at)}` : ""}
                     </p>
                   </div>
-                  <p className="text-sm capitalize text-muted">{item.type}</p>
+                  <p className="text-sm capitalize text-muted">
+                    {item.type === "video" ? t("member.video") : t("member.article")}
+                  </p>
                   <div>
                     <StatusBadge
                       label={item.is_premium ? "premium" : "free"}
@@ -277,14 +287,14 @@ export default function AdminContentPage() {
                               await adminPublishContent(item.id);
                               await load();
                             } catch {
-                              setError("Publish failed");
+                              setError(t("admin.publishFailed"));
                             } finally {
                               setBusy(false);
                             }
                           })()
                         }
                       >
-                        Publish
+                        {t("admin.publish")}
                       </button>
                     ) : null}
                     <button
@@ -299,14 +309,14 @@ export default function AdminContentPage() {
                             await adminDeleteContent(item.id);
                             await load();
                           } catch {
-                            setError("Delete failed");
+                            setError(t("admin.deleteFailed"));
                           } finally {
                             setBusy(false);
                           }
                         })()
                       }
                     >
-                      Delete
+                      {t("common.delete")}
                     </button>
                   </div>
                 </li>

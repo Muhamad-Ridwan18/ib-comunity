@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/useT";
 
 const tones: Record<string, string> = {
   accent: "bg-accent-soft text-accent border-accent/25",
@@ -12,9 +15,14 @@ type StatusBadgeProps = {
   label: string;
   tone?: keyof typeof tones;
   className?: string;
+  /** When true, skip status dictionary lookup */
+  raw?: boolean;
 };
 
-export function StatusBadge({ label, tone = "muted", className }: StatusBadgeProps) {
+export function StatusBadge({ label, tone = "muted", className, raw }: StatusBadgeProps) {
+  const { ts } = useT();
+  const text = raw ? label.replaceAll("_", " ") : ts(label);
+
   return (
     <span
       className={cn(
@@ -23,7 +31,7 @@ export function StatusBadge({ label, tone = "muted", className }: StatusBadgePro
         className,
       )}
     >
-      {label.replaceAll("_", " ")}
+      {text}
     </span>
   );
 }

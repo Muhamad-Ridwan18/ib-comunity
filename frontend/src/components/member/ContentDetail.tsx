@@ -12,8 +12,10 @@ import {
 import { LockedNotice } from "@/components/member/ContentCard";
 import { useAuthStore } from "@/store/auth";
 import { membershipCta } from "@/lib/membership";
+import { useT } from "@/i18n/useT";
 
 export function ContentDetail({ slug, backHref }: { slug: string; backHref: string }) {
+  const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const verified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
   const cta = membershipCta(user?.status);
@@ -51,7 +53,7 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
   return (
     <div className="space-y-6">
       <Link href={backHref} className="inline-flex text-sm text-muted transition hover:text-accent">
-        ← Back
+        {t("common.back")}
       </Link>
       <div className="border-b border-[var(--border)] pb-5">
         <p className="section-kicker">{item.type}</p>
@@ -68,7 +70,7 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
               {item.video_url ? (
                 <video controls className="h-full w-full" src={item.video_url} />
               ) : (
-                <p className="text-sm text-white/60">Video URL not attached for this lesson yet.</p>
+                <p className="text-sm text-white/60">{t("member.videoMissing")}</p>
               )}
             </div>
           ) : null}
@@ -95,11 +97,11 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
                 })()
               }
             >
-              {item.bookmarked ? "Remove bookmark" : "Bookmark"}
+              {item.bookmarked ? t("common.removeBookmark") : t("common.bookmark")}
             </button>
           ) : (
             <Link href={cta.href} className="text-sm font-medium text-accent hover:underline">
-              {cta.label} to bookmark
+              {t("member.bookmarkTo", { cta: t(cta.labelKey) })}
             </Link>
           )}
         </>

@@ -14,6 +14,7 @@ import { listSignals, type SignalItem } from "@/services/signals";
 import { getTelegramLink, listBonuses, type BonusItem } from "@/services/bonus";
 import { getOnboarding } from "@/services/onboarding";
 import { isBrowseOnly, membershipCta } from "@/lib/membership";
+import { useT } from "@/i18n/useT";
 import { USER_STATUS } from "@/constants";
 
 function progressPct(status?: string) {
@@ -42,12 +43,13 @@ async function soft<T>(fn: () => Promise<T>): Promise<T | null> {
 }
 
 export default function MemberDashboardPage() {
+  const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const hydrated = useAuthStore((s) => s.hydrated);
   const accessToken = useAuthStore((s) => s.accessToken);
   const verified =
     user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
-  const firstName = user?.profile?.full_name?.split(" ")[0] || "Member";
+  const firstName = user?.profile?.full_name?.split(" ")[0] || t("status.member");
   const pct = progressPct(user?.status);
 
   const [loading, setLoading] = useState(true);
@@ -78,9 +80,10 @@ export default function MemberDashboardPage() {
 
         if (!verified) {
           const ob = await soft(() => getOnboarding());
-          if (alive && ob?.success && ob.data) setStepLabel(`Step ${ob.data.current_step} of 5`);
+          if (alive && ob?.success && ob.data)
+            setStepLabel(t("member.stepOf", { n: ob.data.current_step, total: 5 }));
         } else {
-          const [c, s, b, t] = await Promise.all([
+          const [c, s, b, tg] = await Promise.all([
             soft(() => listContinue()),
             soft(() => listSignals({ status: "active" })),
             soft(() => listBonuses()),
@@ -91,7 +94,7 @@ export default function MemberDashboardPage() {
           setContinueItems(continued);
           if (s?.success && s.data) setSignals(s.data.slice(0, 6));
           if (b?.success && b.data) setBonuses(b.data.slice(0, 6));
-          if (t?.success && t.data?.telegram_invite_url) setTelegram(t.data.telegram_invite_url);
+          if (tg?.success && tg.data?.telegram_invite_url) setTelegram(tg.data.telegram_invite_url);
         }
       } finally {
         if (alive) setLoading(false);
@@ -100,7 +103,8 @@ export default function MemberDashboardPage() {
     return () => {
       alive = false;
     };
-  }, [hydrated, verified, accessToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, verified, accessToken, t]);
 
   const cta = membershipCta(user?.status);
   const continueRail = continueItems.length ? continueItems : academy.slice(0, 6);
@@ -112,25 +116,25 @@ export default function MemberDashboardPage() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_80%_at_100%_0%,var(--glow),transparent_60%)]" />
         <div className="relative flex flex-col gap-6 px-5 py-6 sm:px-7 sm:py-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="section-kicker">{verified ? "Member desk" : "Your desk"}</p>
+            <p className="section-kicker">{verified ? t("member.memberDesk") : t("member.yourDesk")}</p>
             <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight md:text-[2.35rem]">
-              Welcome back, {firstName}
+              {t("member.welcomeBack", { name: firstName })}
             </h1>
             <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-muted md:text-[0.95rem]">
               {verified
-                ? "Pick up a lesson, review today’s analysis, or check the latest desk signals."
+                ? t("member.welcomeVerified")
                 : isBrowseOnly(user?.status)
-                  ? "Explore public lessons and previews. Become a member when you’re ready for IB verification."
+                  ? t("member.welcomeBrowse")
                   : user?.status === USER_STATUS.pending_verification
-                    ? "Your MT5 verification is with the admin team. You can keep browsing while you wait."
-                    : "Finish IB verification to unlock signals, journal, bonuses, and full academy access."}
+                    ? t("member.welcomePending")
+                    : t("member.welcomeOnboarding")}
             </p>
           </div>
           {!verified ? (
             <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/80 p-4 backdrop-blur">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">
-                  {isBrowseOnly(user?.status) ? "Membership" : "Verification"}
+                  {isBrowseOnly(user?.status) ? t("member.membership") : t("member.verification")}
                 </span>
                 <span className="font-semibold text-accent">{pct}%</span>
               </div>
@@ -139,16 +143,16 @@ export default function MemberDashboardPage() {
               </div>
               <p className="mt-2 text-xs text-muted">{stepLabel || user?.status?.replaceAll("_", " ")}</p>
               <Link href={cta.href} className="btn-primary mt-3 inline-flex w-full sm:w-auto">
-                {cta.label}
+                {t(cta.labelKey)}
               </Link>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
               <Link href={ROUTES.academy} className="btn-primary">
-                Browse Academy
+                {t("member.browseAcademy")}
               </Link>
               <Link href={ROUTES.signals} className="btn-ghost">
-                View Signals
+                {t("member.viewSignals")}
               </Link>
             </div>
           )}
@@ -163,19 +167,19 @@ export default function MemberDashboardPage() {
       ) : (
         <>
           {/* Continue Learning */}
-          <ContentRail title="Continue Learning" href={ROUTES.academy}>
+          <ContentRail title={t("member.continueLearning")} href={ROUTES.academy}>
             {!verified ? (
               <EmptyState
-                title="Unlock your learning path"
-                description="After MT5 verification, progress and continue rails appear here."
-                actionLabel={cta.label}
+                title={t("member.unlockLearningTitle")}
+                description={t("member.unlockLearningBody")}
+                actionLabel={t(cta.labelKey)}
                 actionHref={cta.href}
               />
             ) : continueRail.length === 0 ? (
               <EmptyState
-                title="Start your first lesson"
-                description="Academy content will show here as you watch and read."
-                actionLabel="Browse academy"
+                title={t("member.startFirstTitle")}
+                description={t("member.startFirstBody")}
+                actionLabel={t("member.browseAcademyCta")}
                 actionHref={ROUTES.academy}
               />
             ) : (
@@ -188,11 +192,11 @@ export default function MemberDashboardPage() {
           </ContentRail>
 
           {/* Daily Analysis */}
-          <ContentRail title="Daily Market Analysis" href={ROUTES.analysis}>
+          <ContentRail title={t("member.dailyAnalysis")} href={ROUTES.analysis}>
             {analysis.length === 0 ? (
               <EmptyState
-                title="No analysis yet"
-                description="Desk market reads will appear in this carousel when published."
+                title={t("member.noAnalysisTitle")}
+                description={t("member.noAnalysisBody")}
               />
             ) : (
               <div className="rail-scroll">
@@ -204,16 +208,16 @@ export default function MemberDashboardPage() {
           </ContentRail>
 
           {/* Trading Signals */}
-          <ContentRail title="Trading Signals" href={ROUTES.signals}>
+          <ContentRail title={t("member.tradingSignals")} href={ROUTES.signals}>
             {!verified ? (
               <EmptyState
-                title="Signals are member-only"
-                description="Active setups with entry, SL, and TP unlock after verification."
-                actionLabel={cta.label}
+                title={t("member.signalsMemberOnlyTitle")}
+                description={t("member.signalsMemberOnlyBody")}
+                actionLabel={t(cta.labelKey)}
                 actionHref={cta.href}
               />
             ) : signals.length === 0 ? (
-              <EmptyState title="No active signals" description="When the desk publishes setups, they will appear here." />
+              <EmptyState title={t("member.noActiveSignalsTitle")} description={t("member.noActiveSignalsBody")} />
             ) : (
               <div className="rail-scroll">
                 {signals.map((s) => (
@@ -225,7 +229,7 @@ export default function MemberDashboardPage() {
                       <div>
                         <p className="font-display text-2xl font-semibold tracking-tight">{s.pair}</p>
                         <p className="mt-1 text-sm text-muted">
-                          Entry {s.entry}
+                          {t("member.entry")} {s.entry}
                           {s.sl != null ? ` · SL ${s.sl}` : ""}
                           {s.tp != null ? ` · TP ${s.tp}` : ""}
                         </p>
@@ -246,9 +250,9 @@ export default function MemberDashboardPage() {
           </ContentRail>
 
           {/* Academy */}
-          <ContentRail title="Academy" href={ROUTES.academy}>
+          <ContentRail title={t("nav.academy")} href={ROUTES.academy}>
             {academy.length === 0 ? (
-              <EmptyState title="Academy is empty" description="Lessons will appear here as the desk publishes." />
+              <EmptyState title={t("member.academyEmptyTitle")} description={t("member.academyEmptyBody")} />
             ) : (
               <div className="rail-scroll">
                 {academy.map((item) => (
@@ -259,9 +263,9 @@ export default function MemberDashboardPage() {
           </ContentRail>
 
           {/* Latest Articles */}
-          <ContentRail title="Latest Articles" href={ROUTES.psychology}>
+          <ContentRail title={t("member.latestArticles")} href={ROUTES.psychology}>
             {articles.length === 0 ? (
-              <EmptyState title="No articles yet" description="Written primers and psychology notes will land here." />
+              <EmptyState title={t("member.noArticlesTitle")} description={t("member.noArticlesBody")} />
             ) : (
               <div className="rail-scroll">
                 {articles.map((item) => (
@@ -277,16 +281,16 @@ export default function MemberDashboardPage() {
 
           {/* Bonuses + Telegram */}
           <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
-            <ContentRail title="Member Bonuses" href={ROUTES.bonus} className="space-y-4">
+            <ContentRail title={t("member.memberBonuses")} href={ROUTES.bonus} className="space-y-4">
               {!verified ? (
                 <EmptyState
-                  title="Bonuses unlock after verify"
-                  description="Downloads and private resources appear here for verified members."
-                  actionLabel={cta.label}
+                  title={t("member.bonusesUnlockTitle")}
+                  description={t("member.bonusesUnlockBody")}
+                  actionLabel={t(cta.labelKey)}
                   actionHref={cta.href}
                 />
               ) : bonuses.length === 0 ? (
-                <EmptyState title="No bonuses yet" description="Member resources will show here when published." />
+                <EmptyState title={t("member.noBonusesTitle")} description={t("member.noBonusesBody")} />
               ) : (
                 <div className="rail-scroll">
                   {bonuses.map((b) => (
@@ -306,7 +310,7 @@ export default function MemberDashboardPage() {
                           rel="noreferrer"
                           className="mt-4 inline-flex text-sm font-medium text-accent hover:underline"
                         >
-                          Open resource
+                          {t("common.openResource")}
                         </a>
                       ) : null}
                     </article>
@@ -317,11 +321,9 @@ export default function MemberDashboardPage() {
 
             <section className="relative overflow-hidden rounded-2xl bg-[linear-gradient(155deg,#0052ff_0%,#0039c7_100%)] p-6 text-white">
               <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">Community</p>
-              <h2 className="font-display mt-2 text-xl font-semibold tracking-tight sm:text-2xl">Telegram</h2>
-              <p className="mt-2.5 text-sm leading-relaxed text-white/80">
-                Private desk updates and member discussion after verification.
-              </p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">{t("member.community")}</p>
+              <h2 className="font-display mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{t("member.telegram")}</h2>
+              <p className="mt-2.5 text-sm leading-relaxed text-white/80">{t("member.telegramBody")}</p>
               {verified && telegram ? (
                 <a
                   href={telegram}
@@ -330,14 +332,14 @@ export default function MemberDashboardPage() {
                   className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-white/95"
                 >
                   <Send className="h-4 w-4" />
-                  Open Telegram
+                  {t("member.openTelegram")}
                 </a>
               ) : (
                 <Link
                   href={verified ? ROUTES.bonus : cta.href}
                   className="mt-6 inline-flex rounded-xl border border-white/25 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
                 >
-                  {verified ? "Open Bonus" : cta.label}
+                  {verified ? t("member.openBonus") : t(cta.labelKey)}
                 </Link>
               )}
             </section>

@@ -4,8 +4,10 @@ import Link from "next/link";
 import { Lock } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { membershipCta } from "@/lib/membership";
+import { useT } from "@/i18n/useT";
 
 export function LockedModule({ title }: { title: string }) {
+  const { t } = useT();
   const status = useAuthStore((s) => s.user?.status);
   const cta = membershipCta(status);
 
@@ -17,15 +19,12 @@ export function LockedModule({ title }: { title: string }) {
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
             <Lock className="h-4 w-4" />
           </span>
-          <p className="section-kicker mt-5">Members only</p>
+          <p className="section-kicker mt-5">{t("member.membersOnly")}</p>
           <h1 className="font-display mt-2 text-2xl font-semibold tracking-tight md:text-3xl">{title}</h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted">
-            Unlock after broker (MT5 IB) verification. Keep browsing public lessons, then become a member when you’re
-            ready.
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted">{t("member.lockedModuleBody")}</p>
         </div>
         <Link href={cta.href} className="btn-primary shrink-0">
-          {cta.label}
+          {t(cta.labelKey)}
         </Link>
       </div>
     </div>

@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { AppLogo } from "@/components/layout/AppLogo";
 import { ROUTES } from "@/constants";
+import { useT } from "@/i18n/useT";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useT();
+
   return (
     <div className="app-shell relative flex min-h-screen bg-[var(--background)]">
       <aside className="relative hidden w-[42%] flex-col justify-between overflow-hidden border-r border-[var(--border)] bg-[var(--card)] p-10 lg:flex">
@@ -11,17 +16,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <AppLogo />
         </div>
         <div className="relative">
-          <p className="font-display text-4xl font-semibold tracking-tight md:text-5xl">IB Community</p>
-          <p className="mt-4 max-w-sm text-lg font-medium leading-snug tracking-tight">
-            Learn. Consistent. Profit with IB.
-          </p>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            Academy, signals, journal, and bonuses unlock after MT5 verification under our IB.
-          </p>
+          <p className="font-display text-4xl font-semibold tracking-tight md:text-5xl">{t("common.appName")}</p>
+          <p className="mt-4 max-w-sm text-lg font-medium leading-snug tracking-tight">{t("landing.tagline")}</p>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">{t("landing.authAsideBody")}</p>
         </div>
         <p className="relative text-xs text-muted">
           <Link href={ROUTES.home} className="hover:text-accent">
-            ← Back to home
+            {t("landing.backHome")}
           </Link>
         </p>
       </aside>
@@ -32,7 +33,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="mb-6 flex items-center justify-between lg:hidden">
             <AppLogo />
             <Link href={ROUTES.home} className="text-sm text-muted hover:text-accent">
-              Home
+              {t("landing.home")}
             </Link>
           </div>
           {children}

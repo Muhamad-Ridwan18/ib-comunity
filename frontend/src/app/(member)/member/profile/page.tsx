@@ -6,9 +6,11 @@ import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { MemberPanel } from "@/components/member/MemberChrome";
 import { ROUTES } from "@/constants";
 import { membershipCta } from "@/lib/membership";
+import { useT } from "@/i18n/useT";
 import Link from "next/link";
 
 export default function ProfilePage() {
+  const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const clearSession = useAuthStore((s) => s.clearSession);
   const cta = membershipCta(user?.status);
@@ -23,9 +25,9 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Account"
-        title="Profile"
-        description="Your membership identity and verification status."
+        kicker={t("member.account")}
+        title={t("member.profileTitle")}
+        description={t("member.profileDesc")}
       />
 
       <MemberPanel>
@@ -48,7 +50,7 @@ export default function ProfilePage() {
           <div className="flex flex-wrap gap-2">
             {user?.status !== "verified" ? (
               <Link href={cta.href} className="btn-primary">
-                {cta.label}
+                {t(cta.labelKey)}
               </Link>
             ) : null}
             <button
@@ -66,19 +68,19 @@ export default function ProfilePage() {
 
         <dl className="mt-8 grid gap-5 border-t border-[var(--border)] pt-6 sm:grid-cols-2">
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Telegram</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{t("member.telegram")}</dt>
             <dd className="mt-1.5 text-sm">{user?.profile?.telegram_username || "—"}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Phone</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{t("member.phone")}</dt>
             <dd className="mt-1.5 text-sm">{user?.profile?.phone || "—"}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Timezone</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{t("member.timezone")}</dt>
             <dd className="mt-1.5 text-sm">{user?.profile?.timezone || "UTC"}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Member since</dt>
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{t("member.memberSince")}</dt>
             <dd className="mt-1.5 text-sm">
               {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
             </dd>

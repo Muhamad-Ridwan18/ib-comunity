@@ -7,19 +7,21 @@ import { Bell, Lock, LogOut, Menu } from "lucide-react";
 import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store/auth";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { AppLogo } from "@/components/layout/AppLogo";
 import { Sheet } from "@/components/ui/Sheet";
 import { listNotifications, type NotificationItem } from "@/services/notifications";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/useT";
 
-const nav = [
-  { href: ROUTES.member, label: "Home", exact: true },
-  { href: ROUTES.academy, label: "Academy", locked: true },
-  { href: ROUTES.analysis, label: "Analysis", locked: true },
-  { href: ROUTES.signals, label: "Signals", locked: true },
-  { href: ROUTES.journal, label: "Journal", locked: true },
-  { href: ROUTES.bonus, label: "Bonus", locked: true },
-  { href: ROUTES.support, label: "Support" },
+const nav: { href: string; labelKey: string; exact?: boolean; locked?: boolean }[] = [
+  { href: ROUTES.member, labelKey: "nav.home", exact: true },
+  { href: ROUTES.academy, labelKey: "nav.academy", locked: true },
+  { href: ROUTES.analysis, labelKey: "nav.analysis", locked: true },
+  { href: ROUTES.signals, labelKey: "nav.signals", locked: true },
+  { href: ROUTES.journal, labelKey: "nav.journal", locked: true },
+  { href: ROUTES.bonus, labelKey: "nav.bonus", locked: true },
+  { href: ROUTES.support, labelKey: "nav.support" },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean) {
@@ -28,6 +30,7 @@ function isActive(pathname: string, href: string, exact?: boolean) {
 }
 
 export function MemberShell({ children }: { children: React.ReactNode }) {
+  const { t } = useT();
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const clearSession = useAuthStore((s) => s.clearSession);
@@ -87,7 +90,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
               const locked = item.locked && !verified;
               return (
                 <Link
-                  key={item.href + item.label}
+                  key={item.href + item.labelKey}
                   href={item.href}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition",
@@ -96,7 +99,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
                       : "text-muted hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]",
                   )}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                   {locked ? <Lock className="h-3 w-3 opacity-50" /> : null}
                 </Link>
               );
@@ -109,7 +112,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 className="relative rounded-xl p-2 text-muted transition hover:bg-accent-soft hover:text-accent"
                 onClick={() => setOpenNotes((v) => !v)}
-                aria-label="Notifications"
+                aria-label={t("common.notifications")}
               >
                 <Bell className="h-4 w-4" />
                 {notes.length > 0 ? (
@@ -119,7 +122,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
               {openNotes ? (
                 <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-[var(--border)] bg-[var(--card-solid)] p-2 shadow-[var(--shadow)]">
                   {notes.length === 0 ? (
-                    <p className="px-3 py-4 text-xs text-muted">No notifications yet</p>
+                    <p className="px-3 py-4 text-xs text-muted">{t("common.noNotifications")}</p>
                   ) : (
                     notes.slice(0, 6).map((n) => (
                       <Link
@@ -136,6 +139,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
                 </div>
               ) : null}
             </div>
+            <LocaleToggle />
             <ThemeToggle />
             <Link
               href={ROUTES.profile}
@@ -154,8 +158,8 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         side="left"
-        title="Menu"
-        description={verified ? "Verified member" : "Modules locked"}
+        title={t("common.menu")}
+        description={verified ? t("member.verifiedMember") : t("member.modulesLocked")}
         widthClassName="w-[min(20rem,88vw)]"
       >
         <nav className="space-y-1 p-3">
@@ -164,7 +168,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
             const locked = item.locked && !verified;
             return (
               <Link
-                key={item.href + item.label}
+                key={item.href + item.labelKey}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
@@ -172,7 +176,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
                   active ? "bg-accent-soft font-medium text-accent" : "text-muted hover:bg-accent-soft",
                 )}
               >
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
                 {locked ? <Lock className="h-3.5 w-3.5" /> : null}
               </Link>
             );
@@ -182,7 +186,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
             onClick={() => setMobileOpen(false)}
             className="flex rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-accent-soft"
           >
-            My Account
+            {t("nav.myAccount")}
           </Link>
           <button
             type="button"
@@ -193,7 +197,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
             }}
           >
             <LogOut className="h-4 w-4" />
-            Logout
+            {t("common.logout")}
           </button>
         </nav>
       </Sheet>

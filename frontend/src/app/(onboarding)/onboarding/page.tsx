@@ -18,13 +18,16 @@ import {
 import { me } from "@/services/auth";
 import { useAuthStore } from "@/store/auth";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { AppLogo } from "@/components/layout/AppLogo";
 import { StepRail, WaitingTimeline } from "@/components/onboarding/StepRail";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ROUTES, USER_STATUS } from "@/constants";
 import { isBrowseOnly } from "@/lib/membership";
+import { useT } from "@/i18n/useT";
 
 export default function OnboardingPage() {
+  const { t } = useT();
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -59,7 +62,7 @@ export default function OnboardingPage() {
     try {
       const res = await getOnboarding();
       if (!res.success || !res.data) {
-        setError(res.message || "Failed to load onboarding");
+        setError(res.message || t("onboarding.loadFailed"));
         return;
       }
       setProgress(res.data);
@@ -69,10 +72,11 @@ export default function OnboardingPage() {
       }
       if (res.data.status === "verified") router.replace(ROUTES.member);
     } catch {
-      setError("Cannot load onboarding. Are you logged in?");
+      setError(t("onboarding.cannotLoad"));
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   useEffect(() => {
@@ -85,13 +89,13 @@ export default function OnboardingPage() {
     try {
       const res = await fn();
       if (!res.success || !res.data) {
-        setError(res.message || "Action failed");
+        setError(res.message || t("onboarding.actionFailed"));
         return;
       }
       setProgress(res.data);
       await refreshUser();
     } catch {
-      setError("Request failed");
+      setError(t("onboarding.requestFailed"));
     } finally {
       setBusy(false);
     }
@@ -103,13 +107,13 @@ export default function OnboardingPage() {
     try {
       const res = await startOnboarding();
       if (!res.success || !res.data) {
-        setError(res.message || "Could not start verification");
+        setError(res.message || t("onboarding.startFailed"));
         return;
       }
       setProgress(res.data);
       await refreshUser();
     } catch {
-      setError("Could not start verification");
+      setError(t("onboarding.startFailed"));
     } finally {
       setBusy(false);
     }
@@ -127,7 +131,7 @@ export default function OnboardingPage() {
   if (!progress) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
-        <p className="text-[var(--danger)]">{error ?? "No progress"}</p>
+        <p className="text-[var(--danger)]">{error ?? t("onboarding.noProgress")}</p>
       </div>
     );
   }
@@ -138,25 +142,27 @@ export default function OnboardingPage() {
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-4 py-6 md:py-10">
         <div className="mb-8 flex items-center justify-between gap-3">
           <AppLogo href={ROUTES.member} />
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LocaleToggle />
+            <ThemeToggle />
+          </div>
         </div>
         <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 md:p-10">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_70%_at_100%_0%,var(--glow),transparent_55%)]" />
           <div className="relative">
-          <p className="section-kicker">Membership</p>
+          <p className="section-kicker">{t("onboarding.membership")}</p>
           <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight md:text-[2.35rem]">
-            Become a verified member
+            {t("onboarding.becomeTitle")}
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted md:text-[0.95rem]">
-            You can keep browsing the desk as a guest account. When you want academy, signals, journal, bonuses, and
-            Telegram, start the IB verification steps. An admin will review your MT5 account at the end.
+            {t("onboarding.becomeBody")}
           </p>
           <ul className="mt-6 space-y-2 text-sm text-muted">
-            <li>1. Watch broker tutorial</li>
-            <li>2. Register under our IB</li>
-            <li>3. Submit MT5 account details</li>
-            <li>4. Deposit proof (optional)</li>
-            <li>5. Wait for admin approval</li>
+            <li>{t("onboarding.list1")}</li>
+            <li>{t("onboarding.list2")}</li>
+            <li>{t("onboarding.list3")}</li>
+            <li>{t("onboarding.list4")}</li>
+            <li>{t("onboarding.list5")}</li>
           </ul>
           {error ? (
             <p className="mt-4 rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
@@ -165,10 +171,10 @@ export default function OnboardingPage() {
           ) : null}
           <div className="mt-8 flex flex-wrap gap-3">
             <button type="button" disabled={busy} className="btn-primary px-6 py-3" onClick={() => void beginMembership()}>
-              {busy ? "Starting…" : "Start verification"}
+              {busy ? t("onboarding.starting") : t("onboarding.startVerification")}
             </button>
             <Link href={ROUTES.member} className="btn-ghost px-6 py-3">
-              Back to desk
+              {t("onboarding.backToDesk")}
             </Link>
           </div>
           </div>
@@ -187,23 +193,26 @@ export default function OnboardingPage() {
         <AppLogo href={ROUTES.member} />
         <div className="flex items-center gap-2">
           <p className="hidden text-xs text-muted sm:block">{user?.email}</p>
+          <LocaleToggle />
           <ThemeToggle />
         </div>
       </div>
 
       <div className="grid flex-1 gap-6 md:grid-cols-[240px_1fr]">
         <aside className="surface-panel h-fit p-4 md:sticky md:top-6">
-          <p className="px-3 pb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Steps</p>
+          <p className="px-3 pb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+            {t("onboarding.steps")}
+          </p>
           <StepRail progress={progress} />
         </aside>
 
         <div className="flex min-h-[28rem] flex-col">
           <div className="surface-panel flex-1 p-6 md:p-8">
-            <p className="section-kicker">Membership</p>
+            <p className="section-kicker">{t("onboarding.membership")}</p>
             <h1 className="font-display mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
-              IB verification setup
+              {t("onboarding.setupTitle")}
             </h1>
-            <p className="mt-2 text-sm text-muted">Complete each step in order. Skipping is disabled.</p>
+            <p className="mt-2 text-sm text-muted">{t("onboarding.setupBody")}</p>
 
             {error ? (
               <p className="mt-4 rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
@@ -213,9 +222,9 @@ export default function OnboardingPage() {
 
             {rejected ? (
               <div className="mt-6 rounded-xl border border-[var(--danger)]/25 bg-[var(--danger)]/5 p-5">
-                <p className="font-medium text-[var(--danger)]">Verification rejected</p>
+                <p className="font-medium text-[var(--danger)]">{t("onboarding.rejectedTitle")}</p>
                 <p className="mt-2 text-sm text-muted">
-                  {progress.latest_verification?.rejection_reason || "Please resubmit correct MT5 details."}
+                  {progress.latest_verification?.rejection_reason || t("onboarding.rejectedFallback")}
                 </p>
                 <button
                   type="button"
@@ -228,60 +237,60 @@ export default function OnboardingPage() {
                         await resubmitVerification();
                         await load();
                       } catch {
-                        setError("Resubmit failed");
+                        setError(t("onboarding.resubmitFailed"));
                       } finally {
                         setBusy(false);
                       }
                     })()
                   }
                 >
-                  Resubmit from step 3
+                  {t("onboarding.resubmitStep3")}
                 </button>
               </div>
             ) : null}
 
             <div className={`mt-6 ${busy ? "pointer-events-none opacity-60" : ""}`}>
               {!rejected && step === 1 && (
-                <StepBody title="Watch the broker tutorial">
+                <StepBody title={t("onboarding.step1Title")}>
                   <a
                     href={progress.settings.broker_tutorial_url}
                     target="_blank"
                     rel="noreferrer"
                     className="btn-ghost inline-flex"
                   >
-                    Open tutorial
+                    {t("onboarding.openTutorial")}
                   </a>
                   <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep1)}>
-                    Mark as watched
+                    {t("onboarding.markWatched")}
                   </button>
                 </StepBody>
               )}
 
               {!rejected && step === 2 && (
-                <StepBody title="Register under our IB">
+                <StepBody title={t("onboarding.step2Title")}>
                   <a
                     href={progress.settings.ib_register_url}
                     target="_blank"
                     rel="noreferrer"
                     className="btn-ghost inline-flex"
                   >
-                    Open IB registration
+                    {t("onboarding.openIbRegister")}
                   </a>
                   <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep2)}>
-                    I’ve registered
+                    {t("onboarding.iveRegistered")}
                   </button>
                 </StepBody>
               )}
 
               {!rejected && step === 3 && (
-                <StepBody title="Submit MT5 account">
+                <StepBody title={t("onboarding.step3Title")}>
                   <div className="mt-4 max-w-md space-y-3">
                     <label className="block space-y-1.5 text-sm">
-                      <span className="text-muted">MT5 account number</span>
+                      <span className="text-muted">{t("onboarding.mt5Account")}</span>
                       <input className="field-input" value={mt5} onChange={(e) => setMt5(e.target.value)} />
                     </label>
                     <label className="block space-y-1.5 text-sm">
-                      <span className="text-muted">Broker server</span>
+                      <span className="text-muted">{t("onboarding.brokerServer")}</span>
                       <input className="field-input" value={server} onChange={(e) => setServer(e.target.value)} />
                     </label>
                     <button
@@ -289,21 +298,21 @@ export default function OnboardingPage() {
                       className="btn-primary"
                       onClick={() => void run(() => submitStep3({ mt5_account: mt5, broker_server: server }))}
                     >
-                      Save & continue
+                      {t("onboarding.saveContinue")}
                     </button>
                   </div>
                 </StepBody>
               )}
 
               {!rejected && step === 4 && (
-                <StepBody title="Deposit tutorial & optional proof">
+                <StepBody title={t("onboarding.step4Title")}>
                   <a
                     href={progress.settings.deposit_tutorial_url}
                     target="_blank"
                     rel="noreferrer"
                     className="btn-ghost inline-flex"
                   >
-                    Open deposit tutorial
+                    {t("onboarding.openDeposit")}
                   </a>
                   <div className="mt-4 max-w-md space-y-3">
                     <input
@@ -326,23 +335,23 @@ export default function OnboardingPage() {
                         })
                       }
                     >
-                      Continue
+                      {t("onboarding.continue")}
                     </button>
                   </div>
                 </StepBody>
               )}
 
               {!rejected && step === 5 && !pending && (
-                <StepBody title="Submit for admin review">
-                  <p className="text-sm text-muted">We’ll notify you when an admin reviews your MT5 details.</p>
+                <StepBody title={t("onboarding.step5Title")}>
+                  <p className="text-sm text-muted">{t("onboarding.step5Body")}</p>
                   <button type="button" className="btn-primary mt-4" onClick={() => void run(completeStep5)}>
-                    Submit for verification
+                    {t("onboarding.submitVerification")}
                   </button>
                 </StepBody>
               )}
 
               {pending ? (
-                <StepBody title="Waiting for verification">
+                <StepBody title={t("onboarding.waitingTitle")}>
                   <p className="text-sm text-muted">
                     MT5 {progress.latest_verification?.mt5_account} · {progress.latest_verification?.broker_server}
                   </p>
@@ -353,7 +362,7 @@ export default function OnboardingPage() {
                     verified={false}
                   />
                   <Link href={ROUTES.member} className="btn-ghost mt-6 inline-flex">
-                    Preview desk
+                    {t("onboarding.previewDesk")}
                   </Link>
                 </StepBody>
               ) : null}

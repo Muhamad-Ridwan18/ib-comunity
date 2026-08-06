@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRight, Play } from "lucide-react";
 import type { ContentItem } from "@/services/content";
 import { articleCoverStyle, mediaCoverStyle } from "@/lib/media-cover";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/useT";
 
 export function ContentRail({
   title,
@@ -15,13 +18,14 @@ export function ContentRail({
   children: React.ReactNode;
   className?: string;
 }) {
+  const { t } = useT();
   return (
     <section className={cn("space-y-4", className)}>
       <div className="flex items-end justify-between gap-3">
         <h2 className="font-display text-xl font-semibold tracking-tight md:text-2xl">{title}</h2>
         {href ? (
           <Link href={href} className="inline-flex items-center gap-1 text-sm text-muted transition hover:text-accent">
-            See all
+            {t("common.seeAll")}
             <ChevronRight className="h-4 w-4" />
           </Link>
         ) : null}
@@ -42,6 +46,7 @@ export function MediaCard({
   large?: boolean;
   progress?: number;
 }) {
+  const { t } = useT();
   const bar = progress != null ? Math.min(100, Math.max(8, progress)) : large ? 33 : 0;
 
   return (
@@ -66,7 +71,7 @@ export function MediaCard({
         )}
         <p className="text-[10px] uppercase tracking-[0.16em] text-white/70">
           {item.type}
-          {item.locked ? " · Locked" : ""}
+          {item.locked ? ` · ${t("member.locked")}` : ""}
           {item.duration_sec ? ` · ${Math.ceil(item.duration_sec / 60)}m` : ""}
         </p>
         <p className="mt-1 line-clamp-2 text-sm font-semibold leading-snug">{item.title}</p>
@@ -81,6 +86,7 @@ export function MediaCard({
 }
 
 export function ArticleCard({ item, hrefBase }: { item: ContentItem; hrefBase: string }) {
+  const { t } = useT();
   return (
     <Link
       href={`${hrefBase}/${item.slug}`}
@@ -89,7 +95,7 @@ export function ArticleCard({ item, hrefBase }: { item: ContentItem; hrefBase: s
       <div className="h-32 dark:opacity-90" style={articleCoverStyle(item.slug, item.thumbnail_url)} />
       <div className="flex flex-1 flex-col p-4">
         <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-          {item.category_name || "Article"}
+          {item.category_name || t("member.article")}
         </p>
         <h3 className="mt-2 line-clamp-2 font-display text-base font-semibold group-hover:text-accent">
           {item.title}

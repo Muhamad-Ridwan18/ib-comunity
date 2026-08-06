@@ -7,20 +7,23 @@ import { Menu } from "lucide-react";
 import { ROUTES } from "@/constants";
 import { AppLogo } from "@/components/layout/AppLogo";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { Sheet } from "@/components/ui/Sheet";
 import { useAuthStore } from "@/store/auth";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/useT";
 
-const links = [
-  { href: ROUTES.admin, label: "Overview", exact: true },
-  { href: "/admin/verifications", label: "Verifications" },
-  { href: "/admin/content", label: "Content" },
-  { href: "/admin/signals", label: "Signals" },
-  { href: "/admin/bonuses", label: "Bonuses" },
-  { href: "/admin/tickets", label: "Tickets" },
+const links: { href: string; labelKey: string; exact?: boolean }[] = [
+  { href: ROUTES.admin, labelKey: "nav.overview", exact: true },
+  { href: "/admin/verifications", labelKey: "nav.verifications" },
+  { href: "/admin/content", labelKey: "nav.content" },
+  { href: "/admin/signals", labelKey: "nav.signals" },
+  { href: "/admin/bonuses", labelKey: "nav.bonuses" },
+  { href: "/admin/tickets", labelKey: "nav.tickets" },
 ];
 
 function AdminNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  const { t } = useT();
   return (
     <nav className="space-y-0.5 p-2">
       {links.map((item) => {
@@ -37,7 +40,7 @@ function AdminNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
                 : "text-muted hover:bg-accent-soft hover:text-[var(--foreground)]",
             )}
           >
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         );
       })}
@@ -46,13 +49,14 @@ function AdminNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
         onClick={onNavigate}
         className="mt-4 block rounded-lg px-3 py-2 text-sm text-muted hover:bg-accent-soft"
       >
-        Member preview
+        {t("nav.memberPreview")}
       </Link>
     </nav>
   );
 }
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
+  const { t } = useT();
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const clearSession = useAuthStore((s) => s.clearSession);
@@ -89,9 +93,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
           <AppLogo href={ROUTES.admin} compact className="md:hidden" />
-          <p className="hidden text-sm font-medium md:block">Ops</p>
+          <p className="hidden text-sm font-medium md:block">{t("admin.ops")}</p>
           <div className="ml-auto flex items-center gap-2">
             <p className="hidden text-xs text-muted sm:block">{user?.email}</p>
+            <LocaleToggle />
             <ThemeToggle />
             <button
               type="button"
@@ -101,7 +106,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 window.location.href = ROUTES.login;
               }}
             >
-              Sign out
+              {t("common.signOut")}
             </button>
           </div>
         </header>
@@ -113,8 +118,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         side="left"
-        title="Admin"
-        description="Operations"
+        title={t("status.admin")}
+        description={t("admin.ops")}
         widthClassName="w-[min(18rem,88vw)]"
       >
         <AdminNav pathname={pathname} onNavigate={() => setMobileOpen(false)} />

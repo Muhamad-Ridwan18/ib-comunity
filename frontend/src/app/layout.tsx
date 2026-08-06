@@ -34,15 +34,18 @@ const themeInitScript = `
       : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.classList.remove('light','dark');
     document.documentElement.classList.add(theme);
+    var loc = localStorage.getItem('ib_locale');
+    document.documentElement.lang = (loc === 'en' || loc === 'id') ? loc : 'id';
   } catch (e) {
     document.documentElement.classList.add('dark');
+    document.documentElement.lang = 'id';
   }
 })();
 `;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>

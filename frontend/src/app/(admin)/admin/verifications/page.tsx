@@ -16,23 +16,23 @@ import {
   AdminListRow,
   AdminPageHeader,
   AdminSplit,
-  formatRelativeTime,
 } from "@/components/admin/AdminChrome";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/useT";
 
 type Detail = {
   request: VerificationRequest;
   user: { id: string; email: string; status: string; profile?: { full_name: string } };
 };
 
-const FILTERS = [
-  { value: "pending", label: "Pending" },
-  { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
-  { value: "", label: "All" },
-];
-
 export default function AdminVerificationsPage() {
+  const { t, ts, tr } = useT();
+  const FILTERS = [
+    { value: "pending", label: t("admin.pending") },
+    { value: "approved", label: t("admin.approved") },
+    { value: "rejected", label: t("admin.rejected") },
+    { value: "", label: t("common.all") },
+  ];
   const [items, setItems] = useState<VerificationRequest[]>([]);
   const [status, setStatus] = useState("pending");
   const [selected, setSelected] = useState<string | null>(null);
@@ -55,10 +55,11 @@ export default function AdminVerificationsPage() {
         }
       } else setError(res.message);
     } catch {
-      setError("Failed to load verifications");
+      setError(t("admin.loadFailed"));
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, selected]);
 
   useEffect(() => {
@@ -74,16 +75,18 @@ export default function AdminVerificationsPage() {
       const res = await getAdminVerification(id);
       if (res.success && res.data) setDetail(res.data);
     } catch {
-      setError("Failed to load detail");
+      setError(t("admin.loadFailed"));
     }
   };
 
   return (
     <AdminBleed>
       <AdminPageHeader
-        title="Verifications"
+        title={t("admin.verificationsTitle")}
         description={
-          status === "pending" && !loading ? `${items.length} in queue` : "Review MT5 IB submissions"
+          status === "pending" && !loading
+            ? t("admin.inQueue", { n: items.length })
+            : t("admin.verificationsDesc")
         }
         actions={
           <AdminFilterSeg
@@ -108,10 +111,10 @@ export default function AdminVerificationsPage() {
         list={
           <>
             <div className="hidden grid-cols-[1.4fr_0.9fr_0.9fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
-              <span>Member</span>
-              <span>MT5</span>
-              <span>Server</span>
-              <span className="text-right">Status</span>
+              <span>{t("admin.member")}</span>
+              <span>{t("admin.mt5Short")}</span>
+              <span>{t("admin.serverShort")}</span>
+              <span className="text-right">{t("common.status")}</span>
             </div>
             {loading ? (
               <div className="space-y-2 p-4 md:p-6">
@@ -121,8 +124,8 @@ export default function AdminVerificationsPage() {
               </div>
             ) : items.length === 0 ? (
               <AdminEmpty
-                title="No requests"
-                description={status === "pending" ? "The pending queue is clear." : "Nothing matches this filter."}
+                title={t("admin.noRequests")}
+                description={status === "pending" ? t("admin.pendingQueueClear") : t("admin.emptyFilter")}
               />
             ) : (
               <ul className="divide-y divide-[var(--border)]">
@@ -140,12 +143,12 @@ export default function AdminVerificationsPage() {
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
-                            {item.user_full_name || item.user_email || "Member"}
+                            {item.user_full_name || item.user_email || t("status.member")}
                           </p>
                           <p className="truncate text-xs text-muted">{item.user_email || "—"}</p>
                           <p className={cn("mt-0.5 text-[11px]", hours > 24 ? "font-medium text-[var(--danger)]" : "text-muted")}>
-                            {formatRelativeTime(item.created_at)}
-                            {hours > 24 ? " · aging" : ""}
+                            {tr(item.created_at)}
+                            {hours > 24 ? ` · ${t("admin.agingSuffix")}` : ""}
                           </p>
                         </div>
                         <p className="hidden font-mono text-sm md:block">{item.mt5_account}</p>
@@ -164,14 +167,14 @@ export default function AdminVerificationsPage() {
         }
         detail={
           !detail ? (
-            <AdminEmpty title="Select a request" description="Open a row to approve or reject verification." />
+            <AdminEmpty title={t("admin.selectVerification")} description={t("admin.openRowHint")} />
           ) : (
             <>
               <div className="border-b border-[var(--border)] px-5 py-4 md:px-6">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-display text-lg font-semibold">
-                      {detail.user.profile?.full_name || "Member"}
+                      {detail.user.profile?.full_name || t("status.member")}
                     </p>
                     <p className="mt-0.5 truncate text-sm text-muted">{detail.user.email}</p>
                   </div>
@@ -181,44 +184,44 @@ export default function AdminVerificationsPage() {
               <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 md:px-6">
                 <dl className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">MT5</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.mt5Short")}</dt>
                     <dd className="mt-1 font-mono text-base font-medium">{detail.request.mt5_account}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Server</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.serverShort")}</dt>
                     <dd className="mt-1 text-base font-medium">{detail.request.broker_server}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Account</dt>
-                    <dd className="mt-1 capitalize">{detail.user.status.replaceAll("_", " ")}</dd>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.accountStatus")}</dt>
+                    <dd className="mt-1 capitalize">{ts(detail.user.status)}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Submitted</dt>
-                    <dd className="mt-1">{formatRelativeTime(detail.request.created_at)}</dd>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.submitted")}</dt>
+                    <dd className="mt-1">{tr(detail.request.created_at)}</dd>
                   </div>
                 </dl>
                 {detail.request.proof_key ? (
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 text-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Proof on file</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.proofOnFile")}</p>
                     <p className="mt-1 break-all font-mono text-xs text-muted">{detail.request.proof_key}</p>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted">No deposit proof uploaded.</p>
+                  <p className="text-sm text-muted">{t("admin.noProof")}</p>
                 )}
                 {detail.request.rejection_reason ? (
                   <div className="rounded-xl border border-[var(--danger)]/25 bg-[var(--danger)]/5 px-3 py-2.5 text-sm">
-                    <p className="font-medium text-[var(--danger)]">Rejection reason</p>
+                    <p className="font-medium text-[var(--danger)]">{t("admin.rejectionReason")}</p>
                     <p className="mt-1 text-muted">{detail.request.rejection_reason}</p>
                   </div>
                 ) : null}
                 {detail.request.status === "pending" ? (
                   <label className="block space-y-1.5 text-sm">
-                    <span className="text-muted">Rejection reason</span>
+                    <span className="text-muted">{t("admin.rejectionReason")}</span>
                     <textarea
                       className="field-input min-h-[100px]"
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      placeholder="Required when rejecting"
+                      placeholder={t("admin.requiredWhenRejecting")}
                     />
                   </label>
                 ) : null}
@@ -240,14 +243,14 @@ export default function AdminVerificationsPage() {
                           setSelected(null);
                           await load();
                         } catch {
-                          setError("Approve failed");
+                          setError(t("admin.actionFailed"));
                         } finally {
                           setBusy(false);
                         }
                       })()
                     }
                   >
-                    Approve
+                    {t("admin.approve")}
                   </button>
                   <button
                     type="button"
@@ -256,7 +259,7 @@ export default function AdminVerificationsPage() {
                     onClick={() =>
                       void (async () => {
                         if (!selected || !reason.trim()) {
-                          setError("Rejection reason is required");
+                          setError(t("admin.rejectionRequired"));
                           return;
                         }
                         setBusy(true);
@@ -267,14 +270,14 @@ export default function AdminVerificationsPage() {
                           setSelected(null);
                           await load();
                         } catch {
-                          setError("Reject failed");
+                          setError(t("admin.actionFailed"));
                         } finally {
                           setBusy(false);
                         }
                       })()
                     }
                   >
-                    Reject
+                    {t("admin.reject")}
                   </button>
                 </div>
               ) : null}

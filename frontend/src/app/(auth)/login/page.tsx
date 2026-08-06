@@ -12,6 +12,8 @@ import { useAuthStore } from "@/store/auth";
 import { ROUTES, API_URL } from "@/constants";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LocaleToggle } from "@/components/common/LocaleToggle";
+import { useT } from "@/i18n/useT";
 
 const schema = z.object({
   email: z.string().email(),
@@ -22,6 +24,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage() {
+  const { t } = useT();
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +42,7 @@ export default function LoginPage() {
     try {
       const res = await login(values);
       if (!res.success || !res.data) {
-        setError(res.message || "Login failed");
+        setError(res.message || t("auth.loginFailed"));
         return;
       }
       setSession(res.data.user, res.data.tokens.access_token, res.data.tokens.refresh_token);
@@ -61,7 +64,7 @@ export default function LoginPage() {
         );
         return;
       }
-      setError("Invalid email or password");
+      setError(t("auth.invalidCredentials"));
     }
   });
 
@@ -69,24 +72,25 @@ export default function LoginPage() {
     <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-7 md:p-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_100%_0%,var(--glow),transparent_55%)]" />
       <div className="relative">
-        <div className="absolute right-0 top-0">
+        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+          <LocaleToggle />
           <ThemeToggle />
         </div>
-        <h1 className="font-display pr-12 text-3xl font-semibold tracking-tight">Welcome back</h1>
-        <p className="mt-2 text-sm text-muted">Sign in to browse the desk. Become a member when you’re ready to verify.</p>
+        <h1 className="font-display pr-28 text-3xl font-semibold tracking-tight">{t("auth.welcomeBack")}</h1>
+        <p className="mt-2 text-sm text-muted">{t("auth.welcomeBody")}</p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <label className="block space-y-1.5 text-sm">
-            <span className="text-muted">Email</span>
+            <span className="text-muted">{t("auth.email")}</span>
             <input type="email" className="field-input" autoComplete="email" {...register("email")} />
           </label>
           <label className="block space-y-1.5 text-sm">
-            <span className="text-muted">Password</span>
+            <span className="text-muted">{t("auth.password")}</span>
             <PasswordInput autoComplete="current-password" {...register("password")} />
           </label>
           <label className="flex items-center gap-2.5 text-sm text-muted">
             <input type="checkbox" className="accent-[var(--accent)]" {...register("remember")} />
-            Remember me
+            {t("auth.rememberMe")}
           </label>
           {error ? (
             <p className="rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
@@ -94,16 +98,16 @@ export default function LoginPage() {
             </p>
           ) : null}
           <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
-            {isSubmitting ? "Signing in…" : "Sign in"}
+            {isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
           </button>
         </form>
 
         <div className="mt-6 flex justify-between text-sm text-muted">
           <Link href={ROUTES.forgotPassword} className="hover:text-accent">
-            Forgot password?
+            {t("auth.forgotPassword")}
           </Link>
           <Link href={ROUTES.register} className="hover:text-accent">
-            Create account
+            {t("auth.createAccount")}
           </Link>
         </div>
       </div>

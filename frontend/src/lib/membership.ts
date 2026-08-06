@@ -14,15 +14,21 @@ export function isVerificationActive(status?: string | null) {
   );
 }
 
-export function membershipCta(status?: string | null): { label: string; href: string } {
+export type MembershipCtaKey =
+  | "membership.becomeMember"
+  | "membership.viewVerification"
+  | "membership.resubmit"
+  | "membership.continueVerification";
+
+export function membershipCta(status?: string | null): { labelKey: MembershipCtaKey; href: string } {
   if (isBrowseOnly(status)) {
-    return { label: "Become a member", href: ROUTES.onboarding };
+    return { labelKey: "membership.becomeMember", href: ROUTES.onboarding };
   }
   if (status === USER_STATUS.pending_verification) {
-    return { label: "View verification status", href: ROUTES.onboarding };
+    return { labelKey: "membership.viewVerification", href: ROUTES.onboarding };
   }
   if (status === USER_STATUS.rejected) {
-    return { label: "Resubmit verification", href: ROUTES.onboarding };
+    return { labelKey: "membership.resubmit", href: ROUTES.onboarding };
   }
-  return { label: "Continue verification", href: ROUTES.onboarding };
+  return { labelKey: "membership.continueVerification", href: ROUTES.onboarding };
 }

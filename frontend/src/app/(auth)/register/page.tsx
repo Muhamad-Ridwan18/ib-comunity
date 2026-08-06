@@ -11,6 +11,8 @@ import { useAuthStore } from "@/store/auth";
 import { ROUTES } from "@/constants";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { LocaleToggle } from "@/components/common/LocaleToggle";
+import { useT } from "@/i18n/useT";
 
 const schema = z.object({
   full_name: z.string().min(2, "Name is required"),
@@ -21,6 +23,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function RegisterPage() {
+  const { t } = useT();
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const [error, setError] = useState<string | null>(null);
@@ -35,13 +38,13 @@ export default function RegisterPage() {
     try {
       const res = await registerUser(values);
       if (!res.success || !res.data) {
-        setError(res.message || "Registration failed");
+        setError(res.message || t("auth.registerFailed"));
         return;
       }
       setSession(res.data.user, res.data.tokens.access_token, res.data.tokens.refresh_token);
       router.push(ROUTES.member);
     } catch {
-      setError("Could not register. Email may already be in use.");
+      setError(t("auth.registerError"));
     }
   });
 
@@ -49,26 +52,25 @@ export default function RegisterPage() {
     <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-7 md:p-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_100%_0%,var(--glow),transparent_55%)]" />
       <div className="relative">
-        <div className="absolute right-0 top-0">
+        <div className="absolute right-0 top-0 flex items-center gap-1.5">
+          <LocaleToggle />
           <ThemeToggle />
         </div>
-        <h1 className="font-display pr-12 text-3xl font-semibold tracking-tight">Create account</h1>
-        <p className="mt-2 text-sm text-muted">
-          Explore the desk first. Start IB verification only when you want full member access.
-        </p>
+        <h1 className="font-display pr-28 text-3xl font-semibold tracking-tight">{t("auth.createAccount")}</h1>
+        <p className="mt-2 text-sm text-muted">{t("auth.createAccountBody")}</p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <label className="block space-y-1.5 text-sm">
-            <span className="text-muted">Full name</span>
+            <span className="text-muted">{t("auth.fullName")}</span>
             <input className="field-input" autoComplete="name" {...register("full_name")} />
             {errors.full_name ? <span className="text-[var(--danger)]">{errors.full_name.message}</span> : null}
           </label>
           <label className="block space-y-1.5 text-sm">
-            <span className="text-muted">Email</span>
+            <span className="text-muted">{t("auth.email")}</span>
             <input type="email" className="field-input" autoComplete="email" {...register("email")} />
           </label>
           <label className="block space-y-1.5 text-sm">
-            <span className="text-muted">Password</span>
+            <span className="text-muted">{t("auth.password")}</span>
             <PasswordInput autoComplete="new-password" {...register("password")} />
             {errors.password ? <span className="text-[var(--danger)]">{errors.password.message}</span> : null}
           </label>
@@ -78,14 +80,14 @@ export default function RegisterPage() {
             </p>
           ) : null}
           <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
-            {isSubmitting ? "Creating…" : "Create account"}
+            {isSubmitting ? t("auth.creating") : t("auth.createAccount")}
           </button>
         </form>
 
         <p className="mt-6 text-sm text-muted">
-          Already have an account?{" "}
+          {t("auth.alreadyHave")}{" "}
           <Link href={ROUTES.login} className="text-accent hover:underline">
-            Sign in
+            {t("auth.signIn")}
           </Link>
         </p>
       </div>

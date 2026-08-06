@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { listAdminVerifications, type VerificationRequest } from "@/services/onboarding";
 import { adminListTickets, type Ticket } from "@/services/tickets";
-import { formatRelativeTime } from "@/components/admin/AdminChrome";
+import { useT } from "@/i18n/useT";
 
 export default function AdminDashboardPage() {
+  const { t, tr } = useT();
   const [verifs, setVerifs] = useState<VerificationRequest[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
@@ -34,15 +35,15 @@ export default function AdminDashboardPage() {
   }, []);
 
   const metrics = [
-    { label: "Pending verifications", value: pendingCount, href: "/admin/verifications" },
-    { label: "Open tickets", value: openTickets, href: "/admin/tickets" },
+    { label: t("admin.pendingVerifications"), value: pendingCount, href: "/admin/verifications" },
+    { label: t("admin.openTickets"), value: openTickets, href: "/admin/tickets" },
   ];
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-xl font-semibold tracking-tight md:text-2xl">Overview</h1>
-        <p className="mt-1 text-sm text-muted">Queues that need attention today.</p>
+        <h1 className="font-display text-xl font-semibold tracking-tight md:text-2xl">{t("admin.overviewTitle")}</h1>
+        <p className="mt-1 text-sm text-muted">{t("admin.overviewDesc")}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:max-w-xl">
@@ -61,9 +62,9 @@ export default function AdminDashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]">
           <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-            <h2 className="text-sm font-semibold">Pending verifications</h2>
+            <h2 className="text-sm font-semibold">{t("admin.pendingVerifications")}</h2>
             <Link href="/admin/verifications" className="text-xs font-medium text-accent">
-              View all
+              {t("admin.viewAll")}
             </Link>
           </div>
           <ul className="divide-y divide-[var(--border)]">
@@ -76,7 +77,7 @@ export default function AdminDashboardPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{v.user_full_name || v.user_email || v.mt5_account}</p>
                     <p className="truncate text-xs text-muted">
-                      {v.mt5_account} · {v.broker_server} · {formatRelativeTime(v.created_at)}
+                      {v.mt5_account} · {v.broker_server} · {tr(v.created_at)}
                     </p>
                   </div>
                   <StatusBadge label={v.status} tone={statusTone(v.status)} />
@@ -84,37 +85,37 @@ export default function AdminDashboardPage() {
               </li>
             ))}
             {verifs.length === 0 ? (
-              <li className="px-4 py-10 text-center text-sm text-muted">Queue clear</li>
+              <li className="px-4 py-10 text-center text-sm text-muted">{t("admin.queueClear")}</li>
             ) : null}
           </ul>
         </section>
 
         <section className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]">
           <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-            <h2 className="text-sm font-semibold">Recent tickets</h2>
+            <h2 className="text-sm font-semibold">{t("admin.recentTickets")}</h2>
             <Link href="/admin/tickets" className="text-xs font-medium text-accent">
-              View all
+              {t("admin.viewAll")}
             </Link>
           </div>
           <ul className="divide-y divide-[var(--border)]">
-            {tickets.map((t) => (
-              <li key={t.id}>
+            {tickets.map((ticket) => (
+              <li key={ticket.id}>
                 <Link
                   href="/admin/tickets"
                   className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-[var(--surface-2)]"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{t.topic}</p>
+                    <p className="truncate text-sm font-medium">{ticket.topic}</p>
                     <p className="truncate text-xs text-muted">
-                      {t.name} · {formatRelativeTime(t.updated_at || t.created_at)}
+                      {ticket.name} · {tr(ticket.updated_at || ticket.created_at)}
                     </p>
                   </div>
-                  <StatusBadge label={t.status} tone={statusTone(t.status)} />
+                  <StatusBadge label={ticket.status} tone={statusTone(ticket.status)} />
                 </Link>
               </li>
             ))}
             {tickets.length === 0 ? (
-              <li className="px-4 py-10 text-center text-sm text-muted">No tickets</li>
+              <li className="px-4 py-10 text-center text-sm text-muted">{t("admin.noTicketsShort")}</li>
             ) : null}
           </ul>
         </section>

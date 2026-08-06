@@ -16,8 +16,10 @@ import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { MemberList, MemberListRow, MemberPanel } from "@/components/member/MemberChrome";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n/useT";
 
 function SupportInner() {
+  const { t, ts } = useT();
   const search = useSearchParams();
   const user = useAuthStore((s) => s.user);
   const preTopic = search.get("topic") || "";
@@ -29,7 +31,7 @@ function SupportInner() {
   const [name, setName] = useState(user?.profile?.full_name || "");
   const [telegram, setTelegram] = useState(user?.profile?.telegram_username || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [topic, setTopic] = useState(preTopic || "General support");
+  const [topic, setTopic] = useState(preTopic || t("member.generalSupport"));
   const [description, setDescription] = useState("");
 
   const load = async () => {
@@ -39,7 +41,7 @@ function SupportInner() {
       const res = await listMyTickets();
       if (res.success && res.data) setTickets(res.data);
     } catch {
-      setError("Failed to load tickets");
+      setError(t("member.ticketsLoadFailed"));
     } finally {
       setLoading(false);
     }
@@ -72,28 +74,43 @@ function SupportInner() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Help desk"
-        title="Support"
-        description="Create a ticket or continue a conversation with the team."
+        kicker={t("member.helpDesk")}
+        title={t("member.supportTitle")}
+        description={t("member.supportDesc")}
       />
 
       {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <MemberPanel title="New ticket">
+        <MemberPanel title={t("member.newTicket")}>
           <div className="space-y-3">
-            <input className="field-input" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <input
+              className="field-input"
+              placeholder={t("member.name")}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
             <input
               className="field-input"
               placeholder="Telegram"
               value={telegram}
               onChange={(e) => setTelegram(e.target.value)}
             />
-            <input className="field-input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input className="field-input" placeholder="Topic" value={topic} onChange={(e) => setTopic(e.target.value)} />
+            <input
+              className="field-input"
+              placeholder={t("auth.email")}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              className="field-input"
+              placeholder={t("member.topic")}
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+            />
             <textarea
               className="field-input min-h-[120px]"
-              placeholder="Describe the issue"
+              placeholder={t("member.describeIssue")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -110,7 +127,7 @@ function SupportInner() {
                     description,
                   });
                   if (!res.success) {
-                    setError(res.message || "Failed to create ticket");
+                    setError(res.message || t("member.createTicketFailed"));
                     return;
                   }
                   setDescription("");
@@ -119,18 +136,18 @@ function SupportInner() {
                 })()
               }
             >
-              Submit ticket
+              {t("member.submitTicket")}
             </button>
           </div>
         </MemberPanel>
 
-        <MemberPanel title="My tickets">
+        <MemberPanel title={t("member.myTickets")}>
           {loading ? <Skeleton className="h-32" /> : null}
           {!loading && sorted.length === 0 ? (
             <EmptyState
               className="border-0 bg-transparent p-0 shadow-none"
-              title="No tickets yet"
-              description="Submit a ticket when you need a human from the desk."
+              title={t("member.noTicketsTitle")}
+              description={t("member.noTicketsBody")}
             />
           ) : null}
           {!loading && sorted.length > 0 ? (
@@ -164,7 +181,7 @@ function SupportInner() {
             <div className="flex items-center gap-3">
               <StatusBadge label={selected.status} tone={statusTone(selected.status)} />
               <button type="button" className="text-sm text-muted hover:text-[var(--foreground)]" onClick={() => setSelected(null)}>
-                Close
+                {t("common.close")}
               </button>
             </div>
           }
@@ -180,7 +197,7 @@ function SupportInner() {
                     : "border border-[var(--border)]",
                 )}
               >
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{m.sender_type}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{ts(m.sender_type)}</p>
                 <p className="mt-1 leading-relaxed">{m.message}</p>
               </div>
             ))}
@@ -189,7 +206,7 @@ function SupportInner() {
             <div className="mt-4 flex gap-2">
               <input
                 className="field-input"
-                placeholder="Reply…"
+                placeholder={t("member.reply")}
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
               />
@@ -205,7 +222,7 @@ function SupportInner() {
                   })()
                 }
               >
-                Send
+                {t("common.send")}
               </button>
             </div>
           ) : null}
@@ -216,8 +233,9 @@ function SupportInner() {
 }
 
 export default function SupportPage() {
+  const { t } = useT();
   return (
-    <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
+    <Suspense fallback={<p className="text-sm text-muted">{t("common.loading")}</p>}>
       <SupportInner />
     </Suspense>
   );

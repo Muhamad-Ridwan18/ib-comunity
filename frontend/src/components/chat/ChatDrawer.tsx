@@ -7,6 +7,7 @@ import { MessageCircle, Send, Ticket } from "lucide-react";
 import { sendChat } from "@/services/ai";
 import { ROUTES } from "@/constants";
 import { Sheet } from "@/components/ui/Sheet";
+import { useT } from "@/i18n/useT";
 
 type Bubble = {
   id: string;
@@ -18,9 +19,10 @@ type Bubble = {
 };
 
 const SESSION_KEY = "ib_ai_session";
-const SUGGESTIONS = ["How to deposit?", "MT5 verification", "Telegram group", "Where are signals?"];
+const SUGGESTION_KEYS = ["chat.sugDeposit", "chat.sugMt5", "chat.sugTelegram", "chat.sugSignals"] as const;
 
 export function ChatDrawer() {
+  const { t, locale } = useT();
   const pathname = usePathname();
   const hideOnAdmin = pathname?.startsWith("/admin");
   const [open, setOpen] = useState(false);
@@ -32,10 +34,15 @@ export function ChatDrawer() {
     {
       id: "welcome",
       role: "assistant",
-      text: "Hai! Saya IB AI Assistant. Tanya soal IB, MT5, deposit, verifikasi, atau navigasi modul.",
+      text: t("chat.welcome"),
     },
   ]);
   const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMessages((prev) => prev.map((m) => (m.id === "welcome" ? { ...m, text: t("chat.welcome") } : m)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   useEffect(() => {
     const existing = localStorage.getItem(SESSION_KEY);
@@ -74,13 +81,13 @@ export function ChatDrawer() {
       } else {
         setMessages((prev) => [
           ...prev,
-          { id: `e-${Date.now()}`, role: "assistant", text: res.message || "Gagal membalas." },
+          { id: `e-${Date.now()}`, role: "assistant", text: res.message || t("chat.failReply") },
         ]);
       }
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: `e-${Date.now()}`, role: "assistant", text: "Koneksi gagal. Coba lagi." },
+        { id: `e-${Date.now()}`, role: "assistant", text: t("chat.connectionFailed") },
       ]);
     } finally {
       setBusy(false);
@@ -96,7 +103,7 @@ export function ChatDrawer() {
           type="button"
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-lg transition hover:opacity-90"
-          aria-label="Open AI support"
+          aria-label={t("chat.openAria")}
         >
           <MessageCircle className="h-5 w-5" />
         </button>
@@ -106,21 +113,21 @@ export function ChatDrawer() {
         open={open}
         onClose={() => setOpen(false)}
         side="right"
-        title="IB AI Assistant"
-        description="Rule-based help · escalate anytime"
+        title={t("chat.title")}
+        description={t("chat.description")}
         widthClassName="w-full max-w-full sm:max-w-[560px]"
       >
         <div className="grid h-full min-h-0 flex-1 grid-cols-1 md:grid-cols-[1.2fr_0.8fr]">
           <div className="flex min-h-0 flex-col border-[var(--border)] md:border-r">
             <div className="flex flex-wrap gap-2 border-b border-[var(--border)] px-4 py-3">
-              {SUGGESTIONS.map((s) => (
+              {SUGGESTION_KEYS.map((key) => (
                 <button
-                  key={s}
+                  key={key}
                   type="button"
                   className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-muted hover:border-accent/40 hover:text-accent"
-                  onClick={() => void send(s)}
+                  onClick={() => void send(t(key))}
                 >
-                  {s}
+                  {t(key)}
                 </button>
               ))}
             </div>
@@ -139,16 +146,16 @@ export function ChatDrawer() {
                         className="mt-2 inline-flex rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white"
                         onClick={() => setOpen(false)}
                       >
-                        Open Page
+                        {t("chat.openPage")}
                       </Link>
                     ) : null}
                     {m.needHuman ? (
                       <Link
-                        href={`${ROUTES.support}?topic=${encodeURIComponent(m.topic || "General support")}`}
+                        href={`${ROUTES.support}?topic=${encodeURIComponent(m.topic || t("member.generalSupport"))}`}
                         className="mt-2 block text-xs font-medium text-accent underline"
                         onClick={() => setOpen(false)}
                       >
-                        Need human assistance?
+                        {t("chat.needHuman")}
                       </Link>
                     ) : null}
                   </div>
@@ -166,30 +173,28 @@ export function ChatDrawer() {
               <div className="flex gap-2">
                 <input
                   className="field-input"
-                  placeholder={busy ? "Thinking…" : "Ask something…"}
+                  placeholder={busy ? t("chat.thinking") : t("chat.placeholder")}
                   value={input}
                   disabled={busy}
                   onChange={(e) => setInput(e.target.value)}
                 />
                 <button type="submit" className="btn-primary shrink-0" disabled={busy}>
-                  Send
+                  {t("common.send")}
                 </button>
               </div>
             </form>
           </div>
 
           <aside className="hidden flex-col gap-3 bg-[var(--surface-2)] p-4 md:flex">
-            <p className="font-display text-sm font-semibold">Didn&apos;t find an answer?</p>
-            <p className="text-xs leading-relaxed text-muted">
-              Escalate to a human agent or reach the private community channel.
-            </p>
+            <p className="font-display text-sm font-semibold">{t("chat.noAnswerTitle")}</p>
+            <p className="text-xs leading-relaxed text-muted">{t("chat.noAnswerBody")}</p>
             <Link
               href={`${ROUTES.support}?topic=AI%20escalation`}
               className="btn-primary inline-flex items-center justify-center gap-2"
               onClick={() => setOpen(false)}
             >
               <Ticket className="h-4 w-4" />
-              Create Support Ticket
+              {t("chat.createTicket")}
             </Link>
             <a
               href={telegram}
@@ -198,7 +203,7 @@ export function ChatDrawer() {
               className="btn-ghost inline-flex items-center justify-center gap-2"
             >
               <Send className="h-4 w-4" />
-              Contact on Telegram
+              {t("chat.contactTelegram")}
             </a>
           </aside>
         </div>
