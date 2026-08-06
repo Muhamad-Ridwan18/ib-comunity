@@ -13,6 +13,8 @@ import { listContents, listContinue, type ContentItem } from "@/services/content
 import { listSignals, type SignalItem } from "@/services/signals";
 import { getTelegramLink, listBonuses, type BonusItem } from "@/services/bonus";
 import { getOnboarding } from "@/services/onboarding";
+import { isBrowseOnly, membershipCta } from "@/lib/membership";
+import { USER_STATUS } from "@/constants";
 
 function progressPct(status?: string) {
   switch (status) {
@@ -24,8 +26,10 @@ function progressPct(status?: string) {
       return 60;
     case "onboarding":
       return 40;
+    case "registered":
+      return 10;
     default:
-      return 15;
+      return 10;
   }
 }
 
@@ -98,6 +102,7 @@ export default function MemberDashboardPage() {
     };
   }, [hydrated, verified, accessToken]);
 
+  const cta = membershipCta(user?.status);
   const continueRail = continueItems.length ? continueItems : academy.slice(0, 6);
   const articles = psychology.length ? psychology : academy.filter((i) => i.type === "article");
 
@@ -108,28 +113,34 @@ export default function MemberDashboardPage() {
         <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="section-kicker">Member desk</p>
+            <p className="section-kicker">{verified ? "Member desk" : "Your desk"}</p>
             <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
               Welcome back, {firstName}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted md:text-base">
               {verified
                 ? "Pick up a lesson, review today’s analysis, or check the latest desk signals."
-                : "Finish IB verification to unlock academy, signals, journal, and member bonuses."}
+                : isBrowseOnly(user?.status)
+                  ? "Explore public lessons and previews. Become a member when you’re ready for IB verification."
+                  : user?.status === USER_STATUS.pending_verification
+                    ? "Your MT5 verification is with the admin team. You can keep browsing while you wait."
+                    : "Finish IB verification to unlock signals, journal, bonuses, and full academy access."}
             </p>
           </div>
           {!verified ? (
             <div className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Onboarding</span>
+                <span className="font-medium">
+                  {isBrowseOnly(user?.status) ? "Membership" : "Verification"}
+                </span>
                 <span className="text-accent">{pct}%</span>
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-white dark:bg-[var(--card)]">
                 <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
               </div>
               <p className="mt-2 text-xs text-muted">{stepLabel || user?.status?.replaceAll("_", " ")}</p>
-              <Link href={ROUTES.onboarding} className="btn-primary mt-3 inline-flex">
-                Continue verification
+              <Link href={cta.href} className="btn-primary mt-3 inline-flex">
+                {cta.label}
               </Link>
             </div>
           ) : (
@@ -158,8 +169,8 @@ export default function MemberDashboardPage() {
               <EmptyState
                 title="Unlock your learning path"
                 description="After MT5 verification, progress and continue rails appear here."
-                actionLabel="Continue verification"
-                actionHref={ROUTES.onboarding}
+                actionLabel={cta.label}
+                actionHref={cta.href}
               />
             ) : continueRail.length === 0 ? (
               <EmptyState
@@ -199,8 +210,8 @@ export default function MemberDashboardPage() {
               <EmptyState
                 title="Signals are member-only"
                 description="Active setups with entry, SL, and TP unlock after verification."
-                actionLabel="Continue verification"
-                actionHref={ROUTES.onboarding}
+                actionLabel={cta.label}
+                actionHref={cta.href}
               />
             ) : signals.length === 0 ? (
               <EmptyState title="No active signals" description="When the desk publishes setups, they will appear here." />
@@ -272,8 +283,8 @@ export default function MemberDashboardPage() {
                 <EmptyState
                   title="Bonuses unlock after verify"
                   description="Downloads and private resources appear here for verified members."
-                  actionLabel="Continue verification"
-                  actionHref={ROUTES.onboarding}
+                  actionLabel={cta.label}
+                  actionHref={cta.href}
                 />
               ) : bonuses.length === 0 ? (
                 <EmptyState title="No bonuses yet" description="Member resources will show here when published." />
@@ -319,8 +330,8 @@ export default function MemberDashboardPage() {
                   Open Telegram
                 </a>
               ) : (
-                <Link href={verified ? ROUTES.bonus : ROUTES.onboarding} className="btn-ghost mt-6 inline-flex border-white/30 text-white hover:bg-white/10">
-                  {verified ? "Open Bonus" : "Verify to join"}
+                <Link href={verified ? ROUTES.bonus : cta.href} className="btn-ghost mt-6 inline-flex border-white/30 text-white hover:bg-white/10">
+                  {verified ? "Open Bonus" : cta.label}
                 </Link>
               )}
             </section>

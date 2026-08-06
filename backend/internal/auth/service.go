@@ -70,7 +70,7 @@ func (s *service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 		Email:        email,
 		PasswordHash: hash,
 		RoleID:       role.ID,
-		Status:       StatusOnboarding,
+		Status:       StatusRegistered,
 	}
 	profile := &Profile{
 		FullName: fullName,

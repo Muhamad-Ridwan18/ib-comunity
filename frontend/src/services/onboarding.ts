@@ -38,6 +38,11 @@ export async function getOnboarding() {
   return data;
 }
 
+export async function startOnboarding() {
+  const { data } = await api.post<ApiEnvelope<OnboardingProgress>>("/onboarding/start");
+  return data;
+}
+
 export async function completeStep1() {
   const { data } = await api.post<ApiEnvelope<OnboardingProgress>>("/onboarding/step/1/complete");
   return data;

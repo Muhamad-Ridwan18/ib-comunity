@@ -26,6 +26,15 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 	return response.OK(c, "OK", data)
 }
 
+func (h *Handler) Start(c *fiber.Ctx) error {
+	uid := c.Locals("user_id").(uuid.UUID)
+	data, err := h.svc.Start(c.Context(), uid)
+	if err != nil {
+		return mapErr(c, err)
+	}
+	return response.OK(c, "Membership verification started", data)
+}
+
 func (h *Handler) Step1(c *fiber.Ctx) error {
 	uid := c.Locals("user_id").(uuid.UUID)
 	data, err := h.svc.CompleteStep1(c.Context(), uid)
@@ -97,6 +106,7 @@ func mapErr(c *fiber.Ctx, err error) error {
 func RegisterRoutes(router fiber.Router, h *Handler, authMW fiber.Handler) {
 	g := router.Group("/onboarding", authMW)
 	g.Get("/", h.Get)
+	g.Post("/start", h.Start)
 	g.Post("/step/1/complete", h.Step1)
 	g.Post("/step/2/complete", h.Step2)
 	g.Post("/step/3", h.Step3)

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { Lock, Play, FileText } from "lucide-react";
 import type { ContentItem } from "@/services/content";
-import { ROUTES } from "@/constants";
 import { mediaCoverStyle } from "@/lib/media-cover";
+import { useAuthStore } from "@/store/auth";
+import { membershipCta } from "@/lib/membership";
 
 export function ContentCard({ item, hrefBase }: { item: ContentItem; hrefBase: string }) {
   return (
@@ -36,12 +37,14 @@ export function ContentCard({ item, hrefBase }: { item: ContentItem; hrefBase: s
 }
 
 export function LockedNotice() {
+  const status = useAuthStore((s) => s.user?.status);
+  const cta = membershipCta(status);
   return (
     <div className="rounded-[1.25rem] border border-accent/25 bg-accent-soft/40 p-5">
       <p className="font-display text-lg font-semibold text-accent">Premium content locked</p>
-      <p className="mt-1 text-sm text-muted">Verify your MT5 under our IB to unlock this module.</p>
-      <Link href={ROUTES.onboarding} className="btn-primary mt-4 inline-flex">
-        Continue verification
+      <p className="mt-1 text-sm text-muted">Become a verified member to unlock this lesson.</p>
+      <Link href={cta.href} className="btn-primary mt-4 inline-flex">
+        {cta.label}
       </Link>
     </div>
   );

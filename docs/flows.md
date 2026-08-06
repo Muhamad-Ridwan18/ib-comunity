@@ -7,25 +7,24 @@
 ```text
 Register
   → validate email/password
-  → create user (role=member, status=onboarding)
-  → create profile + onboarding_progress (step=1)
-  → optional verify-email mail
+  → create user (role=member, status=registered)
+  → create profile + onboarding_progress (idle)
   → issue JWT (access) + refresh
-  → redirect /onboarding
+  → redirect /member  (browse desk first)
 
 Login
   → validate credentials
   → reject if status=locked
   → issue tokens (remember → longer refresh TTL)
-  → route by status:
-       onboarding|rejected → /onboarding
-       pending_verification → /onboarding (step 5 waiting)
-       verified → /member
-       admin/super_admin → /admin (or member if dual)
+  → route:
+       admin/super_admin → /admin
+       everyone else → /member
 
-Forgot / Reset
-  → create password_resets token
-  → email link → set new hash → invalidate token
+Become a member (user chooses)
+  → POST /onboarding/start → status=onboarding
+  → /onboarding 5 IB steps (no skip)
+  → step 5 → pending_verification
+  → admin approve → verified → full unlock
 ```
 
 Middleware stack (API):

@@ -9,7 +9,7 @@ import { useState } from "react";
 import axios from "axios";
 import { login } from "@/services/auth";
 import { useAuthStore } from "@/store/auth";
-import { ROUTES, USER_STATUS, API_URL } from "@/constants";
+import { ROUTES, API_URL } from "@/constants";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 
@@ -45,8 +45,7 @@ export default function LoginPage() {
       setSession(res.data.user, res.data.tokens.access_token, res.data.tokens.refresh_token);
       const { user } = res.data;
       if (user.role === "admin" || user.role === "super_admin") router.push(ROUTES.admin);
-      else if (user.status === USER_STATUS.verified) router.push(ROUTES.member);
-      else router.push(ROUTES.onboarding);
+      else router.push(ROUTES.member);
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const msg = err.response?.data?.message;
@@ -72,7 +71,7 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
       <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back</h1>
-      <p className="mt-2 text-sm text-muted">Sign in to continue onboarding or enter the desk.</p>
+      <p className="mt-2 text-sm text-muted">Sign in to browse the desk. Become a member when you’re ready to verify.</p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <label className="block space-y-1.5 text-sm">

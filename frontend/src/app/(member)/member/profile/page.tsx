@@ -4,11 +4,13 @@ import { useAuthStore } from "@/store/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { ROUTES } from "@/constants";
+import { membershipCta } from "@/lib/membership";
 import Link from "next/link";
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const clearSession = useAuthStore((s) => s.clearSession);
+  const cta = membershipCta(user?.status);
 
   return (
     <div className="space-y-6">
@@ -30,8 +32,8 @@ export default function ProfilePage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {user?.status !== "verified" ? (
-              <Link href={ROUTES.onboarding} className="btn-primary">
-                Onboarding
+              <Link href={cta.href} className="btn-primary">
+                {cta.label}
               </Link>
             ) : null}
             <button

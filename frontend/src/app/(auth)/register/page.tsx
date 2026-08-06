@@ -39,7 +39,7 @@ export default function RegisterPage() {
         return;
       }
       setSession(res.data.user, res.data.tokens.access_token, res.data.tokens.refresh_token);
-      router.push(ROUTES.onboarding);
+      router.push(ROUTES.member);
     } catch {
       setError("Could not register. Email may already be in use.");
     }
@@ -51,7 +51,9 @@ export default function RegisterPage() {
         <ThemeToggle />
       </div>
       <h1 className="font-display text-3xl font-semibold tracking-tight">Create account</h1>
-      <p className="mt-2 text-sm text-muted">You’ll start the 5-step IB onboarding next.</p>
+      <p className="mt-2 text-sm text-muted">
+        Explore the desk first. Start IB verification only when you want full member access.
+      </p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <label className="block space-y-1.5 text-sm">

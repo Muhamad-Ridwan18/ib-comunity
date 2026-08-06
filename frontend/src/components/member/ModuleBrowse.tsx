@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ROUTES } from "@/constants";
 import { mediaCoverStyle } from "@/lib/media-cover";
+import { membershipCta } from "@/lib/membership";
 import Link from "next/link";
 
 const titles: Record<ContentModule, string> = {
@@ -29,6 +30,7 @@ const titles: Record<ContentModule, string> = {
 export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; hrefBase: string }) {
   const user = useAuthStore((s) => s.user);
   const verified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
+  const cta = membershipCta(user?.status);
   const [items, setItems] = useState<ContentItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [q, setQ] = useState("");
@@ -83,7 +85,7 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
         description={
           verified
             ? "Browse lessons and articles from the desk."
-            : "Premium items stay locked until IB verification."
+            : "Premium items stay locked until you become a verified member."
         }
       />
 
@@ -157,8 +159,8 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
             <EmptyState
               title="No content yet"
               description="This library is empty for the selected filters."
-              actionLabel={verified ? undefined : "Continue verification"}
-              actionHref={verified ? undefined : ROUTES.onboarding}
+              actionLabel={verified ? undefined : cta.label}
+              actionHref={verified ? undefined : cta.href}
             />
           ) : null}
           {items.map((item) => (

@@ -60,6 +60,7 @@ App: `http://localhost:3000`
 - [Flows](docs/flows.md)
 - [UI](docs/ui.md)
 - [Deployment](docs/deployment.md)
+- [Deploy production (`ibcomunity.webyouneed.id`)](docs/deploy-ibcomunity.md)
 
 ## Defaults (MVP)
 
@@ -83,10 +84,11 @@ Seeded automatically on API startup if missing.
 
 ## P1 quick test
 
-1. Login `member@ib.local` → `/onboarding` (5 steps, no skip)
-2. Complete steps → status `pending_verification`
-3. Login `admin@ib.local` → `/admin/verifications` → Approve
-4. Login member again → status `verified`, modul unlock
+1. Register new user → lands on `/member` (browse desk, premium locked)
+2. Click **Become a member** → `/onboarding` intro → Start verification (5 steps, no skip)
+3. Complete steps → status `pending_verification`
+4. Login `admin@ib.local` → `/admin/verifications` → Approve
+5. Login member again → status `verified`, modules unlock
 
 ## P2 quick test
 

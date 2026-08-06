@@ -12,10 +12,12 @@ import {
 import { LockedNotice } from "@/components/member/ContentCard";
 import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store/auth";
+import { membershipCta } from "@/lib/membership";
 
 export function ContentDetail({ slug, backHref }: { slug: string; backHref: string }) {
   const user = useAuthStore((s) => s.user);
   const verified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
+  const cta = membershipCta(user?.status);
   const [item, setItem] = useState<ContentItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -97,8 +99,8 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
               {item.bookmarked ? "Remove bookmark" : "Bookmark"}
             </button>
           ) : (
-            <Link href={ROUTES.onboarding} className="text-sm text-accent">
-              Verify to bookmark
+            <Link href={cta.href} className="text-sm text-accent">
+              {cta.label} to bookmark
             </Link>
           )}
         </>

@@ -43,6 +43,7 @@ type Step4Request struct {
 
 type Service interface {
 	Get(ctx context.Context, userID uuid.UUID) (*ProgressResponse, error)
+	Start(ctx context.Context, userID uuid.UUID) (*ProgressResponse, error)
 	CompleteStep1(ctx context.Context, userID uuid.UUID) (*ProgressResponse, error)
 	CompleteStep2(ctx context.Context, userID uuid.UUID) (*ProgressResponse, error)
 	SubmitStep3(ctx context.Context, userID uuid.UUID, req Step3Request) (*ProgressResponse, error)
@@ -62,6 +63,30 @@ func NewService(users auth.Repository, verifs verification.Repository, settingsS
 
 func (s *service) Get(ctx context.Context, userID uuid.UUID) (*ProgressResponse, error) {
 	return s.build(ctx, userID)
+}
+
+// Start moves a registered account into the IB verification wizard.
+func (s *service) Start(ctx context.Context, userID uuid.UUID) (*ProgressResponse, error) {
+	user, err := s.users.FindUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	switch user.Status {
+	case auth.StatusLocked:
+		return nil, ErrWrongStatus
+	case auth.StatusVerified:
+		return nil, ErrAlreadyDone
+	case auth.StatusOnboarding, auth.StatusPendingVerification, auth.StatusRejected:
+		return s.build(ctx, userID)
+	case auth.StatusRegistered:
+		user.Status = auth.StatusOnboarding
+		if err := s.users.UpdateUser(ctx, user); err != nil {
+			return nil, err
+		}
+		return s.build(ctx, userID)
+	default:
+		return nil, ErrWrongStatus
+	}
 }
 
 func (s *service) CompleteStep1(ctx context.Context, userID uuid.UUID) (*ProgressResponse, error) {
@@ -211,7 +236,7 @@ func (s *service) loadMutable(ctx context.Context, userID uuid.UUID) (*auth.User
 	if err != nil {
 		return nil, nil, err
 	}
-	if user.Status == auth.StatusLocked {
+	if user.Status == auth.StatusLocked || user.Status == auth.StatusRegistered {
 		return nil, nil, ErrWrongStatus
 	}
 	if user.Status == auth.StatusVerified {
