@@ -10,7 +10,6 @@ import {
   type ContentItem,
 } from "@/services/content";
 import { LockedNotice } from "@/components/member/ContentCard";
-import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store/auth";
 import { membershipCta } from "@/lib/membership";
 

@@ -15,7 +15,6 @@ import { useAuthStore } from "@/store/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { ROUTES } from "@/constants";
 import { mediaCoverStyle } from "@/lib/media-cover";
 import { membershipCta } from "@/lib/membership";
 import Link from "next/link";
