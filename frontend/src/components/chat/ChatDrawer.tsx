@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircle, Send, Ticket } from "lucide-react";
 import { sendChat } from "@/services/ai";
 import { ROUTES } from "@/constants";
@@ -20,6 +21,8 @@ const SESSION_KEY = "ib_ai_session";
 const SUGGESTIONS = ["How to deposit?", "MT5 verification", "Telegram group", "Where are signals?"];
 
 export function ChatDrawer() {
+  const pathname = usePathname();
+  const hideOnAdmin = pathname?.startsWith("/admin");
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -83,6 +86,8 @@ export function ChatDrawer() {
       setBusy(false);
     }
   };
+
+  if (hideOnAdmin) return null;
 
   return (
     <>

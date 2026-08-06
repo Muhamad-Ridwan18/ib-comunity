@@ -106,7 +106,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 animate-fade px-4 py-6 md:px-8">{children}</main>
+        <main className="w-full flex-1 animate-fade px-4 py-6 md:px-6 lg:px-8">{children}</main>
       </div>
 
       <Sheet
