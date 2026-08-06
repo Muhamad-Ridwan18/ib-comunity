@@ -35,6 +35,20 @@ Do **not** use `/v1` on Vercel — that only works with the local Next rewrite p
 
 Redeploy after changing Root Directory / Framework. Smoke-test login against the production API.
 
+### If you see `404: NOT_FOUND` (Code: NOT_FOUND)
+
+That is Vercel’s **platform** 404 (empty / wrong project root), not a Next.js page.
+
+1. Project → **Settings → Build and Deployment**
+2. Framework = **Next.js** (not Services, not Other)
+3. Root Directory = **`frontend`**
+4. Output Directory = **leave default** (do not set `.next` or `frontend/.next`)
+5. **Deployments** → open the **latest** deployment → confirm status Ready
+6. Open **Output** tab — you should see Next.js routes, not an empty tree
+7. Click **Visit** on that deployment (don’t reuse an old Services URL)
+
+If Root Directory was wrong, change it, then **Redeploy** the latest commit.
+
 ## Backend (VPS)
 
 ### 1. Server layout
