@@ -115,10 +115,11 @@ Seeded automatically on API startup if missing.
 
 ## P5 deploy (summary)
 
-1. Vercel: set `NEXT_PUBLIC_API_URL=https://api.example.com/v1`
-2. VPS: production `.env` (`APP_ENV=production`, strong `JWT_SECRET`, `FRONTEND_URL`, `DB_SSLMODE=require`)
-3. Install `deploy/ib-api.service` + `nginx/sites/ib-community.conf`
-4. Ship binary: `DEPLOY_HOST=user@host ./scripts/deploy.sh`
+1. Vercel (root of monorepo): uses `vercel.json` → Next.js service in `frontend/`
+2. Set env: `NEXT_PUBLIC_API_URL=https://api.example.com/v1`
+3. VPS: production `.env` (`APP_ENV=production`, strong `JWT_SECRET`, `FRONTEND_URL`, `DB_SSLMODE=require`)
+4. Install `deploy/ib-api.service` + `nginx/sites/ib-community.conf`
+5. Ship binary: `DEPLOY_HOST=user@host ./scripts/deploy.sh`
 
 See [docs/deployment.md](docs/deployment.md) for the full checklist.
 

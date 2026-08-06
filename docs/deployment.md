@@ -11,8 +11,22 @@
 
 ## Frontend (Vercel)
 
-1. Import the `frontend/` directory (or monorepo root with Root Directory = `frontend`).
-2. Set environment variables:
+Monorepo root includes `vercel.json` that deploys only the Next.js app as a service:
+
+```json
+{
+  "services": {
+    "web": { "root": "frontend/", "framework": "nextjs" }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": { "service": "web" } }]
+}
+```
+
+The Go API stays on the VPS — do **not** expect Fiber to run on Vercel.
+
+1. Import the GitHub repo (root = monorepo, not `frontend/` alone).
+2. In **Build and Deployment**, set framework to **Services** (required when using `services` in `vercel.json`).
+3. Set environment variables:
 
 | Variable | Example |
 |----------|---------|
@@ -21,7 +35,7 @@
 
 Do **not** use `/v1` on Vercel — that only works with the local Next rewrite proxy.
 
-3. Deploy. Smoke-test login against the production API.
+4. Deploy. Smoke-test login against the production API.
 
 ## Backend (VPS)
 
