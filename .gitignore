@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Env
+.env
+.env.local
+frontend/.env.local
+backend/.env
+*.pem
+
+# Go
+backend/bin/
+backend/tmp/
+*.exe
+
+# Storage uploads (keep folders)
+storage/**/*
+!storage/**/.gitkeep
+!storage/**/README.md
+
+# Backups
+backups/database/*
+backups/storage/*
+backups/logs/*
+!backups/**/.gitkeep
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
+
+# Coverage / build
+coverage/
+dist/
