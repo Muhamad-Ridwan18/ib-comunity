@@ -320,6 +320,13 @@ h3,
   animation: pulse-line 3.2s ease-in-out infinite;
 }
 
+.market-ticker {
+  display: inline-flex;
+  min-width: max-content;
+  gap: 0.75rem;
+  animation: market-ticker 26s linear infinite;
+}
+
 @keyframes pulse-line {
   0%,
   100% {
@@ -327,5 +334,14 @@ h3,
   }
   50% {
     opacity: 0.85;
+  }
+}
+
+@keyframes market-ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }

@@ -1,33 +1,107 @@
 "use client";
 
-import { APP_NAME, ROUTES } from "@/constants";
+import { APP_NAME } from "@/constants";
 import Link from "next/link";
 import { useT } from "@/i18n/useT";
 
 export function SiteFooter() {
-  const { t } = useT();
+  const { t, locale } = useT();
+
+  const labels =
+    locale === "id"
+      ? {
+          menu: "Menu",
+          info: "Informasi",
+          newsletter: "Newsletter",
+          about:
+            "Hub trading terpercaya untuk belajar, bertumbuh, dan berkembang bersama trader Indonesia.",
+          aboutUs: "Tentang Kami",
+          terms: "Syarat & Ketentuan",
+          policy: "Kebijakan Privasi",
+          newsletterBody: "Dapatkan update analisis dan informasi penting langsung ke email kamu.",
+          placeholder: "Masukkan email kamu",
+          subscribe: "Subscribe",
+        }
+      : {
+          menu: "Menu",
+          info: "Information",
+          newsletter: "Newsletter",
+          about: "A trusted trading hub to learn, grow, and improve together with the community.",
+          aboutUs: "About Us",
+          terms: "Terms & Conditions",
+          policy: "Privacy Policy",
+          newsletterBody: "Get market updates and important desk information straight to your inbox.",
+          placeholder: "Enter your email",
+          subscribe: "Subscribe",
+        };
 
   return (
     <footer className="border-t border-[var(--border)] py-14">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 md:flex-row md:items-end md:justify-between">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 lg:grid-cols-[1.15fr_0.7fr_0.7fr_0.9fr]">
         <div>
           <p className="font-display text-xl font-semibold">{APP_NAME}</p>
-          <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">{t("landing.footerBody")}</p>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">{labels.about}</p>
+          <div className="mt-5 flex gap-2">
+            {["TG", "YT", "DC", "IG"].map((x) => (
+              <span
+                key={x}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[10px] font-semibold text-muted"
+              >
+                {x}
+              </span>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-4 text-sm text-muted">
-          <Link href="#how" className="hover:text-accent">
-            {t("nav.howItWorks")}
-          </Link>
-          <Link href="#articles" className="hover:text-accent">
-            {t("nav.articles")}
-          </Link>
-          <Link href={ROUTES.register} className="hover:text-accent">
-            {t("nav.join")}
-          </Link>
-          <p className="w-full text-xs md:w-auto">
-            © {new Date().getFullYear()} {APP_NAME}
-          </p>
+
+        <div>
+          <p className="text-sm font-semibold">{labels.menu}</p>
+          <div className="mt-4 space-y-2.5 text-sm text-muted">
+            <Link href="#articles" className="block hover:text-accent">
+              {t("nav.academy")}
+            </Link>
+            <Link href="#articles" className="block hover:text-accent">
+              {t("nav.analysis")}
+            </Link>
+            <Link href="#signals" className="block hover:text-accent">
+              {t("nav.signal")}
+            </Link>
+            <Link href="#benefits" className="block hover:text-accent">
+              {t("nav.bonus")}
+            </Link>
+          </div>
         </div>
+
+        <div>
+          <p className="text-sm font-semibold">{labels.info}</p>
+          <div className="mt-4 space-y-2.5 text-sm text-muted">
+            <Link href="#faq" className="block hover:text-accent">
+              {labels.aboutUs}
+            </Link>
+            <Link href="#how" className="block hover:text-accent">
+              {t("nav.howItWorks")}
+            </Link>
+            <span className="block">{labels.terms}</span>
+            <span className="block">{labels.policy}</span>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold">{labels.newsletter}</p>
+          <p className="mt-4 text-sm leading-relaxed text-muted">{labels.newsletterBody}</p>
+          <div className="mt-4 flex rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
+            <input
+              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-none"
+              placeholder={labels.placeholder}
+            />
+            <button type="button" className="btn-primary px-4 py-2">
+              {labels.subscribe}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-2 border-t border-[var(--border)] px-4 pt-6 text-xs text-muted md:flex-row md:items-center md:justify-between">
+        <p>© {new Date().getFullYear()} {APP_NAME}</p>
+        <p>{t("landing.footerBody")}</p>
       </div>
     </footer>
   );
