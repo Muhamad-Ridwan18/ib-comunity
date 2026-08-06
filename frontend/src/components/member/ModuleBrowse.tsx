@@ -22,13 +22,6 @@ import { useT } from "@/i18n/useT";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-const titles: Record<ContentModule, string> = {
-  academy: "Academy",
-  psychology: "Psychology",
-  daily_analysis: "Daily Analysis",
-  landing: "Education",
-};
-
 export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; hrefBase: string }) {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
