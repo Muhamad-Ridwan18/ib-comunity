@@ -61,7 +61,7 @@ export default function ProfilePage() {
                 window.location.href = ROUTES.login;
               }}
             >
-              Sign out
+              {t("common.signOut")}
             </button>
           </div>
         </div>

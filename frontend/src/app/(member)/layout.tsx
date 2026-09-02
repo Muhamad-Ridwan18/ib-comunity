@@ -1,7 +1,12 @@
 "use client";
 
 import { MemberShell } from "@/components/layout/MemberShell";
+import { AuthGate } from "@/components/common/AuthGate";
 
 export default function MemberLayout({ children }: { children: React.ReactNode }) {
-  return <MemberShell>{children}</MemberShell>;
+  return (
+    <AuthGate>
+      <MemberShell>{children}</MemberShell>
+    </AuthGate>
+  );
 }

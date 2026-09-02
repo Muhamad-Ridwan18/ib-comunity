@@ -9,6 +9,8 @@ import { useState } from "react";
 import { register as registerUser } from "@/services/auth";
 import { useAuthStore } from "@/store/auth";
 import { ROUTES } from "@/constants";
+import { NEW_MEMBER_FLAG } from "@/lib/auth-routing";
+import { track } from "@/lib/analytics";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleToggle } from "@/components/common/LocaleToggle";
@@ -42,6 +44,8 @@ export default function RegisterPage() {
         return;
       }
       setSession(res.data.user, res.data.tokens.access_token, res.data.tokens.refresh_token);
+      sessionStorage.setItem(NEW_MEMBER_FLAG, "1");
+      track("signup_complete", { status: res.data.user.status });
       router.push(ROUTES.member);
     } catch {
       setError(t("auth.registerError"));

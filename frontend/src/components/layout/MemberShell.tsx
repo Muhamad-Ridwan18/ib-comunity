@@ -10,7 +10,9 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { AppLogo } from "@/components/layout/AppLogo";
 import { Sheet } from "@/components/ui/Sheet";
+import { VerificationBanner } from "@/components/member/VerificationBanner";
 import { listNotifications, type NotificationItem } from "@/services/notifications";
+import { isVerifiedMember, membershipCta } from "@/lib/membership";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/useT";
 
@@ -18,6 +20,7 @@ const nav: { href: string; labelKey: string; exact?: boolean; locked?: boolean }
   { href: ROUTES.member, labelKey: "nav.home", exact: true },
   { href: ROUTES.academy, labelKey: "nav.academy", locked: true },
   { href: ROUTES.analysis, labelKey: "nav.analysis", locked: true },
+  { href: ROUTES.psychology, labelKey: "member.psychology", locked: true },
   { href: ROUTES.signals, labelKey: "nav.signals", locked: true },
   { href: ROUTES.journal, labelKey: "nav.journal", locked: true },
   { href: ROUTES.bonus, labelKey: "nav.bonus", locked: true },
@@ -34,7 +37,8 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const clearSession = useAuthStore((s) => s.clearSession);
-  const verified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
+  const verified = isVerifiedMember(user);
+  const cta = membershipCta(user?.status);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notes, setNotes] = useState<NotificationItem[]>([]);
   const [openNotes, setOpenNotes] = useState(false);
@@ -68,6 +72,8 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
       .join("")
       .slice(0, 2)
       .toUpperCase() || "SP";
+
+  const unread = notes.filter((n) => !n.read_at).length;
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -107,6 +113,11 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+            {!verified ? (
+              <Link href={cta.href} className="btn-primary hidden px-3 py-1.5 text-xs sm:inline-flex">
+                {t(cta.labelKey)}
+              </Link>
+            ) : null}
             <div className="relative">
               <button
                 type="button"
@@ -115,7 +126,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
                 aria-label={t("common.notifications")}
               >
                 <Bell className="h-4 w-4" />
-                {notes.length > 0 ? (
+                {unread > 0 ? (
                   <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
                 ) : null}
               </button>
@@ -150,6 +161,7 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
         </div>
+        <VerificationBanner />
       </header>
 
       <main className="mx-auto w-full max-w-7xl animate-fade px-4 py-6 md:px-6 md:py-8">{children}</main>
@@ -163,6 +175,15 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
         widthClassName="w-[min(20rem,88vw)]"
       >
         <nav className="space-y-1 p-3">
+          {!verified ? (
+            <Link
+              href={cta.href}
+              onClick={() => setMobileOpen(false)}
+              className="btn-primary mb-3 flex w-full justify-center"
+            >
+              {t(cta.labelKey)}
+            </Link>
+          ) : null}
           {nav.map((item) => {
             const active = isActive(pathname, item.href, item.exact);
             const locked = item.locked && !verified;

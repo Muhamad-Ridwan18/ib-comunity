@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { LockedModule } from "@/components/member/LockedModule";
+import { RiskDisclosureGate } from "@/components/member/RiskDisclosureGate";
 import { listSignals, type SignalItem } from "@/services/signals";
 import { useAuthStore } from "@/store/auth";
+import { isVerifiedMember } from "@/lib/membership";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonRows } from "@/components/ui/Skeleton";
@@ -11,14 +13,10 @@ import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { MemberFilterSeg, MemberList, MemberListRow } from "@/components/member/MemberChrome";
 import { useT } from "@/i18n/useT";
 
-function isUnlocked(status?: string, role?: string) {
-  return status === "verified" || role === "admin" || role === "super_admin";
-}
-
 export default function SignalsPage() {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
-  const unlocked = isUnlocked(user?.status, user?.role);
+  const unlocked = isVerifiedMember(user);
   const [items, setItems] = useState<SignalItem[]>([]);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
@@ -52,7 +50,8 @@ export default function SignalsPage() {
   if (!unlocked) return <LockedModule title={t("member.signalsTitle")} />;
 
   return (
-    <div className="space-y-6">
+    <RiskDisclosureGate>
+      <div className="space-y-6">
       <PageHeader
         kicker={t("member.liveDesk")}
         title={t("member.signalsTitle")}
@@ -109,6 +108,7 @@ export default function SignalsPage() {
           ))}
         </MemberList>
       ) : null}
-    </div>
+      </div>
+    </RiskDisclosureGate>
   );
 }

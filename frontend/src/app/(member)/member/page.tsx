@@ -13,26 +13,12 @@ import { listContents, listContinue, type ContentItem } from "@/services/content
 import { listSignals, type SignalItem } from "@/services/signals";
 import { getTelegramLink, listBonuses, type BonusItem } from "@/services/bonus";
 import { getOnboarding } from "@/services/onboarding";
-import { isBrowseOnly, membershipCta } from "@/lib/membership";
+import { isBrowseOnly, membershipCta, isVerifiedMember } from "@/lib/membership";
+import { OnboardingProgressTracker } from "@/components/member/OnboardingProgressTracker";
+import { NewMemberWelcome, VerifiedWelcome } from "@/components/member/MemberWelcome";
+import type { OnboardingProgress } from "@/services/onboarding";
 import { useT } from "@/i18n/useT";
 import { USER_STATUS } from "@/constants";
-
-function progressPct(status?: string) {
-  switch (status) {
-    case "verified":
-      return 100;
-    case "pending_verification":
-      return 90;
-    case "rejected":
-      return 60;
-    case "onboarding":
-      return 40;
-    case "registered":
-      return 10;
-    default:
-      return 10;
-  }
-}
 
 async function soft<T>(fn: () => Promise<T>): Promise<T | null> {
   try {
@@ -47,12 +33,12 @@ export default function MemberDashboardPage() {
   const user = useAuthStore((s) => s.user);
   const hydrated = useAuthStore((s) => s.hydrated);
   const accessToken = useAuthStore((s) => s.accessToken);
-  const verified =
-    user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
+  const verified = isVerifiedMember(user);
   const firstName = user?.profile?.full_name?.split(" ")[0] || t("status.member");
-  const pct = progressPct(user?.status);
+  const pending = user?.status === USER_STATUS.pending_verification;
 
   const [loading, setLoading] = useState(true);
+  const [onboarding, setOnboarding] = useState<OnboardingProgress | null>(null);
   const [continueItems, setContinueItems] = useState<ContentItem[]>([]);
   const [academy, setAcademy] = useState<ContentItem[]>([]);
   const [analysis, setAnalysis] = useState<ContentItem[]>([]);
@@ -60,7 +46,6 @@ export default function MemberDashboardPage() {
   const [signals, setSignals] = useState<SignalItem[]>([]);
   const [bonuses, setBonuses] = useState<BonusItem[]>([]);
   const [telegram, setTelegram] = useState("");
-  const [stepLabel, setStepLabel] = useState("");
 
   useEffect(() => {
     if (!hydrated) return;
@@ -80,8 +65,7 @@ export default function MemberDashboardPage() {
 
         if (!verified) {
           const ob = await soft(() => getOnboarding());
-          if (alive && ob?.success && ob.data)
-            setStepLabel(t("member.stepOf", { n: ob.data.current_step, total: 5 }));
+          if (alive && ob?.success && ob.data) setOnboarding(ob.data);
         } else {
           const [c, s, b, tg] = await Promise.all([
             soft(() => listContinue()),
@@ -109,9 +93,20 @@ export default function MemberDashboardPage() {
   const cta = membershipCta(user?.status);
   const continueRail = continueItems.length ? continueItems : academy.slice(0, 6);
   const articles = psychology.length ? psychology : academy.filter((i) => i.type === "article");
+  const showFunnel = !verified;
 
   return (
     <div className="space-y-10 md:space-y-12">
+      <NewMemberWelcome />
+      <VerifiedWelcome />
+      {showFunnel ? (
+        <OnboardingProgressTracker
+          progress={onboarding}
+          status={user?.status}
+          pending={pending}
+        />
+      ) : null}
+
       <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_80%_at_100%_0%,var(--glow),transparent_60%)]" />
         <div className="relative flex flex-col gap-6 px-5 py-6 sm:px-7 sm:py-8 lg:flex-row lg:items-end lg:justify-between">
@@ -125,28 +120,12 @@ export default function MemberDashboardPage() {
                 ? t("member.welcomeVerified")
                 : isBrowseOnly(user?.status)
                   ? t("member.welcomeBrowse")
-                  : user?.status === USER_STATUS.pending_verification
+                  : pending
                     ? t("member.welcomePending")
                     : t("member.welcomeOnboarding")}
             </p>
           </div>
-          {!verified ? (
-            <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/80 p-4 backdrop-blur">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">
-                  {isBrowseOnly(user?.status) ? t("member.membership") : t("member.verification")}
-                </span>
-                <span className="font-semibold text-accent">{pct}%</span>
-              </div>
-              <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white dark:bg-[var(--card)]">
-                <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
-              </div>
-              <p className="mt-2 text-xs text-muted">{stepLabel || user?.status?.replaceAll("_", " ")}</p>
-              <Link href={cta.href} className="btn-primary mt-3 inline-flex w-full sm:w-auto">
-                {t(cta.labelKey)}
-              </Link>
-            </div>
-          ) : (
+          {verified ? (
             <div className="flex flex-wrap gap-2">
               <Link href={ROUTES.academy} className="btn-primary">
                 {t("member.browseAcademy")}
@@ -155,6 +134,10 @@ export default function MemberDashboardPage() {
                 {t("member.viewSignals")}
               </Link>
             </div>
+          ) : (
+            <Link href={cta.href} className="btn-primary inline-flex w-full sm:w-auto">
+              {t(cta.labelKey)}
+            </Link>
           )}
         </div>
       </section>

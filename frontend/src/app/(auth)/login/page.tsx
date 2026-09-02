@@ -10,6 +10,8 @@ import axios from "axios";
 import { login } from "@/services/auth";
 import { useAuthStore } from "@/store/auth";
 import { ROUTES, API_URL } from "@/constants";
+import { postAuthRoute } from "@/lib/auth-routing";
+import { track } from "@/lib/analytics";
 import { PasswordInput } from "@/components/forms/PasswordInput";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleToggle } from "@/components/common/LocaleToggle";
@@ -47,8 +49,8 @@ export default function LoginPage() {
       }
       setSession(res.data.user, res.data.tokens.access_token, res.data.tokens.refresh_token);
       const { user } = res.data;
-      if (user.role === "admin" || user.role === "super_admin") router.push(ROUTES.admin);
-      else router.push(ROUTES.member);
+      track("login_complete", { status: user.status, role: user.role });
+      router.push(postAuthRoute(user));
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const msg = err.response?.data?.message;

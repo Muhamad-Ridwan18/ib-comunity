@@ -5,19 +5,16 @@ import { Download, ExternalLink, Send, Sparkles } from "lucide-react";
 import { LockedModule } from "@/components/member/LockedModule";
 import { getTelegramLink, listBonuses, type BonusItem } from "@/services/bonus";
 import { useAuthStore } from "@/store/auth";
+import { isVerifiedMember } from "@/lib/membership";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useT } from "@/i18n/useT";
 
-function isUnlocked(status?: string, role?: string) {
-  return status === "verified" || role === "admin" || role === "super_admin";
-}
-
 export default function BonusPage() {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
-  const unlocked = isUnlocked(user?.status, user?.role);
+  const unlocked = isVerifiedMember(user);
   const [items, setItems] = useState<BonusItem[]>([]);
   const [telegram, setTelegram] = useState("");
   const [loading, setLoading] = useState(true);

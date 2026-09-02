@@ -22,11 +22,22 @@ import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { AppLogo } from "@/components/layout/AppLogo";
 import { StepRail, WaitingTimeline } from "@/components/onboarding/StepRail";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { AuthGate } from "@/components/common/AuthGate";
 import { ROUTES, USER_STATUS } from "@/constants";
 import { isBrowseOnly } from "@/lib/membership";
+import { VERIFIED_WELCOME_FLAG } from "@/lib/auth-routing";
+import { track } from "@/lib/analytics";
 import { useT } from "@/i18n/useT";
 
 export default function OnboardingPage() {
+  return (
+    <AuthGate>
+      <OnboardingInner />
+    </AuthGate>
+  );
+}
+
+function OnboardingInner() {
   const { t } = useT();
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
@@ -52,7 +63,10 @@ export default function OnboardingPage() {
     const res = await me();
     if (res.success && res.data) {
       setSession(res.data, accessToken, refreshToken);
-      if (res.data.status === "verified") router.replace(ROUTES.member);
+      if (res.data.status === "verified") {
+        sessionStorage.setItem(VERIFIED_WELCOME_FLAG, "1");
+        router.replace(ROUTES.member);
+      }
     }
   }, [accessToken, refreshToken, router, setSession]);
 
@@ -93,6 +107,7 @@ export default function OnboardingPage() {
         return;
       }
       setProgress(res.data);
+      track("onboarding_step", { step: res.data.current_step });
       await refreshUser();
     } catch {
       setError(t("onboarding.requestFailed"));
@@ -111,6 +126,7 @@ export default function OnboardingPage() {
         return;
       }
       setProgress(res.data);
+      track("onboarding_start");
       await refreshUser();
     } catch {
       setError(t("onboarding.startFailed"));
@@ -164,6 +180,17 @@ export default function OnboardingPage() {
             <li>{t("onboarding.list4")}</li>
             <li>{t("onboarding.list5")}</li>
           </ul>
+          <div className="mt-6 rounded-xl border border-accent/20 bg-accent-soft/40 p-4">
+            <p className="text-sm font-semibold text-accent">{t("onboarding.unlockTitle")}</p>
+            <p className="mt-1.5 text-sm text-muted">{t("onboarding.unlockBody")}</p>
+            <ul className="mt-3 space-y-1.5 text-sm text-muted">
+              <li>{t("onboarding.unlock1")}</li>
+              <li>{t("onboarding.unlock2")}</li>
+              <li>{t("onboarding.unlock3")}</li>
+              <li>{t("onboarding.unlock4")}</li>
+              <li>{t("onboarding.unlock5")}</li>
+            </ul>
+          </div>
           {error ? (
             <p className="mt-4 rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
               {error}
@@ -186,6 +213,17 @@ export default function OnboardingPage() {
   const step = progress.current_step;
   const rejected = progress.status === "rejected";
   const pending = progress.status === "pending_verification";
+  const supportHref = `${ROUTES.support}?topic=${encodeURIComponent(t("member.verificationHelpTopic"))}`;
+
+  const submitMt5 = () => {
+    const account = mt5.trim();
+    const broker = server.trim();
+    if (!/^\d{5,12}$/.test(account) || broker.length < 3) {
+      setError(t("onboarding.mt5Invalid"));
+      return;
+    }
+    void run(() => submitStep3({ mt5_account: account, broker_server: broker }));
+  };
 
   return (
     <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 md:py-10">
@@ -213,6 +251,17 @@ export default function OnboardingPage() {
               {t("onboarding.setupTitle")}
             </h1>
             <p className="mt-2 text-sm text-muted">{t("onboarding.setupBody")}</p>
+
+            <div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 p-4">
+              <p className="text-sm font-semibold">{t("onboarding.unlockTitle")}</p>
+              <ul className="mt-2 space-y-1 text-sm text-muted">
+                <li>{t("onboarding.unlock1")}</li>
+                <li>{t("onboarding.unlock2")}</li>
+                <li>{t("onboarding.unlock3")}</li>
+                <li>{t("onboarding.unlock4")}</li>
+                <li>{t("onboarding.unlock5")}</li>
+              </ul>
+            </div>
 
             {error ? (
               <p className="mt-4 rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
@@ -246,12 +295,16 @@ export default function OnboardingPage() {
                 >
                   {t("onboarding.resubmitStep3")}
                 </button>
+                <Link href={supportHref} className="btn-ghost mt-3 ml-3 inline-flex">
+                  {t("onboarding.supportLink")}
+                </Link>
               </div>
             ) : null}
 
             <div className={`mt-6 ${busy ? "pointer-events-none opacity-60" : ""}`}>
               {!rejected && step === 1 && (
                 <StepBody title={t("onboarding.step1Title")}>
+                  <p className="mb-4 text-sm text-muted">{t("onboarding.returnAfterExternal")}</p>
                   <a
                     href={progress.settings.broker_tutorial_url}
                     target="_blank"
@@ -268,6 +321,7 @@ export default function OnboardingPage() {
 
               {!rejected && step === 2 && (
                 <StepBody title={t("onboarding.step2Title")}>
+                  <p className="mb-4 text-sm text-muted">{t("onboarding.returnAfterExternal")}</p>
                   <a
                     href={progress.settings.ib_register_url}
                     target="_blank"
@@ -296,7 +350,7 @@ export default function OnboardingPage() {
                     <button
                       type="button"
                       className="btn-primary"
-                      onClick={() => void run(() => submitStep3({ mt5_account: mt5, broker_server: server }))}
+                      onClick={submitMt5}
                     >
                       {t("onboarding.saveContinue")}
                     </button>

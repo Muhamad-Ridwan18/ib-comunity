@@ -2,18 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { LockedModule } from "@/components/member/LockedModule";
+import { RiskDisclosureGate } from "@/components/member/RiskDisclosureGate";
 import { createJournal, deleteJournal, listJournals, type JournalItem } from "@/services/journal";
 import { useAuthStore } from "@/store/auth";
+import { isVerifiedMember } from "@/lib/membership";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import { MemberList, MemberListRow, MemberPanel } from "@/components/member/MemberChrome";
 import { useT } from "@/i18n/useT";
-
-function isUnlocked(status?: string, role?: string) {
-  return status === "verified" || role === "admin" || role === "super_admin";
-}
 
 function numOrNull(v: string) {
   if (!v.trim()) return null;
@@ -24,7 +22,7 @@ function numOrNull(v: string) {
 export default function JournalPage() {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
-  const unlocked = isUnlocked(user?.status, user?.role);
+  const unlocked = isVerifiedMember(user);
   const [items, setItems] = useState<JournalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +61,8 @@ export default function JournalPage() {
   if (!unlocked) return <LockedModule title={t("member.journalTitle")} />;
 
   return (
-    <div className="space-y-6">
+    <RiskDisclosureGate>
+      <div className="space-y-6">
       <PageHeader
         kicker={t("member.privateLog")}
         title={t("member.journalTitle")}
@@ -192,6 +191,7 @@ export default function JournalPage() {
           ))}
         </MemberList>
       ) : null}
-    </div>
+      </div>
+    </RiskDisclosureGate>
   );
 }

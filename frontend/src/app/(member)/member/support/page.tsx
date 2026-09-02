@@ -93,7 +93,7 @@ function SupportInner() {
             />
             <input
               className="field-input"
-              placeholder="Telegram"
+              placeholder={t("member.telegram")}
               value={telegram}
               onChange={(e) => setTelegram(e.target.value)}
             />

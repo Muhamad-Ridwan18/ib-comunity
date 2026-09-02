@@ -11,13 +11,13 @@ import {
 } from "@/services/content";
 import { LockedNotice } from "@/components/member/ContentCard";
 import { useAuthStore } from "@/store/auth";
-import { membershipCta } from "@/lib/membership";
+import { membershipCta, isVerifiedMember } from "@/lib/membership";
 import { useT } from "@/i18n/useT";
 
 export function ContentDetail({ slug, backHref }: { slug: string; backHref: string }) {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
-  const verified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
+  const verified = isVerifiedMember(user);
   const cta = membershipCta(user?.status);
   const [item, setItem] = useState<ContentItem | null>(null);
   const [error, setError] = useState<string | null>(null);
