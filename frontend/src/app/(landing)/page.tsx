@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, CirclePlay, Play, ShieldCheck } from "lucide-react";
+import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
 import { LandingXauusdEducation } from "@/components/marketing/LandingXauusdEducation";
 import { ROUTES } from "@/constants";
 import { track } from "@/lib/analytics";
-import { listContents, type ContentItem } from "@/services/content";
-import { mediaCoverStyle } from "@/lib/media-cover";
+import { getHookVideo, type HookVideo } from "@/services/landing";
 import { useT } from "@/i18n/useT";
 
 type MarketQuote = {
@@ -20,7 +20,7 @@ type MarketQuote = {
 
 export default function LandingPage() {
   const { t, locale } = useT();
-  const [hookVideo, setHookVideo] = useState<ContentItem | null>(null);
+  const [hookVideo, setHookVideo] = useState<HookVideo | null>(null);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
   const [marketLive, setMarketLive] = useState(false);
 
@@ -40,10 +40,9 @@ export default function LandingPage() {
     let alive = true;
     void (async () => {
       try {
-        const landing = await listContents({ module: "landing" });
+        const res = await getHookVideo();
         if (!alive) return;
-        const landingItems = landing.success && landing.data ? landing.data : [];
-        setHookVideo(landingItems.find((i) => i.type === "video") ?? landingItems[0] ?? null);
+        setHookVideo(res.success && res.data ? res.data : null);
       } catch {
         if (alive) setHookVideo(null);
       }
@@ -78,7 +77,7 @@ export default function LandingPage() {
           heroTitleC: "Komunitas.",
           heroTitleD: "Bersama Santara Pips.",
           heroSub:
-            "Platform edukasi dan analisis untuk trader yang ingin belajar dengan struktur jelas — bukan janji profit.",
+            "Grow Your Pips, The Santara Way.",
           joinNow: "Daftar Gratis",
           demo: "Lihat Demo",
           marketLive: "Data pasar · update ~45 detik",
@@ -96,7 +95,7 @@ export default function LandingPage() {
           heroTitleC: "Community.",
           heroTitleD: "With Santara Pips.",
           heroSub:
-            "An education and analysis platform for traders who want clear structure — not profit promises.",
+            "Grow Your Pips, The Santara Way.",
           joinNow: "Register Free",
           demo: "Watch Demo",
           marketLive: "Market data · ~45s refresh",
@@ -266,14 +265,11 @@ export default function LandingPage() {
             </div>
             <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
               {hookVideo?.video_url ? (
-                <iframe title={hookVideo.title} src={hookVideo.video_url} className="aspect-video w-full" allowFullScreen />
+                <LandingHookVideoPlayer video={hookVideo} fallbackTitle={t("landing.hookTitle")} />
               ) : (
-                <div
-                  className="flex aspect-video items-center justify-center gap-2 text-white/90"
-                  style={mediaCoverStyle(hookVideo?.slug || "hook", hookVideo?.thumbnail_url)}
-                >
+                <div className="flex aspect-video items-center justify-center gap-2 bg-[#0d1833]/90 text-white/90">
                   <Play className="h-5 w-5 fill-current" />
-                  <p className="text-sm font-medium">{hookVideo?.title || t("landing.hookTitle")}</p>
+                  <p className="text-sm font-medium">{t("landing.hookTitle")}</p>
                 </div>
               )}
             </div>

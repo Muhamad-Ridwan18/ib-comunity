@@ -9,21 +9,29 @@ use RuntimeException;
 
 class UploadService
 {
-    /** @var array<string, array{max: int}> */
+    /** @var array<string, array{max: int, ext?: string[]}> */
     private const PURPOSES = [
         'proof' => ['max' => 10 * 1024 * 1024],
         'avatar' => ['max' => 2 * 1024 * 1024],
         'thumbnail' => ['max' => 5 * 1024 * 1024],
         'attachment' => ['max' => 10 * 1024 * 1024],
         'temp' => ['max' => 5 * 1024 * 1024],
+        'video' => ['max' => 100 * 1024 * 1024, 'ext' => ['mp4', 'webm', 'mov']],
     ];
 
-    private const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+    private const DEFAULT_EXT = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
 
-    public function store(UploadedFile $file, string $purpose = 'temp'): array
+    /** @var list<string> */
+    private const ADMIN_ONLY_PURPOSES = ['video'];
+
+    public function store(UploadedFile $file, string $purpose = 'temp', bool $allowAdminOnly = false): array
     {
         $purpose = strtolower(trim($purpose));
         if (! isset(self::PURPOSES[$purpose])) {
+            throw new RuntimeException('Invalid upload purpose', 400);
+        }
+
+        if (in_array($purpose, self::ADMIN_ONLY_PURPOSES, true) && ! $allowAdminOnly) {
             throw new RuntimeException('Invalid upload purpose', 400);
         }
 
@@ -36,7 +44,7 @@ class UploadService
         if ($ext === 'jpeg') {
             $ext = 'jpg';
         }
-        if (! in_array($ext, self::ALLOWED_EXT, true)) {
+        if (! in_array($ext, $this->allowedExtensions($purpose), true)) {
             throw new RuntimeException('Unsupported file type', 422);
         }
 
@@ -57,5 +65,11 @@ class UploadService
         }
 
         return Storage::disk('public')->url($key);
+    }
+
+    /** @return list<string> */
+    private function allowedExtensions(string $purpose): array
+    {
+        return self::PURPOSES[$purpose]['ext'] ?? self::DEFAULT_EXT;
     }
 }

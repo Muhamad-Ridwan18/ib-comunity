@@ -17,6 +17,7 @@ const links: { href: string; labelKey: string; exact?: boolean }[] = [
   { href: ROUTES.admin, labelKey: "nav.overview", exact: true },
   { href: "/admin/verifications", labelKey: "nav.verifications" },
   { href: "/admin/content", labelKey: "nav.content" },
+  { href: "/admin/landing", labelKey: "nav.landing" },
   { href: "/admin/signals", labelKey: "nav.signals" },
   { href: "/admin/bonuses", labelKey: "nav.bonuses" },
   { href: "/admin/tickets", labelKey: "nav.tickets" },

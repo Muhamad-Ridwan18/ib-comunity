@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AdminAiController;
 use App\Http\Controllers\Api\V1\AdminBonusController;
 use App\Http\Controllers\Api\V1\AdminContentController;
+use App\Http\Controllers\Api\V1\AdminLandingHookVideoController;
 use App\Http\Controllers\Api\V1\AdminJournalController;
 use App\Http\Controllers\Api\V1\AdminSignalController;
 use App\Http\Controllers\Api\V1\AdminTicketController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\V1\BonusController;
 use App\Http\Controllers\Api\V1\ContentController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\JournalController;
+use App\Http\Controllers\Api\V1\LandingHookVideoController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\SettingsController;
@@ -42,6 +44,7 @@ Route::prefix('v1')->group(function () {
 
     // Public settings
     Route::get('/settings/public', [SettingsController::class, 'publicSettings']);
+    Route::get('/landing/hook-video', [LandingHookVideoController::class, 'show']);
 
     // Optional auth routes
     Route::middleware('optional.auth')->group(function () {
@@ -156,7 +159,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/ai/conversations', [AdminAiController::class, 'index']);
             Route::get('/ai/conversations/{id}', [AdminAiController::class, 'show']);
 
-            Route::post('/uploads', [UploadController::class, 'store']);
+            Route::post('/uploads', [UploadController::class, 'storeAdmin']);
+
+            Route::get('/landing/hook-video', [AdminLandingHookVideoController::class, 'show']);
+            Route::put('/landing/hook-video', [AdminLandingHookVideoController::class, 'update']);
+
             Route::get('/plans', [BillingController::class, 'plans']);
         });
     });

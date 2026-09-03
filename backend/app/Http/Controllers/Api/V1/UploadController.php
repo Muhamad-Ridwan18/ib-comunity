@@ -20,7 +20,23 @@ class UploadController extends Controller
         return $this->fromService(
             fn () => $this->uploads->store(
                 $request->file('file'),
-                $request->query('purpose', 'temp')
+                $request->query('purpose', 'temp'),
+                false
+            ),
+            'Uploaded',
+            201
+        );
+    }
+
+    public function storeAdmin(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file']]);
+
+        return $this->fromService(
+            fn () => $this->uploads->store(
+                $request->file('file'),
+                $request->query('purpose', 'temp'),
+                true
             ),
             'Uploaded',
             201
