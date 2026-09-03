@@ -14,7 +14,7 @@ type TermsAcceptanceModalProps = {
 };
 
 export function TermsAcceptanceModal({ open, onClose, onConfirm, busy = false }: TermsAcceptanceModalProps) {
-  const { t } = useT();
+  const { locale, t } = useT();
   const c = termsAndConditions[locale === "id" ? "id" : "en"];
   const [terms, setTerms] = useState({ docs: false, age: false, risk: false });
   const [showError, setShowError] = useState(false);
