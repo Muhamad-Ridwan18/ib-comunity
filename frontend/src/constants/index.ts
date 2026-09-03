@@ -2,8 +2,8 @@ export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Santara Pips";
 
 /**
  * API base URL.
- * Local/dev: always same-origin `/v1` (Next.js rewrites → Go :8080).
- * Production: set NEXT_PUBLIC_API_URL to the real API host (not the Next app).
+ * Local/dev: same-origin `/v1` (Next.js rewrites → Laravel :8081) or explicit localhost URL.
+ * Production: NEXT_PUBLIC_API_URL=https://api.santarapips.com/v1
  */
 function resolveApiUrl(): string {
   const raw = (process.env.NEXT_PUBLIC_API_URL || "").trim();

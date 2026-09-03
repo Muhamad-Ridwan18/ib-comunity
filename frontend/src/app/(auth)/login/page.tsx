@@ -61,7 +61,7 @@ export default function LoginPage() {
         const target = `${err.config?.baseURL ?? API_URL}${err.config?.url ?? ""}`;
         setError(
           err.code === "ERR_NETWORK"
-            ? `Cannot reach API (${target}). Ensure Go API is on :8080.`
+            ? `Cannot reach API (${target}). Check backend is running and NEXT_PUBLIC_API_URL is set.`
             : err.message || "Cannot reach API.",
         );
         return;

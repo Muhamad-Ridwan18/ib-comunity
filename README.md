@@ -56,6 +56,16 @@ npm run dev
 
 App: `http://localhost:3000`
 
+## Production URLs
+
+| Role | URL |
+|------|-----|
+| **API** | `https://api.santarapips.com` |
+| **Frontend** | `https://santarapips.com` (Vercel) |
+
+**Vercel env:** `NEXT_PUBLIC_API_URL=https://api.santarapips.com/v1`  
+**Backend `.env`:** `APP_URL=https://api.santarapips.com` · `FRONTEND_URL=https://santarapips.com`
+
 ## Docs
 
 - [Architecture](docs/architecture.md)
