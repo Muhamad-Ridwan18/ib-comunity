@@ -62,7 +62,7 @@ class MemberHomeService
     private function publicVideoSlot(array $slot): ?array
     {
         $url = $this->resolveVideoUrl($slot);
-        if (! ($slot['is_active'] ?? false) || ! $url) {
+        if (! $this->toBool($slot['is_active'] ?? false) || ! $url) {
             return null;
         }
 
@@ -82,7 +82,7 @@ class MemberHomeService
             'title' => (string) ($slot['title'] ?? ''),
             'video_url' => $url,
             'video_key' => $slot['video_key'] ?? null,
-            'is_active' => (bool) ($slot['is_active'] ?? false),
+            'is_active' => $this->toBool($slot['is_active'] ?? false),
             'kind' => $url ? $this->detectKind($url) : null,
         ];
     }
@@ -91,7 +91,7 @@ class MemberHomeService
     private function publicReferral(array $referral): ?array
     {
         $link = trim((string) ($referral['link'] ?? ''));
-        if ($link === '' || ! ($referral['is_active'] ?? true)) {
+        if ($link === '' || ! $this->toBool($referral['is_active'] ?? true)) {
             return null;
         }
 
@@ -112,7 +112,7 @@ class MemberHomeService
             'link' => (string) ($referral['link'] ?? ''),
             'barcode_key' => $referral['barcode_key'] ?? null,
             'barcode_url' => $this->resolveBarcodeUrl($referral),
-            'is_active' => (bool) ($referral['is_active'] ?? true),
+            'is_active' => $this->toBool($referral['is_active'] ?? true),
         ];
     }
 
@@ -123,10 +123,9 @@ class MemberHomeService
 
         if (array_key_exists('title', $input)) {
             $title = trim((string) $input['title']);
-            if ($title === '') {
-                throw new RuntimeException('Validation failed', 422);
+            if ($title !== '') {
+                $slot['title'] = $title;
             }
-            $slot['title'] = $title;
         }
 
         if (! empty($input['video_key'])) {
@@ -147,10 +146,14 @@ class MemberHomeService
         }
 
         if (array_key_exists('is_active', $input)) {
-            $slot['is_active'] = (bool) $input['is_active'];
+            $slot['is_active'] = $this->toBool($input['is_active']);
         }
 
         if (($slot['is_active'] ?? false) && empty($this->resolveVideoUrl($slot))) {
+            throw new RuntimeException('Validation failed', 422);
+        }
+
+        if (($slot['is_active'] ?? false) && trim((string) ($slot['title'] ?? '')) === '') {
             throw new RuntimeException('Validation failed', 422);
         }
 
@@ -186,33 +189,48 @@ class MemberHomeService
         }
 
         if (array_key_exists('is_active', $input)) {
-            $referral['is_active'] = (bool) $input['is_active'];
+            $referral['is_active'] = $this->toBool($input['is_active']);
         }
 
         return $referral;
     }
 
+    private function toBool(mixed $value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+    }
+
     private function getStored(): array
     {
+        $defaults = [
+            'welcome' => $this->defaultVideoSlot('Selamat datang di Santara Pips'),
+            'tutorial' => $this->defaultVideoSlot('Tutorial member'),
+            'referral' => [
+                'title' => 'Link Referral',
+                'link' => '',
+                'barcode_key' => null,
+                'barcode_url' => null,
+                'is_active' => true,
+            ],
+            'updated_at' => null,
+        ];
+
         $row = Setting::query()->find(self::SETTING_KEY);
         if (! $row || ! $row->value) {
-            return [
-                'welcome' => $this->defaultVideoSlot('Selamat datang di Santara Pips'),
-                'tutorial' => $this->defaultVideoSlot('Tutorial member'),
-                'referral' => [
-                    'title' => 'Link Referral',
-                    'link' => '',
-                    'barcode_key' => null,
-                    'barcode_url' => null,
-                    'is_active' => true,
-                ],
-                'updated_at' => null,
-            ];
+            return $defaults;
         }
 
         $decoded = json_decode($row->value, true);
+        if (! is_array($decoded)) {
+            return $defaults;
+        }
 
-        return is_array($decoded) ? $decoded : [];
+        return [
+            'welcome' => array_merge($defaults['welcome'], $decoded['welcome'] ?? []),
+            'tutorial' => array_merge($defaults['tutorial'], $decoded['tutorial'] ?? []),
+            'referral' => array_merge($defaults['referral'], $decoded['referral'] ?? []),
+            'updated_at' => $decoded['updated_at'] ?? null,
+        ];
     }
 
     /** @return array<string, mixed> */

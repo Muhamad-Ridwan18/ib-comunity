@@ -103,6 +103,17 @@ export default function AdminMemberHomePage() {
         videoUrl: "",
         isActive: true,
       });
+      await persistAll({
+        [target]: {
+          ...current,
+          title: nextTitle,
+          pendingKey: up.data.key,
+          pendingUrl: up.data.url,
+          uploadName: file.name,
+          videoUrl: "",
+          isActive: true,
+        },
+      });
     } catch {
       setError(t("admin.uploadFailed"));
     } finally {
@@ -110,9 +121,14 @@ export default function AdminMemberHomePage() {
     }
   };
 
-  const buildVideoPayload = (draft: VideoDraft, saved?: AdminVideoSlot) => {
+  const buildVideoPayload = (
+    draft: VideoDraft,
+    saved: AdminVideoSlot | undefined,
+    fallbackTitle: string,
+  ) => {
+    const title = draft.title.trim() || saved?.title || fallbackTitle;
     const payload: { title: string; is_active: boolean; video_key?: string; video_url?: string } = {
-      title: draft.title.trim(),
+      title,
       is_active: draft.isActive,
     };
     if (draft.pendingKey) payload.video_key = draft.pendingKey;
@@ -121,24 +137,38 @@ export default function AdminMemberHomePage() {
     return payload;
   };
 
+  const persistAll = async (overrides?: {
+    welcome?: VideoDraft;
+    tutorial?: VideoDraft;
+    referralLink?: string;
+    referralTitle?: string;
+    referralActive?: boolean;
+    barcodeKey?: string | null;
+  }) => {
+    const welcomeDraft = overrides?.welcome ?? welcome;
+    const tutorialDraft = overrides?.tutorial ?? tutorial;
+    const res = await adminUpdateMemberHome({
+      welcome: buildVideoPayload(welcomeDraft, data?.welcome, t("admin.memberWelcomeDefaultTitle")),
+      tutorial: buildVideoPayload(tutorialDraft, data?.tutorial, t("admin.memberTutorialDefaultTitle")),
+      referral: {
+        title: (overrides?.referralTitle ?? referralTitle).trim() || t("member.referralTitle"),
+        link: (overrides?.referralLink ?? referralLink).trim(),
+        is_active: overrides?.referralActive ?? referralActive,
+        ...((overrides?.barcodeKey ?? barcodeKey) ? { barcode_key: overrides?.barcodeKey ?? barcodeKey! } : {}),
+      },
+    });
+    if (!res.success) throw new Error(res.message);
+    await load();
+    setSuccess(t("admin.memberHomeSaved"));
+    setError(null);
+  };
+
   const saveAll = async () => {
     setBusy(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await adminUpdateMemberHome({
-        welcome: buildVideoPayload(welcome, data?.welcome),
-        tutorial: buildVideoPayload(tutorial, data?.tutorial),
-        referral: {
-          title: referralTitle.trim() || t("member.referralTitle"),
-          link: referralLink.trim(),
-          is_active: referralActive,
-          ...(barcodeKey ? { barcode_key: barcodeKey } : {}),
-        },
-      });
-      if (!res.success) throw new Error(res.message);
-      await load();
-      setSuccess(t("admin.memberHomeSaved"));
+      await persistAll();
     } catch {
       setError(t("admin.saveFailed"));
     } finally {
@@ -240,6 +270,7 @@ export default function AdminMemberHomePage() {
                   setBarcodeKey(up.data.key);
                   setBarcodeUrl(up.data.url);
                   setBarcodeName(file.name);
+                  await persistAll({ barcodeKey: up.data.key });
                 } catch {
                   setError(t("admin.uploadFailed"));
                 } finally {

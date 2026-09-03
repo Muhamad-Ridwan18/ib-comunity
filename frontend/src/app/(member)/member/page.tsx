@@ -24,6 +24,7 @@ const emptyContent: MemberHomeContent = {
 export default function MemberDashboardPage() {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const hydrated = useAuthStore((s) => s.hydrated);
   const verified = isVerifiedMember(user);
   const firstName = user?.profile?.full_name?.split(" ")[0] || t("status.member");
@@ -34,19 +35,29 @@ export default function MemberDashboardPage() {
   const [content, setContent] = useState<MemberHomeContent>(emptyContent);
   const [onboarding, setOnboarding] = useState<OnboardingProgress | null>(null);
 
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!hydrated) return;
+    if (!accessToken) {
+      setLoading(false);
+      return;
+    }
     let alive = true;
     void (async () => {
       setLoading(true);
+      setFetchError(null);
       try {
         const [homeRes, obRes] = await Promise.all([
-          getMemberHome().catch(() => null),
+          getMemberHome(),
           !verified ? getOnboarding().catch(() => null) : Promise.resolve(null),
         ]);
         if (!alive) return;
-        if (homeRes?.success && homeRes.data) setContent(homeRes.data);
+        if (homeRes.success) setContent(homeRes.data ?? emptyContent);
+        else setFetchError(homeRes.message || t("member.homeLoadFailed"));
         if (obRes?.success && obRes.data) setOnboarding(obRes.data);
+      } catch {
+        if (alive) setFetchError(t("member.homeLoadFailed"));
       } finally {
         if (alive) setLoading(false);
       }
@@ -54,7 +65,7 @@ export default function MemberDashboardPage() {
     return () => {
       alive = false;
     };
-  }, [hydrated, verified]);
+  }, [hydrated, accessToken, verified, t]);
 
   const showFunnel = !verified;
   const hasConfiguredContent = Boolean(content.welcome || content.tutorial || content.referral);
@@ -68,13 +79,19 @@ export default function MemberDashboardPage() {
         <OnboardingProgressTracker progress={onboarding} status={user?.status} pending={pending} />
       ) : null}
 
-      {loading || !hydrated ? (
+      {fetchError ? (
+        <p className="rounded-lg border border-[var(--danger)]/20 bg-[var(--danger)]/5 px-4 py-2 text-sm text-[var(--danger)]">
+          {fetchError}
+        </p>
+      ) : null}
+
+      {loading || !hydrated || !accessToken ? (
         <div className="space-y-4">
           <Skeleton className="h-36 rounded-2xl" />
           <Skeleton className="h-64 rounded-2xl" />
           <Skeleton className="h-64 rounded-2xl" />
         </div>
-      ) : hasConfiguredContent ? (
+      ) : fetchError ? null : hasConfiguredContent ? (
         <MemberHomeSections content={content} firstName={firstName} />
       ) : (
         <section className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-8 text-center">

@@ -201,6 +201,7 @@ export const en = {
     homeIntro: "Watch the welcome message, save your referral link, and follow the tutorial to get started.",
     homeEmptyTitle: "Member home is being prepared",
     homeEmptyBody: "The admin team has not published welcome content yet. You can continue verification or explore modules from the sidebar.",
+    homeLoadFailed: "Could not load home content. Refresh the page or try again later.",
     exploreModules: "Explore modules",
     welcomeVideoKicker: "Welcome",
     tutorialVideoKicker: "Tutorial",

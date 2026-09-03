@@ -202,6 +202,7 @@ export const id: Messages = {
     homeIntro: "Tonton pesan selamat datang, simpan link referral, dan ikuti tutorial untuk memulai.",
     homeEmptyTitle: "Beranda member sedang disiapkan",
     homeEmptyBody: "Tim admin belum menerbitkan konten selamat datang. Anda bisa lanjut verifikasi atau jelajahi modul dari sidebar.",
+    homeLoadFailed: "Gagal memuat konten beranda. Muat ulang halaman atau coba lagi nanti.",
     exploreModules: "Jelajahi modul",
     welcomeVideoKicker: "Selamat datang",
     tutorialVideoKicker: "Tutorial",
