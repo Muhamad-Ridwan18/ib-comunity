@@ -17,16 +17,16 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { useT } from "@/i18n/useT";
 
-const schema = z
-  .object({
-    full_name: z.string().min(2, "Name is required"),
-    email: z.string().email(),
-    password: z.string().min(8, "Min 8 characters"),
-    terms_agree_docs: z.literal(true),
-    terms_age_capacity: z.literal(true),
-    terms_risk_release: z.literal(true),
-  })
-  .strict();
+const requiredCheck = (message: string) => z.boolean().refine((v) => v === true, { message });
+
+const schema = z.object({
+  full_name: z.string().min(2, "Name is required"),
+  email: z.string().email(),
+  password: z.string().min(8, "Min 8 characters"),
+  terms_agree_docs: requiredCheck("Required"),
+  terms_age_capacity: requiredCheck("Required"),
+  terms_risk_release: requiredCheck("Required"),
+});
 
 type FormValues = z.infer<typeof schema>;
 
