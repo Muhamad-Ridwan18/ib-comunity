@@ -101,21 +101,6 @@ export default function LandingPage() {
           ctaBtn: "Register Now",
         };
 
-  const deskModules =
-    locale === "id"
-      ? [
-          { label: "Academy", desc: "Pelajaran terstruktur" },
-          { label: "Analisis", desc: "Bacaan harian desk" },
-          { label: "Sinyal", desc: "Setup edukatif" },
-          { label: "Telegram", desc: "Komunitas privat" },
-        ]
-      : [
-          { label: "Academy", desc: "Structured lessons" },
-          { label: "Analysis", desc: "Daily desk reads" },
-          { label: "Signals", desc: "Educational setups" },
-          { label: "Telegram", desc: "Private community" },
-        ];
-
   return (
     <>
       <section className="relative overflow-hidden border-b border-[var(--border)]">
@@ -229,12 +214,7 @@ export default function LandingPage() {
             className="animate-rise-delay relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(140deg,#0b1326,#0b1532)] p-4 text-white shadow-[0_24px_80px_rgba(10,20,48,0.5)]"
           >
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/40 blur-3xl" />
-            <LandingDeskPreview
-              locale={locale}
-              quotes={quotes}
-              deskPreviewLabel={copy.deskPreview}
-              deskModules={deskModules}
-            />
+            <LandingDeskPreview locale={locale} quotes={quotes} />
             <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
               {hookVideo?.video_url ? (
                 <LandingHookVideoPlayer video={hookVideo} fallbackTitle={t("landing.hookTitle")} />
