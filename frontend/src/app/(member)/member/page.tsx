@@ -71,7 +71,7 @@ export default function MemberDashboardPage() {
   const hasConfiguredContent = Boolean(content.welcome || content.tutorial || content.referral);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <NewMemberWelcome />
       <VerifiedWelcome />
 
@@ -87,9 +87,9 @@ export default function MemberDashboardPage() {
 
       {loading || !hydrated || !accessToken ? (
         <div className="space-y-4">
-          <Skeleton className="h-36 rounded-2xl" />
-          <Skeleton className="h-64 rounded-2xl" />
-          <Skeleton className="h-64 rounded-2xl" />
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-48 rounded-xl" />
+          <Skeleton className="h-48 rounded-xl" />
         </div>
       ) : fetchError ? null : hasConfiguredContent ? (
         <MemberHomeSections content={content} firstName={firstName} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandingBootstrap } from "@/components/common/BrandingBootstrap";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/auth";
@@ -28,6 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={client}>
+      <BrandingBootstrap />
       {children}
       <ChatDrawer />
     </QueryClientProvider>

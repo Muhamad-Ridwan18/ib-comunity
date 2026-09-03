@@ -17,12 +17,13 @@ class UploadService
         'attachment' => ['max' => 10 * 1024 * 1024],
         'temp' => ['max' => 5 * 1024 * 1024],
         'video' => ['max' => 100 * 1024 * 1024, 'ext' => ['mp4', 'webm', 'mov']],
+        'logo' => ['max' => 2 * 1024 * 1024, 'ext' => ['png', 'webp', 'jpg', 'jpeg', 'svg']],
     ];
 
     private const DEFAULT_EXT = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
 
     /** @var list<string> */
-    private const ADMIN_ONLY_PURPOSES = ['video'];
+    private const ADMIN_ONLY_PURPOSES = ['video', 'logo'];
 
     public function store(UploadedFile $file, string $purpose = 'temp', bool $allowAdminOnly = false): array
     {

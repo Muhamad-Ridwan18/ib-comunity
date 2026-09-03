@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminAiController;
+use App\Http\Controllers\Api\V1\AdminBrandingController;
+use App\Http\Controllers\Api\V1\BrandingController;
 use App\Http\Controllers\Api\V1\AdminBonusController;
 use App\Http\Controllers\Api\V1\AdminContentController;
 use App\Http\Controllers\Api\V1\AdminMemberHomeController;
@@ -46,6 +48,7 @@ Route::prefix('v1')->group(function () {
 
     // Public settings
     Route::get('/settings/public', [SettingsController::class, 'publicSettings']);
+    Route::get('/settings/branding', [BrandingController::class, 'show']);
     Route::get('/landing/hook-video', [LandingHookVideoController::class, 'show']);
 
     // Optional auth routes
@@ -167,6 +170,9 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/landing/hook-video', [AdminLandingHookVideoController::class, 'show']);
             Route::put('/landing/hook-video', [AdminLandingHookVideoController::class, 'update']);
+
+            Route::get('/branding', [AdminBrandingController::class, 'show']);
+            Route::put('/branding', [AdminBrandingController::class, 'update']);
 
             Route::get('/member/home', [AdminMemberHomeController::class, 'show']);
             Route::put('/member/home', [AdminMemberHomeController::class, 'update']);

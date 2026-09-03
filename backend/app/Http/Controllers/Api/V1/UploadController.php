@@ -77,5 +77,5 @@ class UploadController extends Controller
 
     private const MEMBER_PURPOSES = ['proof', 'avatar', 'thumbnail', 'attachment', 'temp'];
 
-    private const ADMIN_PURPOSES = ['proof', 'avatar', 'thumbnail', 'attachment', 'temp', 'video'];
+    private const ADMIN_PURPOSES = ['proof', 'avatar', 'thumbnail', 'attachment', 'temp', 'video', 'logo'];
 }
