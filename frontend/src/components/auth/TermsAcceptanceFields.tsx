@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, FieldPath, UseFormRegister } from "react-hook-form";
 import { termsAndConditions } from "@/content/terms-and-conditions";
 import { ROUTES } from "@/constants";
 import { useT } from "@/i18n/useT";
@@ -12,12 +12,12 @@ type TermsFormValues = {
   terms_risk_release: boolean;
 };
 
-type TermsAcceptanceFieldsProps = {
-  register: UseFormRegister<TermsFormValues>;
-  errors: FieldErrors<TermsFormValues>;
+type TermsAcceptanceFieldsProps<T extends TermsFormValues> = {
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
 };
 
-export function TermsAcceptanceFields({ register, errors }: TermsAcceptanceFieldsProps) {
+export function TermsAcceptanceFields<T extends TermsFormValues>({ register, errors }: TermsAcceptanceFieldsProps<T>) {
   const { locale, t } = useT();
   const c = termsAndConditions[locale === "id" ? "id" : "en"];
 
@@ -49,7 +49,7 @@ export function TermsAcceptanceFields({ register, errors }: TermsAcceptanceField
             <input
               type="checkbox"
               className="mt-1 accent-[var(--accent)]"
-              {...register(field.name, { required: true })}
+              {...register(field.name as FieldPath<T>, { required: true })}
             />
             <span className="leading-relaxed text-muted">
               <span className="font-medium text-[var(--foreground)]">
