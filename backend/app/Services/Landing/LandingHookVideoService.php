@@ -16,27 +16,29 @@ class LandingHookVideoService
     public function getPublic(): ?array
     {
         $data = $this->getStored();
-        if (! ($data['is_active'] ?? false) || empty($data['video_url'])) {
+        $videoUrl = $this->resolveVideoUrl($data);
+        if (! ($data['is_active'] ?? false) || ! $videoUrl) {
             return null;
         }
 
         return [
             'title' => (string) ($data['title'] ?? 'Santara Pips'),
-            'video_url' => (string) $data['video_url'],
-            'kind' => $this->detectKind((string) $data['video_url']),
+            'video_url' => $videoUrl,
+            'kind' => $this->detectKind($videoUrl),
         ];
     }
 
     public function getAdmin(): array
     {
         $data = $this->getStored();
+        $videoUrl = $this->resolveVideoUrl($data);
 
         return [
             'title' => (string) ($data['title'] ?? ''),
-            'video_url' => $data['video_url'] ?? null,
+            'video_url' => $videoUrl,
             'video_key' => $data['video_key'] ?? null,
             'is_active' => (bool) ($data['is_active'] ?? false),
-            'kind' => ! empty($data['video_url']) ? $this->detectKind((string) $data['video_url']) : null,
+            'kind' => $videoUrl ? $this->detectKind($videoUrl) : null,
             'updated_at' => $data['updated_at'] ?? null,
         ];
     }
@@ -74,7 +76,7 @@ class LandingHookVideoService
             $data['is_active'] = (bool) $input['is_active'];
         }
 
-        if (($data['is_active'] ?? false) && empty($data['video_url'])) {
+        if (($data['is_active'] ?? false) && empty($this->resolveVideoUrl($data))) {
             throw new RuntimeException('Validation failed', 422);
         }
 
@@ -119,5 +121,17 @@ class LandingHookVideoService
         }
 
         return 'file';
+    }
+
+    /** @param array<string, mixed> $data */
+    private function resolveVideoUrl(array $data): ?string
+    {
+        if (! empty($data['video_key'])) {
+            return $this->uploads->urlForKey((string) $data['video_key']);
+        }
+
+        $url = trim((string) ($data['video_url'] ?? ''));
+
+        return $url !== '' ? $url : null;
     }
 }

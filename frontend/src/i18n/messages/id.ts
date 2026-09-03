@@ -564,6 +564,9 @@ export const id: Messages = {
     hookVideoActive: "Tampilkan video di beranda",
     hookVideoRequired: "Upload video atau tempel URL sebelum diaktifkan.",
     uploadFailed: "Upload gagal",
+    hookVideoSaved: "Video hero disimpan dan ditampilkan di beranda.",
+    hookVideoLive: "Aktif di beranda",
+    hookVideoDraft: "Belum dipublikasikan",
   },
   chat: {
     title: "Asisten AI Santara Pips",

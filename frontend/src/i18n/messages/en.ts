@@ -563,6 +563,9 @@ export const en = {
     hookVideoActive: "Show video on home page",
     hookVideoRequired: "Upload a video or paste a URL before activating.",
     uploadFailed: "Upload failed",
+    hookVideoSaved: "Hero video saved and published on the home page.",
+    hookVideoLive: "Live on home",
+    hookVideoDraft: "Not published",
   },
   chat: {
     title: "Santara Pips AI Assistant",

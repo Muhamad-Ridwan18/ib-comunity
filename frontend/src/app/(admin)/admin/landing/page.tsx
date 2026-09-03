@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminChrome";
 import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
+import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import {
   adminGetHookVideo,
   adminUpdateHookVideo,
@@ -10,6 +11,10 @@ import {
   type AdminHookVideo,
 } from "@/services/landing";
 import { useT } from "@/i18n/useT";
+
+function videoKind(url: string): "embed" | "file" {
+  return url.includes("youtube") || url.includes("youtu.be") || url.includes("vimeo") ? "embed" : "file";
+}
 
 export default function AdminLandingPage() {
   const { t } = useT();
@@ -19,6 +24,7 @@ export default function AdminLandingPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [uploadName, setUploadName] = useState<string | null>(null);
@@ -51,30 +57,51 @@ export default function AdminLandingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const previewVideo =
-    pendingUrl && title.trim()
-      ? {
-          title: title.trim(),
-          video_url: pendingUrl,
-          kind: (pendingUrl.includes("youtube") || pendingUrl.includes("youtu.be") || pendingUrl.includes("vimeo")
-            ? "embed"
-            : "file") as "embed" | "file",
-        }
-      : data?.video_url && data.kind
-        ? {
-            title: title.trim() || data.title,
-            video_url: data.video_url,
-            kind: data.kind,
-          }
-        : null;
+  const persistHookVideo = async (payload: {
+    title: string;
+    is_active: boolean;
+    video_key?: string;
+    video_url?: string;
+  }) => {
+    const res = await adminUpdateHookVideo(payload);
+    if (!res.success) throw new Error(res.message || "save failed");
+    await load();
+    setSuccess(t("admin.hookVideoSaved"));
+    setError(null);
+  };
+
+  const previewUrl = pendingUrl || data?.video_url || null;
+  const previewTitle = title.trim() || data?.title || t("admin.hookVideoTitlePlaceholder");
+  const previewVideo = previewUrl
+    ? {
+        title: previewTitle,
+        video_url: previewUrl,
+        kind: videoKind(previewUrl),
+      }
+    : null;
 
   return (
     <div className="max-w-3xl">
-      <AdminPageHeader title={t("admin.landingTitle")} description={t("admin.landingDesc")} />
+      <AdminPageHeader
+        title={t("admin.landingTitle")}
+        description={t("admin.landingDesc")}
+        actions={
+          data?.is_active ? (
+            <StatusBadge label={t("admin.hookVideoLive")} tone={statusTone("published")} raw />
+          ) : (
+            <StatusBadge label={t("admin.hookVideoDraft")} tone={statusTone("draft")} raw />
+          )
+        }
+      />
 
       {error ? (
         <p className="mb-4 rounded-lg border border-[var(--danger)]/20 bg-[var(--danger)]/5 px-4 py-2 text-sm text-[var(--danger)]">
           {error}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="mb-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300">
+          {success}
         </p>
       ) : null}
 
@@ -106,13 +133,24 @@ export default function AdminLandingPage() {
                 void (async () => {
                   setBusy(true);
                   setError(null);
+                  setSuccess(null);
                   try {
                     const up = await adminUploadHookVideo(file);
-                    if (!up.success || !up.data) throw new Error("upload failed");
+                    if (!up.success || !up.data) throw new Error(up.message || "upload failed");
+
+                    const nextTitle = title.trim() || t("admin.hookVideoTitlePlaceholder");
                     setPendingKey(up.data.key);
                     setPendingUrl(up.data.url);
                     setUploadName(file.name);
                     setVideoUrl("");
+                    setTitle(nextTitle);
+                    setIsActive(true);
+
+                    await persistHookVideo({
+                      title: nextTitle,
+                      video_key: up.data.key,
+                      is_active: true,
+                    });
                   } catch {
                     setError(t("admin.uploadFailed"));
                   } finally {
@@ -165,7 +203,7 @@ export default function AdminLandingPage() {
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("member.preview")}</p>
             <div className="overflow-hidden rounded-xl border border-[var(--border)]">
-              <LandingHookVideoPlayer video={previewVideo} fallbackTitle={title} />
+              <LandingHookVideoPlayer video={previewVideo} fallbackTitle={previewTitle} />
             </div>
           </div>
         ) : null}
@@ -179,6 +217,7 @@ export default function AdminLandingPage() {
               void (async () => {
                 setBusy(true);
                 setError(null);
+                setSuccess(null);
                 try {
                   const payload: {
                     title: string;
@@ -194,6 +233,8 @@ export default function AdminLandingPage() {
                     payload.video_key = pendingKey;
                   } else if (videoUrl.trim()) {
                     payload.video_url = videoUrl.trim();
+                  } else if (data?.video_key) {
+                    payload.video_key = data.video_key;
                   } else if (!isActive) {
                     payload.video_url = "";
                   } else {
@@ -201,9 +242,7 @@ export default function AdminLandingPage() {
                     return;
                   }
 
-                  const res = await adminUpdateHookVideo(payload);
-                  if (!res.success) throw new Error(res.message);
-                  await load();
+                  await persistHookVideo(payload);
                 } catch {
                   setError(t("admin.saveFailed"));
                 } finally {
