@@ -140,6 +140,20 @@ export const id: Messages = {
     backHome: "← Kembali ke beranda",
     home: "Beranda",
   },
+  about: {
+    kicker: "Tentang kami",
+    title: "Tentang Santara Pips",
+    intro:
+      "Santara Pips adalah desk edukasi dan analisis trading privat. Kami membantu trader belajar dengan struktur, membaca pasar dengan konteks, dan berkembang di komunitas member terverifikasi — tanpa janji profit.",
+    missionTitle: "Misi kami",
+    missionBody:
+      "Menyediakan edukasi terstruktur, analisis harian dari desk, dan pengalaman member yang terkontrol melalui verifikasi Introducing Broker agar komunitas tetap serius dan akuntabel.",
+    disclaimerTitle: "Pengungkapan risiko",
+    disclaimerBody:
+      "Trading memiliki risiko. Konten di Santara Pips hanya untuk edukasi dan analisis — bukan nasihat keuangan. Keputusan trading sepenuhnya tanggung jawab Anda.",
+    ctaTitle: "Siap menjelajahi desk?",
+    ctaBody: "Daftar gratis di beranda, lalu selesaikan verifikasi Santara Pips saat ingin akses premium.",
+  },
   auth: {
     welcomeBack: "Selamat datang kembali",
     welcomeBody: "Masuk untuk menjelajah desk. Jadi member saat Anda siap verifikasi.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_NAME } from "@/constants";
+import { APP_NAME, ROUTES } from "@/constants";
 import Link from "next/link";
 import { useT } from "@/i18n/useT";
 
@@ -15,7 +15,6 @@ export function SiteFooter() {
           newsletter: "Newsletter",
           about:
             "Hub trading terpercaya untuk belajar, bertumbuh, dan berkembang bersama trader Indonesia.",
-          aboutUs: "Tentang Kami",
           terms: "Syarat & Ketentuan",
           policy: "Kebijakan Privasi",
           newsletterBody: "Dapatkan update analisis dan informasi penting langsung ke email kamu.",
@@ -27,7 +26,6 @@ export function SiteFooter() {
           info: "Information",
           newsletter: "Newsletter",
           about: "A trusted trading hub to learn, grow, and improve together with the community.",
-          aboutUs: "About Us",
           terms: "Terms & Conditions",
           policy: "Privacy Policy",
           newsletterBody: "Get market updates and important desk information straight to your inbox.",
@@ -56,17 +54,11 @@ export function SiteFooter() {
         <div>
           <p className="text-sm font-semibold">{labels.menu}</p>
           <div className="mt-4 space-y-2.5 text-sm text-muted">
-            <Link href="#articles" className="block hover:text-accent">
-              {t("nav.academy")}
+            <Link href={ROUTES.home} className="block hover:text-accent">
+              {t("nav.home")}
             </Link>
-            <Link href="#articles" className="block hover:text-accent">
-              {t("nav.analysis")}
-            </Link>
-            <Link href="#signals" className="block hover:text-accent">
-              {t("nav.signal")}
-            </Link>
-            <Link href="#benefits" className="block hover:text-accent">
-              {t("nav.bonus")}
+            <Link href={ROUTES.about} className="block hover:text-accent">
+              {t("nav.about")}
             </Link>
           </div>
         </div>
@@ -74,11 +66,8 @@ export function SiteFooter() {
         <div>
           <p className="text-sm font-semibold">{labels.info}</p>
           <div className="mt-4 space-y-2.5 text-sm text-muted">
-            <Link href="#faq" className="block hover:text-accent">
-              {labels.aboutUs}
-            </Link>
-            <Link href="#how" className="block hover:text-accent">
-              {t("nav.howItWorks")}
+            <Link href={ROUTES.about} className="block hover:text-accent">
+              {t("nav.about")}
             </Link>
             <span className="block">{labels.terms}</span>
             <span className="block">{labels.policy}</span>

@@ -526,23 +526,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12" id="faq">
-        <p className="section-kicker">{t("landing.faqKicker")}</p>
-        <h2 className="section-title mt-2">{t("landing.faqTitle")}</h2>
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          {[
-            { q: t("landing.faq1q"), a: t("landing.faq1a") },
-            { q: t("landing.faq2q"), a: t("landing.faq2a") },
-            { q: t("landing.faq3q"), a: t("landing.faq3a") },
-          ].map((item) => (
-            <article key={item.q} className="surface-panel p-5">
-              <h3 className="font-display text-base font-semibold">{item.q}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{item.a}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section className="mx-auto max-w-6xl px-4 py-6" id="testimonials">
         <div className="flex items-end justify-between gap-3">
           <div>

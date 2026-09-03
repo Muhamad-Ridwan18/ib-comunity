@@ -138,6 +138,20 @@ export const en = {
     backHome: "← Back to home",
     home: "Home",
   },
+  about: {
+    kicker: "About us",
+    title: "About Santara Pips",
+    intro:
+      "Santara Pips is a private trading education and analysis desk. We help traders learn with structure, read the market with context, and grow inside a verified member community — without profit promises.",
+    missionTitle: "Our mission",
+    missionBody:
+      "Provide structured education, daily desk analysis, and a gated member experience tied to Introducing Broker verification so the community stays serious and accountable.",
+    disclaimerTitle: "Risk disclosure",
+    disclaimerBody:
+      "Trading carries risk. Content on Santara Pips is for education and analysis only — not financial advice. You are responsible for your own trading decisions.",
+    ctaTitle: "Ready to explore the desk?",
+    ctaBody: "Register free on the home page, then complete Santara Pips verification when you want premium access.",
+  },
   auth: {
     welcomeBack: "Welcome back",
     welcomeBody: "Sign in to browse the desk. Become a member when you're ready to verify.",

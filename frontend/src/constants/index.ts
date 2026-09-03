@@ -19,6 +19,7 @@ export const API_URL = resolveApiUrl();
 
 export const ROUTES = {
   home: "/",
+  about: "/about",
   login: "/login",
   register: "/register",
   forgotPassword: "/forgot-password",

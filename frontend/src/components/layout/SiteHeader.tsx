@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { AppLogo } from "@/components/layout/AppLogo";
@@ -11,18 +12,23 @@ import { ROUTES } from "@/constants";
 import { track } from "@/lib/analytics";
 import { useT } from "@/i18n/useT";
 
+const navLinks = [
+  { href: ROUTES.home, key: "nav.home" },
+  { href: ROUTES.about, key: "nav.about" },
+] as const;
+
 export function SiteHeader() {
   const { t } = useT();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navLinks = [
-    { href: ROUTES.home, key: "nav.home" },
-    { href: "#articles", key: "nav.academy" },
-    { href: "#articles", key: "nav.analysis" },
-    { href: "#benefits", key: "nav.signal" },
-    { href: "#how", key: "nav.howItWorks" },
-    { href: "#faq", key: "nav.about" },
-  ] as const;
+  const linkClass = (href: string) =>
+    [
+      "rounded-lg px-3 py-2 text-[13px] transition",
+      pathname === href
+        ? "bg-accent-soft font-medium text-accent"
+        : "text-muted hover:bg-accent-soft hover:text-[var(--foreground)]",
+    ].join(" ");
 
   return (
     <>
@@ -41,11 +47,7 @@ export function SiteHeader() {
           </div>
           <nav className="hidden items-center gap-0.5 text-sm md:flex">
             {navLinks.map((l) => (
-              <Link
-                key={l.key}
-                href={l.href}
-                className="rounded-lg px-3 py-2 text-[13px] text-muted transition hover:bg-accent-soft hover:text-[var(--foreground)]"
-              >
+              <Link key={l.key} href={l.href} className={linkClass(l.href)}>
                 {t(l.key)}
               </Link>
             ))}
@@ -80,7 +82,7 @@ export function SiteHeader() {
               key={l.key}
               href={l.href}
               onClick={() => setMobileOpen(false)}
-              className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-accent-soft"
+              className={`block rounded-xl px-3 py-2.5 text-sm ${pathname === l.href ? "bg-accent-soft font-medium text-accent" : "text-muted hover:bg-accent-soft"}`}
             >
               {t(l.key)}
             </Link>
