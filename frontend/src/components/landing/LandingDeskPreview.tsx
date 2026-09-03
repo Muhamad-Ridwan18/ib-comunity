@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MarketQuote } from "@/components/landing/landing-types";
 
 const FALLBACK_QUOTES: MarketQuote[] = [
@@ -10,18 +10,73 @@ const FALLBACK_QUOTES: MarketQuote[] = [
   { symbol: "BTC/USD", name: "Bitcoin", close: 62450, change: 880, percent_change: 1.43 },
 ];
 
-const BASE_BAR_HEIGHTS = [28, 34, 29, 45, 41, 52, 56, 62, 74, 71];
+const HISTORY_LEN = 28;
+const TICK_MS = 550;
 
 const SIGNAL_NOTES = {
   id: ["Sweep → continuation", "HTF supply rejection"],
   en: ["Sweep → continuation", "HTF supply rejection"],
 } as const;
 
-function sparklinePoints(change: number, tick = 0) {
+function primaryQuote(quotes: MarketQuote[]) {
+  return quotes[0] ?? FALLBACK_QUOTES[0];
+}
+
+function initPriceHistory(anchor: number) {
+  const spread = Math.max(anchor * 0.00025, 0.0004);
+  return Array.from({ length: HISTORY_LEN }, (_, i) => anchor + Math.sin(i * 0.55) * spread);
+}
+
+function nextPriceTick(prev: number, anchor: number, t: number) {
+  const spread = Math.max(anchor * 0.00022, 0.00035);
+  const wave = Math.sin(t / 420 + prev * 0.001) * spread;
+  const jitter = (Math.random() - 0.5) * spread * 0.35;
+  const pull = (anchor - prev) * 0.08;
+  return prev + wave + jitter + pull;
+}
+
+function normalizeSeries(values: number[]) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(max - min, 1e-9);
+  return values.map((v) => 18 + ((v - min) / range) * 64);
+}
+
+function performanceChartPaths(values: number[]) {
+  const width = 100;
+  const height = 100;
+  const pad = 6;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(max - min, 1);
+
+  const points = values.map((v, i) => ({
+    x: pad + (i / (values.length - 1)) * (width - pad * 2),
+    y: pad + (1 - (v - min) / range) * (height - pad * 2),
+  }));
+
+  const line = points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
+  const area = [
+    `M ${points[0].x.toFixed(2)},${height - pad}`,
+    ...points.map((p) => `L ${p.x.toFixed(2)},${p.y.toFixed(2)}`),
+    `L ${points[points.length - 1].x.toFixed(2)},${height - pad}`,
+    "Z",
+  ].join(" ");
+
+  const bars = points.map((p) => ({
+    x: p.x,
+    h: Math.max(8, height - pad - p.y),
+  }));
+
+  return { line, area, last: points[points.length - 1], bars, height, pad };
+}
+
+function sparklinePoints(change: number, tick: number) {
   const seed = Math.max(6, Math.min(22, Math.round(Math.abs(change) * 10)));
-  const values = [28, 34, 31, 38, 36, 44, 41, 47, 52, 56, 61, 58].map((v, i) => {
-    const wave = Math.sin(tick / 4 + i * 0.7) * 4;
-    return change >= 0 ? v + ((seed + i * 2) % 12) + wave : v - ((seed + i * 2) % 10) + wave;
+  const values = Array.from({ length: 12 }, (_, i) => {
+    const wave = Math.sin(tick / 3.5 + i * 0.65) * 5;
+    const base = [28, 34, 31, 38, 36, 44, 41, 47, 52, 56, 61, 58][i] ?? 40;
+    return change >= 0 ? base + ((seed + i * 2) % 12) + wave : base - ((seed + i * 2) % 10) + wave;
   });
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -34,9 +89,8 @@ function sparklinePoints(change: number, tick = 0) {
     .join(" ");
 }
 
-function baseBarHeights(quotes: MarketQuote[]) {
-  if (quotes.length === 0) return BASE_BAR_HEIGHTS;
-  return quotes.map((q, i) => 35 + Math.min(40, Math.max(4, Math.abs(q.percent_change) * 18 + i * 7)));
+function formatPrice(q: MarketQuote) {
+  return q.close >= 100 ? q.close.toLocaleString(undefined, { maximumFractionDigits: 2 }) : q.close.toFixed(4);
 }
 
 type Props = {
@@ -46,14 +100,17 @@ type Props = {
 
 export function LandingDeskPreview({ locale, quotes }: Props) {
   const liveQuotes = quotes.length > 0 ? quotes : FALLBACK_QUOTES;
-  const barSeed = useMemo(() => baseBarHeights(quotes), [quotes]);
-  const [barHeights, setBarHeights] = useState(barSeed);
+  const lead = primaryQuote(liveQuotes);
+
+  const [priceHistory, setPriceHistory] = useState<number[]>(() => initPriceHistory(lead.close));
   const [tick, setTick] = useState(0);
+  const [flash, setFlash] = useState(false);
+  const anchorRef = useRef(lead.close);
+  const timeRef = useRef(0);
 
   const labels =
     locale === "id"
       ? {
-          overview: "Ringkasan",
           winrate: "Winrate",
           rr: "RR Rata-rata",
           signals: "Sinyal",
@@ -61,9 +118,9 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
           performance: "Performa",
           latestSignals: "Sinyal Terbaru",
           live: "Live",
+          symbol: lead.symbol.replace("/", ""),
         }
       : {
-          overview: "Overview",
           winrate: "Winrate",
           rr: "Avg RR",
           signals: "Signals",
@@ -71,6 +128,7 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
           performance: "Performance",
           latestSignals: "Latest Signals",
           live: "Live",
+          symbol: lead.symbol.replace("/", ""),
         };
 
   const stats = [
@@ -80,31 +138,53 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
     { label: labels.members, value: "10.2k" },
   ];
 
-  const performanceDelta = liveQuotes[0]
-    ? `${liveQuotes[0].change >= 0 ? "+" : ""}${
-        liveQuotes[0].change >= 100 ? liveQuotes[0].change.toFixed(0) : liveQuotes[0].change.toFixed(2)
-      }`
-    : "+120 pips";
-
   const signalNotes = SIGNAL_NOTES[locale];
 
-  useEffect(() => {
-    setBarHeights(barSeed);
-  }, [barSeed]);
+  const chartValues = useMemo(() => normalizeSeries(priceHistory), [priceHistory]);
+  const chart = useMemo(() => performanceChartPaths(chartValues), [chartValues]);
+
+  const performanceDelta = `${lead.change >= 0 ? "+" : ""}${lead.percent_change.toFixed(2)}%`;
+  const livePrice = formatPrice({ ...lead, close: priceHistory[priceHistory.length - 1] ?? lead.close });
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setTick((n) => n + 1);
-      setBarHeights((prev) =>
-        prev.map((h, i) => {
-          const base = barSeed[i] ?? h;
-          const wave = Math.sin(Date.now() / 700 + i * 0.85) * 5;
-          return Math.max(20, Math.min(94, base + wave));
-        }),
-      );
-    }, 1400);
-    return () => window.clearInterval(timer);
-  }, [barSeed]);
+    anchorRef.current = lead.close;
+  }, [lead.close]);
+
+  useEffect(() => {
+    let alive = true;
+    let last = performance.now();
+
+    const loop = (now: number) => {
+      if (!alive) return;
+      if (now - last >= TICK_MS) {
+        last = now;
+        timeRef.current = now;
+        setTick((n) => n + 1);
+        setFlash(true);
+        window.setTimeout(() => setFlash(false), 180);
+        setPriceHistory((prev) => {
+          const lastPrice = prev[prev.length - 1] ?? anchorRef.current;
+          const next = nextPriceTick(lastPrice, anchorRef.current, now);
+          return [...prev.slice(1), next];
+        });
+      }
+      requestAnimationFrame(loop);
+    };
+
+    const id = requestAnimationFrame(loop);
+    return () => {
+      alive = false;
+      cancelAnimationFrame(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    setPriceHistory((prev) => {
+      const next = [...prev];
+      next[next.length - 1] = lead.close;
+      return next;
+    });
+  }, [lead.close]);
 
   return (
     <div className="relative rounded-2xl border border-white/10 bg-[#0d1833]/90 p-4 backdrop-blur">
@@ -129,23 +209,76 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
       </div>
 
       <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-white/70">{labels.performance}</p>
-          <p className="text-[10px] font-medium text-emerald-300 tabular-nums">{performanceDelta}</p>
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs text-white/70">{labels.performance}</p>
+            <p className="text-[10px] text-white/45">{labels.symbol}</p>
+          </div>
+          <div className="text-right">
+            <p
+              className={`text-xs font-semibold tabular-nums transition-colors duration-150 ${
+                flash ? "text-emerald-200" : "text-white"
+              }`}
+            >
+              {livePrice}
+            </p>
+            <p
+              className={`text-[10px] font-medium tabular-nums ${
+                lead.change >= 0 ? "text-emerald-300" : "text-rose-300"
+              }`}
+            >
+              {performanceDelta}
+            </p>
+          </div>
         </div>
-        <div className="desk-chart-scan relative mt-3 h-24 overflow-hidden rounded-lg border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),transparent)] p-2">
-          <div className="flex h-full items-end gap-1.5">
-            {barHeights.map((h, i) => (
-              <span
-                key={i}
-                className="desk-bar w-full rounded-sm bg-[linear-gradient(180deg,#7bb1ff,#4d88ff)]/90"
-                style={{
-                  height: `${h}%`,
-                  animationDelay: `${i * 70}ms`,
-                }}
+
+        <div className="desk-chart-scan relative mt-3 h-28 overflow-hidden rounded-lg border border-white/10 bg-[#081024]">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
+            <defs>
+              <linearGradient id="deskPerfFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4d88ff" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#4d88ff" stopOpacity="0.02" />
+              </linearGradient>
+              <linearGradient id="deskPerfLine" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#7bb1ff" />
+                <stop offset="100%" stopColor="#4ade80" />
+              </linearGradient>
+            </defs>
+
+            {[20, 40, 60, 80].map((y) => (
+              <line key={y} x1="6" x2="94" y1={y} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="0.6" />
+            ))}
+
+            {chart.bars.map((bar, i) => (
+              <rect
+                key={`bar-${i}-${tick}`}
+                x={bar.x - 1.1}
+                y={chart.height - chart.pad - bar.h * 0.35}
+                width="2.2"
+                height={bar.h * 0.35}
+                fill="rgba(77,136,255,0.18)"
+                className="desk-bar"
               />
             ))}
-          </div>
+
+            <path d={chart.area} fill="url(#deskPerfFill)" />
+            <polyline
+              fill="none"
+              stroke="url(#deskPerfLine)"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points={chart.line}
+              className="desk-line"
+            />
+            <circle cx={chart.last.x} cy={chart.last.y} r="2.4" fill="#4ade80">
+              <animate attributeName="r" values="2.2;3.4;2.2" dur="1.2s" repeatCount="indefinite" />
+            </circle>
+            <circle cx={chart.last.x} cy={chart.last.y} r="5" fill="#4ade80" opacity="0.15">
+              <animate attributeName="r" values="4;7;4" dur="1.2s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.2;0.05;0.2" dur="1.2s" repeatCount="indefinite" />
+            </circle>
+          </svg>
         </div>
       </div>
 
@@ -162,20 +295,18 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
                     {positive ? "BUY" : "SELL"}
                   </span>
                 </div>
-                <p className="mt-1 truncate text-[10px] text-white/70">{signalNotes[i] ?? quote.name}</p>
+                <p className="mt-0.5 truncate text-[10px] tabular-nums text-white/80">{formatPrice(quote)}</p>
+                <p className="mt-0.5 truncate text-[10px] text-white/50">{signalNotes[i] ?? quote.name}</p>
                 <div className="mt-2 h-8">
-                  <svg
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    className="market-pulse h-full w-full overflow-visible"
-                  >
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible">
                     <polyline
                       fill="none"
                       stroke={positive ? "#4ade80" : "#fb7185"}
                       strokeWidth="5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      points={sparklinePoints(quote.percent_change, tick + i)}
+                      points={sparklinePoints(quote.percent_change, tick + i * 3)}
+                      className="desk-line"
                     />
                   </svg>
                 </div>
