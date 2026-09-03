@@ -1,5 +1,5 @@
 export function toAutoplayEmbedUrl(url: string, options?: { muted?: boolean }): string {
-  const muted = options?.muted ?? true;
+  const muted = options?.muted ?? false;
 
   try {
     const parsed = new URL(url);

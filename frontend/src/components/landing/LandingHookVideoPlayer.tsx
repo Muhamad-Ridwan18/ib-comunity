@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { toAutoplayEmbedUrl } from "@/lib/video-embed";
 import type { HookVideo } from "@/services/landing";
@@ -16,11 +16,26 @@ type Props = {
 export function LandingHookVideoPlayer({ video, fallbackTitle, className }: Props) {
   const { t } = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
-  const [embedSrc, setEmbedSrc] = useState(() => toAutoplayEmbedUrl(video.video_url, { muted: true }));
+  const [muted, setMuted] = useState(false);
+  const [embedSrc, setEmbedSrc] = useState(() => toAutoplayEmbedUrl(video.video_url, { muted: false }));
 
   const title = video.title || fallbackTitle;
   const frameClass = className ?? "aspect-video w-full";
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || video.kind !== "file") return;
+
+    el.muted = false;
+    el.volume = 1;
+    void el.play().catch(() => {
+      el.muted = true;
+      setMuted(true);
+      void el.play().catch(() => {
+        /* ignore */
+      });
+    });
+  }, [video.video_url, video.kind]);
 
   const toggleSound = () => {
     const nextMuted = !muted;
@@ -28,6 +43,7 @@ export function LandingHookVideoPlayer({ video, fallbackTitle, className }: Prop
     if (video.kind === "file" && videoRef.current) {
       videoRef.current.muted = nextMuted;
       if (!nextMuted) {
+        videoRef.current.volume = 1;
         void videoRef.current.play().catch(() => {
           /* ignore */
         });
@@ -57,7 +73,6 @@ export function LandingHookVideoPlayer({ video, fallbackTitle, className }: Prop
           className={cn(frameClass, "object-cover")}
           src={video.video_url}
           autoPlay
-          muted
           loop
           playsInline
           preload="auto"
