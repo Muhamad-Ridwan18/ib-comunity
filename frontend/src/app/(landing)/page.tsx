@@ -2,37 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  BookOpen,
-  CirclePlay,
-  LineChart,
-  Play,
-  Quote,
-  Radio,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { ArrowRight, CirclePlay, Play, ShieldCheck } from "lucide-react";
+import { LandingXauusdEducation } from "@/components/marketing/LandingXauusdEducation";
 import { ROUTES } from "@/constants";
 import { track } from "@/lib/analytics";
 import { listContents, type ContentItem } from "@/services/content";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { articleCoverStyle, mediaCoverStyle } from "@/lib/media-cover";
+import { mediaCoverStyle } from "@/lib/media-cover";
 import { useT } from "@/i18n/useT";
-
-const featureDefs = [
-  { icon: BookOpen, titleKey: "landing.featureQuality", bodyKey: "landing.featureQualityBody" },
-  { icon: LineChart, titleKey: "landing.featureAnalysis", bodyKey: "landing.featureAnalysisBody" },
-  { icon: Radio, titleKey: "landing.featureSignals", bodyKey: "landing.featureSignalsBody" },
-  { icon: Users, titleKey: "landing.featureCommunity", bodyKey: "landing.featureCommunityBody" },
-] as const;
-
-const signalPreview = [
-  { pair: "XAUUSD", dir: "buy", entry: "—", note: "Contoh format setup · bukan rekomendasi live" },
-  { pair: "EURUSD", dir: "sell", entry: "—", note: "Entry, SL, TP, dan konteks pasar" },
-  { pair: "GBPUSD", dir: "buy", entry: "—", note: "Terbuka setelah verifikasi member" },
-];
 
 type MarketQuote = {
   symbol: string;
@@ -43,11 +19,8 @@ type MarketQuote = {
 };
 
 export default function LandingPage() {
-  const { t, ts, locale } = useT();
-  const [articles, setArticles] = useState<ContentItem[]>([]);
+  const { t, locale } = useT();
   const [hookVideo, setHookVideo] = useState<ContentItem | null>(null);
-  const [tab, setTab] = useState<"academy" | "analysis" | "signal">("academy");
-  const [loading, setLoading] = useState(true);
   const [quotes, setQuotes] = useState<MarketQuote[]>([]);
   const [marketLive, setMarketLive] = useState(false);
 
@@ -67,33 +40,18 @@ export default function LandingPage() {
     let alive = true;
     void (async () => {
       try {
-        const [landing, academy, analysis] = await Promise.all([
-          listContents({ module: "landing" }),
-          listContents({ module: "academy" }),
-          listContents({ module: "daily_analysis" }),
-        ]);
+        const landing = await listContents({ module: "landing" });
         if (!alive) return;
         const landingItems = landing.success && landing.data ? landing.data : [];
         setHookVideo(landingItems.find((i) => i.type === "video") ?? landingItems[0] ?? null);
-        const pool =
-          tab === "analysis"
-            ? analysis.success && analysis.data
-              ? analysis.data
-              : []
-            : academy.success && academy.data
-              ? academy.data
-              : landingItems;
-        setArticles(pool.slice(0, 6));
       } catch {
-        if (alive) setArticles([]);
-      } finally {
-        if (alive) setLoading(false);
+        if (alive) setHookVideo(null);
       }
     })();
     return () => {
       alive = false;
     };
-  }, [tab]);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -123,24 +81,13 @@ export default function LandingPage() {
             "Platform edukasi dan analisis untuk trader yang ingin belajar dengan struktur jelas — bukan janji profit.",
           joinNow: "Daftar Gratis",
           demo: "Lihat Demo",
-          processTeaser: "Setelah daftar, selesaikan 5 langkah verifikasi di dashboard member untuk membuka fitur premium.",
-          processCta: "Mulai dari sini",
-          valueA: "Edukasi Terstruktur",
-          valueABody: "Pelajaran academy dari dasar hingga eksekusi dengan alur yang jelas.",
-          valueB: "Analisis Harian",
-          valueBBody: "Bacaan pasar dari desk dengan level dan invalidasi.",
-          valueC: "Komunitas Privat",
-          valueCBody: "Diskusi dan support setelah verifikasi MT5 selesai.",
-          valueD: "Bukan Janji Hasil",
-          valueDBody: "Kami fokus pada edukasi dan analisis — keputusan trading tetap di tangan Anda.",
-          testimonialTitle: "Pengalaman Member",
-          ctaTitle: "Siap mulai perjalanan trading Anda?",
-          ctaBody:
-            "Daftar gratis, jelajahi edukasi publik, lalu selesaikan verifikasi saat siap membuka academy, analisis, dan sinyal.",
-          ctaBtn: "Daftar Sekarang",
           marketLive: "Data pasar · update ~45 detik",
           marketUnavailable: "Data pasar sementara tidak tersedia",
           deskPreview: "Pratinjau desk member",
+          ctaTitle: "Siap mulai perjalanan trading Anda?",
+          ctaBody:
+            "Daftar gratis, pelajari materi edukasi, lalu selesaikan verifikasi saat siap membuka fitur premium.",
+          ctaBtn: "Daftar Sekarang",
         }
       : {
           trusted: "Education · Analysis · Community",
@@ -152,63 +99,14 @@ export default function LandingPage() {
             "An education and analysis platform for traders who want clear structure — not profit promises.",
           joinNow: "Register Free",
           demo: "Watch Demo",
-          processTeaser:
-            "After registering, complete the 5-step verification in your member dashboard to unlock premium features.",
-          processCta: "Start here",
-          valueA: "Structured Education",
-          valueABody: "Academy lessons from basics to execution with a clear learning path.",
-          valueB: "Daily Analysis",
-          valueBBody: "Desk market reads with levels and invalidation.",
-          valueC: "Private Community",
-          valueCBody: "Discussion and support after MT5 verification is complete.",
-          valueD: "No Result Promises",
-          valueDBody: "We focus on education and analysis — trading decisions remain yours.",
-          testimonialTitle: "Member Experiences",
-          ctaTitle: "Ready to start your trading journey?",
-          ctaBody:
-            "Register free, explore public education, then complete verification when you're ready for academy, analysis, and signals.",
-          ctaBtn: "Register Now",
           marketLive: "Market data · ~45s refresh",
           marketUnavailable: "Market data temporarily unavailable",
           deskPreview: "Member desk preview",
+          ctaTitle: "Ready to start your trading journey?",
+          ctaBody:
+            "Register free, study the education material, then complete verification when you're ready for premium access.",
+          ctaBtn: "Register Now",
         };
-
-  const testimonials =
-    locale === "id"
-      ? [
-          {
-            name: "Muhamad Ridwan",
-            role: "Swing Trader",
-            text: "Materinya terstruktur dan sinyalnya mudah dipahami. Saya lebih fokus belajar proses, bukan mengejar hasil.",
-          },
-          {
-            name: "Farel Aditya",
-            role: "Forex Trader",
-            text: "Analisis hariannya detail, jadi saya punya konteks sebelum mengambil keputusan sendiri.",
-          },
-          {
-            name: "Dina Pratama",
-            role: "Scalper",
-            text: "Komunitasnya aktif dan dashboard member jelas menunjukkan langkah verifikasi berikutnya.",
-          },
-        ]
-      : [
-          {
-            name: "Muhamad Ridwan",
-            role: "Swing Trader",
-            text: "Lessons are structured and signals are easy to read. I focus on the process, not chasing results.",
-          },
-          {
-            name: "Farel Aditya",
-            role: "Forex Trader",
-            text: "Daily analysis gives me context before I make my own trading decisions.",
-          },
-          {
-            name: "Dina Pratama",
-            role: "Scalper",
-            text: "Active community and the member dashboard clearly shows the next verification step.",
-          },
-        ];
 
   const deskModules =
     locale === "id"
@@ -283,10 +181,10 @@ export default function LandingPage() {
                 {copy.joinNow}
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="#hook" className="btn-ghost gap-2 px-5 py-2.5">
+              <a href="#education" className="btn-ghost gap-2 px-5 py-2.5">
                 <CirclePlay className="h-4 w-4" />
                 {copy.demo}
-              </Link>
+              </a>
             </div>
 
             {marketLive && quotes.length > 0 ? (
@@ -383,171 +281,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-b border-[var(--border)] bg-[var(--card)]" id="benefits">
-        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
-          {featureDefs.map((f) => (
-            <div key={f.titleKey} className="surface-panel flex gap-3 p-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
-                <f.icon className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="font-medium">{t(f.titleKey)}</p>
-                <p className="mt-1 text-sm text-muted">{t(f.bodyKey)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <div id="education">
+        <LandingXauusdEducation />
+      </div>
 
-      <section className="mx-auto max-w-6xl px-4 py-10" id="how">
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8">
-          <p className="section-kicker">{t("landing.processKicker")}</p>
-          <h2 className="section-title mt-2">{t("landing.processTitle")}</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{copy.processTeaser}</p>
-          <Link href={ROUTES.register} className="btn-primary mt-5 inline-flex gap-2" onClick={() => track("cta_click", { source: "process" })}>
-            {copy.processCta}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 py-12" id="articles">
-        <div id="signals" className="sr-only" aria-hidden />
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="section-kicker">{t("landing.previewKicker")}</p>
-            <h2 className="section-title mt-2">{t("landing.previewTitle")}</h2>
-          </div>
-          <div className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-0.5">
-            {(
-              [
-                ["academy", "landing.tabAcademy"],
-                ["analysis", "landing.tabAnalysis"],
-                ["signal", "landing.tabSignal"],
-              ] as const
-            ).map(([key, labelKey]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  if (key === "signal") {
-                    setTab(key);
-                    setLoading(false);
-                    return;
-                  }
-                  setLoading(true);
-                  setTab(key);
-                }}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                  tab === key
-                    ? "bg-white text-[var(--foreground)] shadow-sm dark:bg-[var(--card)]"
-                    : "text-muted hover:text-[var(--foreground)]"
-                }`}
-              >
-                {t(labelKey)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-8">
-          {loading && tab !== "signal" ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Skeleton className="h-52" />
-              <Skeleton className="h-52" />
-              <Skeleton className="h-52" />
-            </div>
-          ) : tab === "signal" ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {signalPreview.map((s) => (
-                <article key={s.pair} className="surface-panel relative overflow-hidden p-5">
-                  <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--accent-soft),transparent_55%)] opacity-70" />
-                  <div className="relative">
-                    <div className="flex items-start justify-between">
-                      <p className="font-display text-2xl font-semibold">{s.pair}</p>
-                      <span className="rounded-md bg-accent-soft px-2 py-0.5 text-[11px] font-semibold uppercase text-accent">
-                        {ts(s.dir)}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-muted">
-                      {t("member.entry")} {s.entry}
-                    </p>
-                    <p className="mt-3 text-sm text-muted">{s.note}</p>
-                    <p className="mt-4 text-xs font-medium text-accent">{t("landing.unlockAfter")}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : articles.length === 0 ? (
-            <EmptyState
-              title={t("landing.libraryEmptyTitle")}
-              description={t("landing.libraryEmptyBody")}
-              actionLabel={t("nav.joinNow")}
-              actionHref={ROUTES.register}
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {articles.map((item) => (
-                <article key={item.id} className="surface-panel overflow-hidden">
-                  <div className="relative h-36" style={articleCoverStyle(item.slug, item.thumbnail_url)}>
-                    <span className="absolute left-3 top-3 rounded-md bg-black/40 px-2 py-0.5 text-[10px] uppercase tracking-wide text-white">
-                      {item.type === "video" ? t("member.video") : t("member.article")}
-                      {item.is_premium ? ` · ${t("member.membersOnly")}` : ""}
-                    </span>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-[11px] uppercase tracking-wide text-muted">{item.category_name || item.module}</p>
-                    <h3 className="mt-1 font-display text-lg font-semibold">{item.title}</h3>
-                    {item.excerpt ? <p className="mt-2 line-clamp-2 text-sm text-muted">{item.excerpt}</p> : null}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { icon: BookOpen, title: copy.valueA, body: copy.valueABody },
-            { icon: LineChart, title: copy.valueB, body: copy.valueBBody },
-            { icon: Users, title: copy.valueC, body: copy.valueCBody },
-            { icon: ShieldCheck, title: copy.valueD, body: copy.valueDBody },
-          ].map((x) => (
-            <article key={x.title} className="surface-panel p-4">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
-                <x.icon className="h-4 w-4" />
-              </span>
-              <p className="mt-3 font-display text-base font-semibold">{x.title}</p>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted">{x.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 py-6" id="testimonials">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="section-kicker">{locale === "id" ? "Testimoni" : "Testimonials"}</p>
-            <h2 className="section-title mt-2">{copy.testimonialTitle}</h2>
-          </div>
-        </div>
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
-          {testimonials.map((x) => (
-            <article key={x.name} className="surface-panel p-5">
-              <Quote className="h-4 w-4 text-accent" />
-              <p className="mt-3 text-sm leading-relaxed text-muted">{x.text}</p>
-              <div className="mt-4">
-                <p className="text-sm font-semibold">{x.name}</p>
-                <p className="text-xs text-muted">{x.role}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 pb-24">
+      <section className="mx-auto max-w-6xl px-4 pb-24 pt-4">
         <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(135deg,#0052ff,#003bb8)] px-6 py-12 text-center text-white md:px-14">
           <div className="pointer-events-none absolute -left-12 top-0 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -right-10 bottom-0 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
