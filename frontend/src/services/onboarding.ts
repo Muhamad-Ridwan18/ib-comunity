@@ -74,7 +74,7 @@ export async function uploadProof(file: File) {
   const form = new FormData();
   form.append("file", file);
   const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/uploads?purpose=proof", form, {
-    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 60_000,
   });
   return data;
 }
