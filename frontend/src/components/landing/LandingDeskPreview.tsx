@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MarketQuote } from "@/components/landing/landing-types";
 
 const FALLBACK_QUOTES: MarketQuote[] = [
@@ -35,40 +35,91 @@ function nextPriceTick(prev: number, anchor: number, t: number) {
   return prev + wave + jitter + pull;
 }
 
-function normalizeSeries(values: number[]) {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = Math.max(max - min, 1e-9);
-  return values.map((v) => 18 + ((v - min) / range) * 64);
-}
+function PerformanceChart({ values }: { values: number[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-function performanceChartPaths(values: number[]) {
-  const width = 100;
-  const height = 100;
-  const pad = 6;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = Math.max(max - min, 1);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || values.length < 2) return;
 
-  const points = values.map((v, i) => ({
-    x: pad + (i / (values.length - 1)) * (width - pad * 2),
-    y: pad + (1 - (v - min) / range) * (height - pad * 2),
-  }));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  const line = points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
-  const area = [
-    `M ${points[0].x.toFixed(2)},${height - pad}`,
-    ...points.map((p) => `L ${p.x.toFixed(2)},${p.y.toFixed(2)}`),
-    `L ${points[points.length - 1].x.toFixed(2)},${height - pad}`,
-    "Z",
-  ].join(" ");
+    const draw = () => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
 
-  const bars = points.map((p) => ({
-    x: p.x,
-    h: Math.max(8, height - pad - p.y),
-  }));
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  return { line, area, last: points[points.length - 1], bars, height, pad };
+      const w = rect.width;
+      const h = rect.height;
+      const padX = 6;
+      const padY = 10;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const range = Math.max(max - min, 1e-9);
+
+      const points = values.map((v, i) => ({
+        x: padX + (i / (values.length - 1)) * (w - padX * 2),
+        y: padY + (1 - (v - min) / range) * (h - padY * 2),
+      }));
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.strokeStyle = "rgba(255,255,255,0.07)";
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 4; i += 1) {
+        const y = padY + ((h - padY * 2) * i) / 5;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      const baseline = h - padY;
+      const area = new Path2D();
+      area.moveTo(points[0].x, baseline);
+      points.forEach((p) => area.lineTo(p.x, p.y));
+      area.lineTo(points[points.length - 1].x, baseline);
+      area.closePath();
+
+      const fill = ctx.createLinearGradient(0, padY, 0, baseline);
+      fill.addColorStop(0, "rgba(77, 136, 255, 0.42)");
+      fill.addColorStop(1, "rgba(77, 136, 255, 0.04)");
+      ctx.fillStyle = fill;
+      ctx.fill(area);
+
+      ctx.beginPath();
+      points.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.strokeStyle = "#6ee7b7";
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      const last = points[points.length - 1];
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "#6ee7b7";
+      ctx.fill();
+      ctx.strokeStyle = "#052e1a";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    };
+
+    draw();
+    const observer = new ResizeObserver(draw);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [values]);
+
+  return <canvas ref={canvasRef} className="h-full w-full" aria-hidden />;
 }
 
 function sparklinePoints(change: number, tick: number) {
@@ -89,8 +140,8 @@ function sparklinePoints(change: number, tick: number) {
     .join(" ");
 }
 
-function formatPrice(q: MarketQuote) {
-  return q.close >= 100 ? q.close.toLocaleString(undefined, { maximumFractionDigits: 2 }) : q.close.toFixed(4);
+function formatPrice(close: number) {
+  return close >= 100 ? close.toLocaleString(undefined, { maximumFractionDigits: 2 }) : close.toFixed(4);
 }
 
 type Props = {
@@ -106,7 +157,6 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
   const [tick, setTick] = useState(0);
   const [flash, setFlash] = useState(false);
   const anchorRef = useRef(lead.close);
-  const timeRef = useRef(0);
 
   const labels =
     locale === "id"
@@ -118,7 +168,6 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
           performance: "Performa",
           latestSignals: "Sinyal Terbaru",
           live: "Live",
-          symbol: lead.symbol.replace("/", ""),
         }
       : {
           winrate: "Winrate",
@@ -128,7 +177,6 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
           performance: "Performance",
           latestSignals: "Latest Signals",
           live: "Live",
-          symbol: lead.symbol.replace("/", ""),
         };
 
   const stats = [
@@ -139,12 +187,9 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
   ];
 
   const signalNotes = SIGNAL_NOTES[locale];
-
-  const chartValues = useMemo(() => normalizeSeries(priceHistory), [priceHistory]);
-  const chart = useMemo(() => performanceChartPaths(chartValues), [chartValues]);
+  const liveClose = priceHistory[priceHistory.length - 1] ?? lead.close;
 
   const performanceDelta = `${lead.change >= 0 ? "+" : ""}${lead.percent_change.toFixed(2)}%`;
-  const livePrice = formatPrice({ ...lead, close: priceHistory[priceHistory.length - 1] ?? lead.close });
 
   useEffect(() => {
     anchorRef.current = lead.close;
@@ -158,7 +203,6 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
       if (!alive) return;
       if (now - last >= TICK_MS) {
         last = now;
-        timeRef.current = now;
         setTick((n) => n + 1);
         setFlash(true);
         window.setTimeout(() => setFlash(false), 180);
@@ -212,7 +256,7 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-xs text-white/70">{labels.performance}</p>
-            <p className="text-[10px] text-white/45">{labels.symbol}</p>
+            <p className="text-[10px] text-white/45">{lead.symbol.replace("/", "")}</p>
           </div>
           <div className="text-right">
             <p
@@ -220,7 +264,7 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
                 flash ? "text-emerald-200" : "text-white"
               }`}
             >
-              {livePrice}
+              {formatPrice(liveClose)}
             </p>
             <p
               className={`text-[10px] font-medium tabular-nums ${
@@ -232,53 +276,9 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
           </div>
         </div>
 
-        <div className="desk-chart-scan relative mt-3 h-28 overflow-hidden rounded-lg border border-white/10 bg-[#081024]">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-            <defs>
-              <linearGradient id="deskPerfFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4d88ff" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#4d88ff" stopOpacity="0.02" />
-              </linearGradient>
-              <linearGradient id="deskPerfLine" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#7bb1ff" />
-                <stop offset="100%" stopColor="#4ade80" />
-              </linearGradient>
-            </defs>
-
-            {[20, 40, 60, 80].map((y) => (
-              <line key={y} x1="6" x2="94" y1={y} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="0.6" />
-            ))}
-
-            {chart.bars.map((bar, i) => (
-              <rect
-                key={`bar-${i}-${tick}`}
-                x={bar.x - 1.1}
-                y={chart.height - chart.pad - bar.h * 0.35}
-                width="2.2"
-                height={bar.h * 0.35}
-                fill="rgba(77,136,255,0.18)"
-                className="desk-bar"
-              />
-            ))}
-
-            <path d={chart.area} fill="url(#deskPerfFill)" />
-            <polyline
-              fill="none"
-              stroke="url(#deskPerfLine)"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              points={chart.line}
-              className="desk-line"
-            />
-            <circle cx={chart.last.x} cy={chart.last.y} r="2.4" fill="#4ade80">
-              <animate attributeName="r" values="2.2;3.4;2.2" dur="1.2s" repeatCount="indefinite" />
-            </circle>
-            <circle cx={chart.last.x} cy={chart.last.y} r="5" fill="#4ade80" opacity="0.15">
-              <animate attributeName="r" values="4;7;4" dur="1.2s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.2;0.05;0.2" dur="1.2s" repeatCount="indefinite" />
-            </circle>
-          </svg>
+        <div className="relative mt-3 h-28 overflow-hidden rounded-lg border border-white/10 bg-[#081024]">
+          <PerformanceChart values={priceHistory} />
+          <div className="desk-chart-scan pointer-events-none absolute inset-0 z-[1]" aria-hidden />
         </div>
       </div>
 
@@ -295,7 +295,7 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
                     {positive ? "BUY" : "SELL"}
                   </span>
                 </div>
-                <p className="mt-0.5 truncate text-[10px] tabular-nums text-white/80">{formatPrice(quote)}</p>
+                <p className="mt-0.5 truncate text-[10px] tabular-nums text-white/80">{formatPrice(quote.close)}</p>
                 <p className="mt-0.5 truncate text-[10px] text-white/50">{signalNotes[i] ?? quote.name}</p>
                 <div className="mt-2 h-8">
                   <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible">
@@ -305,8 +305,8 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
                       strokeWidth="5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
                       points={sparklinePoints(quote.percent_change, tick + i * 3)}
-                      className="desk-line"
                     />
                   </svg>
                 </div>

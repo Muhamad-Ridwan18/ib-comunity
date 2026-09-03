@@ -257,21 +257,9 @@ h3,
     transition: height 0.55s linear, y 0.55s linear;
   }
 
-  .desk-line {
-    transition: points 0.55s linear;
-  }
-
-  .desk-area {
-    transition: d 0.55s linear;
-  }
-
-  .desk-chart-scan::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  .desk-chart-scan {
+    background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.1) 50%, transparent 60%);
     animation: desk-scan 2.8s ease-in-out infinite;
-    pointer-events: none;
   }
 }
 
