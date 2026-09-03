@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AdminAiController;
 use App\Http\Controllers\Api\V1\AdminBonusController;
 use App\Http\Controllers\Api\V1\AdminContentController;
+use App\Http\Controllers\Api\V1\AdminMemberHomeController;
 use App\Http\Controllers\Api\V1\AdminLandingHookVideoController;
 use App\Http\Controllers\Api\V1\AdminJournalController;
 use App\Http\Controllers\Api\V1\AdminSignalController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\V1\ContentController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\JournalController;
 use App\Http\Controllers\Api\V1\LandingHookVideoController;
+use App\Http\Controllers\Api\V1\MemberHomeController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\SettingsController;
@@ -58,6 +60,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/member/home', [MemberHomeController::class, 'show']);
 
         // Billing (authenticated)
         Route::get('/billing/subscription', [BillingController::class, 'mySubscription']);
@@ -164,6 +167,9 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/landing/hook-video', [AdminLandingHookVideoController::class, 'show']);
             Route::put('/landing/hook-video', [AdminLandingHookVideoController::class, 'update']);
+
+            Route::get('/member/home', [AdminMemberHomeController::class, 'show']);
+            Route::put('/member/home', [AdminMemberHomeController::class, 'update']);
 
             Route::get('/plans', [BillingController::class, 'plans']);
         });
