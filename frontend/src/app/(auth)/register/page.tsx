@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { TermsAcceptanceFields } from "@/components/auth/TermsAcceptanceFields";
 import { register as registerUser } from "@/services/auth";
 import { useAuthStore } from "@/store/auth";
 import { ROUTES } from "@/constants";
@@ -16,11 +17,16 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { useT } from "@/i18n/useT";
 
-const schema = z.object({
-  full_name: z.string().min(2, "Name is required"),
-  email: z.string().email(),
-  password: z.string().min(8, "Min 8 characters"),
-});
+const schema = z
+  .object({
+    full_name: z.string().min(2, "Name is required"),
+    email: z.string().email(),
+    password: z.string().min(8, "Min 8 characters"),
+    terms_agree_docs: z.literal(true),
+    terms_age_capacity: z.literal(true),
+    terms_risk_release: z.literal(true),
+  })
+  .strict();
 
 type FormValues = z.infer<typeof schema>;
 
@@ -32,13 +38,31 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { isSubmitting, errors },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      terms_agree_docs: false,
+      terms_age_capacity: false,
+      terms_risk_release: false,
+    },
+  });
+
+  const termsAccepted =
+    watch("terms_agree_docs") === true &&
+    watch("terms_age_capacity") === true &&
+    watch("terms_risk_release") === true;
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     try {
-      const res = await registerUser(values);
+      const res = await registerUser({
+        email: values.email,
+        password: values.password,
+        full_name: values.full_name,
+        accept_terms: true,
+      });
       if (!res.success || !res.data) {
         setError(res.message || t("auth.registerFailed"));
         return;
@@ -78,12 +102,15 @@ export default function RegisterPage() {
             <PasswordInput autoComplete="new-password" {...register("password")} />
             {errors.password ? <span className="text-[var(--danger)]">{errors.password.message}</span> : null}
           </label>
+
+          <TermsAcceptanceFields register={register} errors={errors} />
+
           {error ? (
             <p className="rounded-xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-sm text-[var(--danger)]">
               {error}
             </p>
           ) : null}
-          <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3">
+          <button type="submit" disabled={isSubmitting || !termsAccepted} className="btn-primary w-full py-3 disabled:opacity-50">
             {isSubmitting ? t("auth.creating") : t("auth.createAccount")}
           </button>
         </form>

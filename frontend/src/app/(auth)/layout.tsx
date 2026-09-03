@@ -29,7 +29,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       <div className="relative flex flex-1 items-center justify-center px-4 py-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_0%,rgba(0,82,255,0.06),transparent_50%)]" />
-        <div className="relative w-full max-w-md animate-rise">
+        <div className="relative w-full max-w-lg animate-rise">
           <div className="mb-6 flex items-center justify-between lg:hidden">
             <AppLogo />
             <Link href={ROUTES.home} className="text-sm text-muted hover:text-accent">

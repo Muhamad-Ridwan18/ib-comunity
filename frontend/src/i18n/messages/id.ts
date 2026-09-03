@@ -180,6 +180,8 @@ export const id: Messages = {
     invalidCredentials: "Email atau kata sandi salah",
     registerFailed: "Registrasi gagal",
     registerError: "Tidak bisa mendaftar. Email mungkin sudah dipakai.",
+    termsTitle: "Syarat & Ketentuan",
+    termsReadFull: "Baca lengkap",
     invalidToken: "Token tidak valid atau kedaluwarsa",
   },
   member: {

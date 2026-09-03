@@ -178,6 +178,8 @@ export const en = {
     invalidCredentials: "Invalid email or password",
     registerFailed: "Registration failed",
     registerError: "Could not register. Email may already be in use.",
+    termsTitle: "Terms & Conditions",
+    termsReadFull: "Read full terms",
     invalidToken: "Invalid or expired token",
   },
   member: {

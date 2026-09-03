@@ -18,6 +18,7 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
             'full_name' => ['required', 'string', 'min:2', 'max:150'],
+            'accept_terms' => ['required', 'accepted'],
         ]);
 
         $payload = $this->auth->register($data['email'], $data['password'], $data['full_name']);

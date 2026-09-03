@@ -69,7 +69,9 @@ export function SiteFooter() {
             <Link href={ROUTES.about} className="block hover:text-accent">
               {t("nav.about")}
             </Link>
-            <span className="block">{labels.terms}</span>
+            <Link href={ROUTES.terms} className="block hover:text-accent">
+              {labels.terms}
+            </Link>
             <span className="block">{labels.policy}</span>
           </div>
         </div>
