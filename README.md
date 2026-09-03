@@ -4,18 +4,18 @@ Private trading community platform. Access to premium modules requires Santara P
 
 ## Stack
 
-- **Frontend:** Next.js 15, TypeScript, Tailwind, shadcn/ui → Vercel
-- **Backend:** Go Fiber, GORM, PostgreSQL, JWT → Ubuntu VPS + Nginx
+- **Frontend:** Next.js 15, TypeScript, Tailwind → Vercel
+- **Backend:** Laravel 11, Sanctum, PostgreSQL/SQLite → Ubuntu VPS + Nginx
 - **Storage:** Local VPS (MVP), abstractable to Cloudflare R2 / Stream
 
 ## Monorepo
 
 ```text
-frontend/   Next.js app
-backend/    Go Fiber API
-storage/    Local uploads (gitignored contents)
-docs/       Architecture & API docs
-backups/    Ops backups
+frontend/                 Next.js app
+backend/                  Laravel API (active)
+docs/                     Architecture & API docs
+nginx/                    Legacy Go Nginx site config (optional archive)
+backups/golang-api/       Archived Go Fiber API + deploy/scripts/storage
 ```
 
 ## Quick start (dev)
@@ -28,24 +28,28 @@ Requires Docker Desktop (or any Postgres 16 matching `.env`).
 docker compose up -d
 ```
 
-If Docker is unavailable, point `backend/.env` at your local Laragon/Postgres instance and create database `ib_community`.
+Or use SQLite for Laravel local (default in `backend/.env.example`).
 
-### 2. Backend
+### 2. Backend (Laravel)
 
 ```bash
 cd backend
-cp ../.env.example .env
-# adjust if needed
-go run ./cmd/api
+cp .env.example .env
+php artisan key:generate
+# SQLite:
+# New-Item -ItemType File -Force database/database.sqlite
+php artisan migrate --seed
+php artisan serve --port=8081
 ```
 
-API: `http://localhost:8080` · Health: `GET /health`
+API: `http://localhost:8081` · Health: `GET /health` · Routes under `/v1/...`
 
 ### 3. Frontend
 
 ```bash
 cd frontend
-cp ../.env.example .env.local   # keep NEXT_PUBLIC_* vars
+cp ../.env.example .env.local
+# set NEXT_PUBLIC_API_URL=http://localhost:8081/v1
 npm install
 npm run dev
 ```
@@ -61,7 +65,9 @@ App: `http://localhost:3000`
 - [UI](docs/ui.md)
 - [Deployment](docs/deployment.md)
 - [Deploy production (`ibcomunity.webyouneed.id`)](docs/deploy-ibcomunity.md)
+- [Laravel migration notes](docs/laravel-migration.md)
 - [Admin UI/UX spec](docs/admin-ui-spec.md)
+- [Golang archive](backups/golang-api/README.md)
 
 ## Defaults (MVP)
 
@@ -81,7 +87,7 @@ Password for all: `password123`
 | `admin@ib.local` | admin | verified |
 | `super@ib.local` | super_admin | verified |
 
-Seeded automatically on API startup if missing.
+Aliases `*@santara.local` are also seeded.
 
 ## P1 quick test
 
@@ -91,37 +97,6 @@ Seeded automatically on API startup if missing.
 4. Login `admin@ib.local` → `/admin/verifications` → Approve
 5. Login member again → status `verified`, modules unlock
 
-## P2 quick test
+## Legacy Go backend
 
-1. Guest/member unverified → `/member/academy` shows **Locked** cards
-2. `verified@ib.local` → open content, body visible, bookmark works
-3. `admin@ib.local` → `/admin/content` create/publish
-
-## P3 quick test
-
-1. Unverified → `/member/signals|journal|bonus` show locked shell
-2. `verified@ib.local` → signals list, create journal entry, open bonus + Telegram link
-3. `admin@ib.local` → `/admin/signals` publish/close · `/admin/bonuses` CRUD
-
-## P4 quick test
-
-1. Floating chat FAB → opens **right drawer** → ask `deposit` / `telegram` → reply + Open page
-2. Ask nonsense 3× → `Need human assistance?` → Support ticket prefills topic
-3. `verified@ib.local` → `/member/support` create ticket · admin `/admin/tickets` reply
-4. Member bell shows notification after admin reply
-
-## UI notes
-
-- Member: **top navigation** (no permanent sidebar), Netflix-style content carousels, AI right drawer
-- Admin: separate Linear-style left nav for ops
-- Accent blue `#0052FF`, light premium SaaS surfaces
-
-## P5 deploy (summary)
-
-1. Vercel: Framework **Next.js**, Root Directory **`frontend`**, env `NEXT_PUBLIC_API_URL=https://api…/v1`
-2. VPS: production `.env` (`APP_ENV=production`, strong `JWT_SECRET`, `FRONTEND_URL`, `DB_SSLMODE=require`)
-3. Install `deploy/ib-api.service` + `nginx/sites/ib-community.conf`
-4. Ship binary: `DEPLOY_HOST=user@host ./scripts/deploy.sh`
-
-See [docs/deployment.md](docs/deployment.md) for the full checklist.
-
+The previous Go Fiber API is archived at [`backups/golang-api/`](backups/golang-api/README.md). Keep it for reference/rollback only.
