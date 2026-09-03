@@ -4,19 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, CirclePlay, Play, ShieldCheck } from "lucide-react";
 import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
+import { LandingDeskPreview } from "@/components/landing/LandingDeskPreview";
+import type { MarketQuote } from "@/components/landing/landing-types";
 import { LandingXauusdEducation } from "@/components/marketing/LandingXauusdEducation";
 import { ROUTES } from "@/constants";
 import { track } from "@/lib/analytics";
 import { getHookVideo, type HookVideo } from "@/services/landing";
 import { useT } from "@/i18n/useT";
-
-type MarketQuote = {
-  symbol: string;
-  name: string;
-  close: number;
-  change: number;
-  percent_change: number;
-};
 
 export default function LandingPage() {
   const { t, locale } = useT();
@@ -235,34 +229,12 @@ export default function LandingPage() {
             className="animate-rise-delay relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(140deg,#0b1326,#0b1532)] p-4 text-white shadow-[0_24px_80px_rgba(10,20,48,0.5)]"
           >
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/40 blur-3xl" />
-            <div className="relative rounded-2xl border border-white/10 bg-[#0d1833]/90 p-4 backdrop-blur">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-white/80">Santara Pips</p>
-                <span className="rounded-md border border-white/15 px-2 py-1 text-[10px] text-white/80">
-                  {copy.deskPreview}
-                </span>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {deskModules.map((m) => (
-                  <div key={m.label} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
-                    <p className="text-xs font-semibold">{m.label}</p>
-                    <p className="mt-0.5 text-[10px] text-white/60">{m.desc}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-white/50">
-                  {locale === "id" ? "Alur Member" : "Member Flow"}
-                </p>
-                <ol className="mt-2 space-y-1.5 text-[11px] text-white/75">
-                  <li>1. {locale === "id" ? "Daftar akun" : "Create account"}</li>
-                  <li>2. {locale === "id" ? "Tonton tutorial broker" : "Watch broker tutorial"}</li>
-                  <li>3. {locale === "id" ? "Daftar & verifikasi MT5" : "Register & verify MT5"}</li>
-                  <li>4. {locale === "id" ? "Deposit & upload bukti" : "Deposit & upload proof"}</li>
-                  <li>5. {locale === "id" ? "Buka fitur premium" : "Unlock premium features"}</li>
-                </ol>
-              </div>
-            </div>
+            <LandingDeskPreview
+              locale={locale}
+              quotes={quotes}
+              deskPreviewLabel={copy.deskPreview}
+              deskModules={deskModules}
+            />
             <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
               {hookVideo?.video_url ? (
                 <LandingHookVideoPlayer video={hookVideo} fallbackTitle={t("landing.hookTitle")} />
