@@ -181,6 +181,9 @@ export const en = {
     registerError: "Could not register. Email may already be in use.",
     termsTitle: "Terms & Conditions",
     termsReadFull: "Read full terms",
+    termsModalHint: "Review and accept all points below to complete registration.",
+    termsAgreeRegister: "Agree & create account",
+    termsRegisterNote: "By registering, you will be asked to review and accept our",
     invalidToken: "Invalid or expired token",
   },
   member: {

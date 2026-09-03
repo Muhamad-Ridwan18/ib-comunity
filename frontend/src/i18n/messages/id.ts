@@ -183,6 +183,9 @@ export const id: Messages = {
     registerError: "Tidak bisa mendaftar. Email mungkin sudah dipakai.",
     termsTitle: "Syarat & Ketentuan",
     termsReadFull: "Baca lengkap",
+    termsModalHint: "Baca dan setujui semua poin di bawah untuk menyelesaikan pendaftaran.",
+    termsAgreeRegister: "Setuju & buat akun",
+    termsRegisterNote: "Dengan mendaftar, Anda akan diminta membaca dan menyetujui",
     invalidToken: "Token tidak valid atau kedaluwarsa",
   },
   member: {
