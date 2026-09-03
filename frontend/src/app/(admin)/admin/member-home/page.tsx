@@ -9,7 +9,6 @@ import {
   adminUploadBarcode,
   adminUploadMemberVideo,
   type AdminMemberHome,
-  type AdminReferralSlot,
   type AdminVideoSlot,
 } from "@/services/member-home";
 import { useT } from "@/i18n/useT";
