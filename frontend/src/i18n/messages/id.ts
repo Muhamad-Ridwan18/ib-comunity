@@ -136,6 +136,8 @@ export const id: Messages = {
     footerBody:
       "Desk trading privat. Modul premium terbuka setelah verifikasi MT5 di bawah Introducing Broker kami.",
     hookTitle: "Pengenalan desk",
+    unmute: "Nyalakan suara",
+    mute: "Matikan suara",
     hookBody: "Lihat mengapa verifikasi Santara Pips membuka desk member penuh.",
     authAsideBody: "Academy, sinyal, jurnal, dan bonus terbuka setelah verifikasi MT5 di bawah Santara Pips.",
     backHome: "← Kembali ke beranda",
