@@ -32,11 +32,84 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+type MemberNavProps = {
+  pathname: string;
+  verified: boolean;
+  onNavigate?: () => void;
+};
+
+function MemberNav({ pathname, verified, onNavigate }: MemberNavProps) {
+  const { t } = useT();
+  const clearSession = useAuthStore((s) => s.clearSession);
+  const cta = membershipCta(useAuthStore.getState().user?.status);
+
+  return (
+    <>
+      <nav className="space-y-0.5 p-2">
+        {nav.map((item) => {
+          const active = isActive(pathname, item.href, item.exact);
+          const locked = item.locked && !verified;
+          return (
+            <Link
+              key={item.href + item.labelKey}
+              href={item.href}
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition",
+                active
+                  ? "nav-pill-active font-medium"
+                  : "text-muted hover:bg-accent-soft hover:text-[var(--foreground)]",
+              )}
+            >
+              <span>{t(item.labelKey)}</span>
+              {locked ? <Lock className="h-3.5 w-3.5 shrink-0 opacity-50" /> : null}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto border-t border-[var(--border)] p-2">
+        {!verified ? (
+          <Link
+            href={cta.href}
+            onClick={onNavigate}
+            className="btn-primary mb-2 flex w-full justify-center px-3 py-2 text-xs"
+          >
+            {t(cta.labelKey)}
+          </Link>
+        ) : null}
+        <Link
+          href={ROUTES.profile}
+          onClick={onNavigate}
+          className={cn(
+            "block rounded-lg px-3 py-2 text-sm transition",
+            pathname === ROUTES.profile
+              ? "nav-pill-active font-medium"
+              : "text-muted hover:bg-accent-soft hover:text-[var(--foreground)]",
+          )}
+        >
+          {t("nav.myAccount")}
+        </Link>
+        <button
+          type="button"
+          className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-accent-soft hover:text-[var(--foreground)]"
+          onClick={() => {
+            clearSession();
+            window.location.href = ROUTES.login;
+          }}
+        >
+          <LogOut className="h-4 w-4" />
+          {t("common.logout")}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function MemberShell({ children }: { children: React.ReactNode }) {
   const { t } = useT();
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
-  const clearSession = useAuthStore((s) => s.clearSession);
   const verified = isVerifiedMember(user);
   const cta = membershipCta(user?.status);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -76,151 +149,96 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
   const unread = notes.filter((n) => !n.read_at).length;
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/85 backdrop-blur-xl dark:bg-[var(--header)]">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 md:px-6">
-          <button
-            type="button"
-            className="rounded-lg p-2 text-muted hover:bg-accent-soft lg:hidden"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
+    <div className="flex min-h-screen bg-[var(--background)]">
+      <aside className="sticky top-0 hidden h-screen w-52 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--sidebar)] md:flex">
+        <div className="border-b border-[var(--border)] px-4 py-4">
           <AppLogo href={ROUTES.member} />
-
-          <nav className="ml-2 hidden items-center gap-0.5 lg:flex">
-            {nav.map((item) => {
-              const active = isActive(pathname, item.href, item.exact);
-              const locked = item.locked && !verified;
-              return (
-                <Link
-                  key={item.href + item.labelKey}
-                  href={item.href}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition",
-                    active
-                      ? "bg-accent-soft font-medium text-accent"
-                      : "text-muted hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]",
-                  )}
-                >
-                  {t(item.labelKey)}
-                  {locked ? <Lock className="h-3 w-3 opacity-50" /> : null}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-            {!verified ? (
-              <Link href={cta.href} className="btn-primary hidden px-3 py-1.5 text-xs sm:inline-flex">
-                {t(cta.labelKey)}
-              </Link>
-            ) : null}
-            <div className="relative">
-              <button
-                type="button"
-                className="relative rounded-xl p-2 text-muted transition hover:bg-accent-soft hover:text-accent"
-                onClick={() => setOpenNotes((v) => !v)}
-                aria-label={t("common.notifications")}
-              >
-                <Bell className="h-4 w-4" />
-                {unread > 0 ? (
-                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
-                ) : null}
-              </button>
-              {openNotes ? (
-                <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-[var(--border)] bg-[var(--card-solid)] p-2 shadow-[var(--shadow)]">
-                  {notes.length === 0 ? (
-                    <p className="px-3 py-4 text-xs text-muted">{t("common.noNotifications")}</p>
-                  ) : (
-                    notes.slice(0, 6).map((n) => (
-                      <Link
-                        key={n.id}
-                        href={n.link || ROUTES.support}
-                        className="block rounded-xl px-3 py-2.5 text-xs hover:bg-accent-soft"
-                        onClick={() => setOpenNotes(false)}
-                      >
-                        <p className="font-medium">{n.title}</p>
-                        <p className="mt-0.5 text-muted">{n.body}</p>
-                      </Link>
-                    ))
-                  )}
-                </div>
-              ) : null}
-            </div>
-            <LocaleToggle />
-            <ThemeToggle />
-            <Link
-              href={ROUTES.profile}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-white shadow-sm"
-              title={user?.email}
-            >
-              {initials}
-            </Link>
-          </div>
         </div>
-        <VerificationBanner />
-      </header>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto py-2">
+          <MemberNav pathname={pathname} verified={verified} />
+        </div>
+      </aside>
 
-      <main className="mx-auto w-full max-w-7xl animate-fade px-4 py-6 md:px-6 md:py-8">{children}</main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--header)] backdrop-blur-xl">
+          <div className="flex h-12 items-center gap-3 px-4 md:px-6">
+            <button
+              type="button"
+              className="rounded-lg p-1.5 text-muted hover:bg-accent-soft md:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <AppLogo href={ROUTES.member} compact className="md:hidden" />
+            <p className="hidden text-sm font-medium md:block">{t("member.memberDesk")}</p>
+
+            <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+              {!verified ? (
+                <Link href={cta.href} className="btn-primary hidden px-3 py-1.5 text-xs sm:inline-flex">
+                  {t(cta.labelKey)}
+                </Link>
+              ) : null}
+              <div className="relative">
+                <button
+                  type="button"
+                  className="relative rounded-xl p-2 text-muted transition hover:bg-accent-soft hover:text-accent"
+                  onClick={() => setOpenNotes((v) => !v)}
+                  aria-label={t("common.notifications")}
+                >
+                  <Bell className="h-4 w-4" />
+                  {unread > 0 ? (
+                    <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
+                  ) : null}
+                </button>
+                {openNotes ? (
+                  <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl border border-[var(--border)] bg-[var(--card-solid)] p-2 shadow-[var(--shadow)]">
+                    {notes.length === 0 ? (
+                      <p className="px-3 py-4 text-xs text-muted">{t("common.noNotifications")}</p>
+                    ) : (
+                      notes.slice(0, 6).map((n) => (
+                        <Link
+                          key={n.id}
+                          href={n.link || ROUTES.support}
+                          className="block rounded-xl px-3 py-2.5 text-xs hover:bg-accent-soft"
+                          onClick={() => setOpenNotes(false)}
+                        >
+                          <p className="font-medium">{n.title}</p>
+                          <p className="mt-0.5 text-muted">{n.body}</p>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                ) : null}
+              </div>
+              <LocaleToggle />
+              <ThemeToggle />
+              <Link
+                href={ROUTES.profile}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-white shadow-sm"
+                title={user?.email}
+              >
+                {initials}
+              </Link>
+            </div>
+          </div>
+          <VerificationBanner />
+        </header>
+
+        <main className="w-full flex-1 animate-fade px-4 py-6 md:px-6 lg:px-8">{children}</main>
+      </div>
 
       <Sheet
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         side="left"
-        title={t("common.menu")}
+        title={t("member.memberDesk")}
         description={verified ? t("member.verifiedMember") : t("member.modulesLocked")}
-        widthClassName="w-[min(20rem,88vw)]"
+        widthClassName="w-[min(18rem,88vw)]"
       >
-        <nav className="space-y-1 p-3">
-          {!verified ? (
-            <Link
-              href={cta.href}
-              onClick={() => setMobileOpen(false)}
-              className="btn-primary mb-3 flex w-full justify-center"
-            >
-              {t(cta.labelKey)}
-            </Link>
-          ) : null}
-          {nav.map((item) => {
-            const active = isActive(pathname, item.href, item.exact);
-            const locked = item.locked && !verified;
-            return (
-              <Link
-                key={item.href + item.labelKey}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "flex items-center justify-between rounded-xl px-3 py-2.5 text-sm",
-                  active ? "bg-accent-soft font-medium text-accent" : "text-muted hover:bg-accent-soft",
-                )}
-              >
-                <span>{t(item.labelKey)}</span>
-                {locked ? <Lock className="h-3.5 w-3.5" /> : null}
-              </Link>
-            );
-          })}
-          <Link
-            href={ROUTES.profile}
-            onClick={() => setMobileOpen(false)}
-            className="flex rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-accent-soft"
-          >
-            {t("nav.myAccount")}
-          </Link>
-          <button
-            type="button"
-            className="mt-4 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-accent-soft"
-            onClick={() => {
-              clearSession();
-              window.location.href = ROUTES.login;
-            }}
-          >
-            <LogOut className="h-4 w-4" />
-            {t("common.logout")}
-          </button>
-        </nav>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <MemberNav pathname={pathname} verified={verified} onNavigate={() => setMobileOpen(false)} />
+        </div>
       </Sheet>
     </div>
   );
