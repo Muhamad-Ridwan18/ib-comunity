@@ -160,6 +160,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/ai/conversations/{id}', [AdminAiController::class, 'show']);
 
             Route::post('/uploads', [UploadController::class, 'storeAdmin']);
+            Route::post('/uploads/video', [UploadController::class, 'storeAdminVideo']);
 
             Route::get('/landing/hook-video', [AdminLandingHookVideoController::class, 'show']);
             Route::put('/landing/hook-video', [AdminLandingHookVideoController::class, 'update']);

@@ -9,11 +9,12 @@ import { useT } from "@/i18n/useT";
 import { track } from "@/lib/analytics";
 
 const UNLOCK_KEYS = [
-  "member.unlockAcademy",
-  "member.unlockAnalysis",
-  "member.unlockSignals",
-  "member.unlockJournal",
-  "member.unlockTelegram",
+  "member.psychology",
+  "member.technical",
+  "nav.signals",
+  "member.compounding",
+  "member.calendar",
+  "member.tools",
 ] as const;
 
 export function LockedModule({ title }: { title: string }) {

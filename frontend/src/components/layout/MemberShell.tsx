@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, Lock, LogOut, Menu } from "lucide-react";
+import { memberNav } from "@/config/member-nav";
 import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store/auth";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
@@ -12,20 +13,9 @@ import { AppLogo } from "@/components/layout/AppLogo";
 import { Sheet } from "@/components/ui/Sheet";
 import { VerificationBanner } from "@/components/member/VerificationBanner";
 import { listNotifications, type NotificationItem } from "@/services/notifications";
-import { isVerifiedMember, membershipCta } from "@/lib/membership";
+import { isVerifiedMember } from "@/lib/membership";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/useT";
-
-const nav: { href: string; labelKey: string; exact?: boolean; locked?: boolean }[] = [
-  { href: ROUTES.member, labelKey: "nav.home", exact: true },
-  { href: ROUTES.academy, labelKey: "nav.academy", locked: true },
-  { href: ROUTES.analysis, labelKey: "nav.analysis", locked: true },
-  { href: ROUTES.psychology, labelKey: "member.psychology", locked: true },
-  { href: ROUTES.signals, labelKey: "nav.signals", locked: true },
-  { href: ROUTES.journal, labelKey: "nav.journal", locked: true },
-  { href: ROUTES.bonus, labelKey: "nav.bonus", locked: true },
-  { href: ROUTES.support, labelKey: "nav.support" },
-];
 
 function isActive(pathname: string, href: string, exact?: boolean) {
   if (exact) return pathname === href;
@@ -41,28 +31,33 @@ type MemberNavProps = {
 function MemberNav({ pathname, verified, onNavigate }: MemberNavProps) {
   const { t } = useT();
   const clearSession = useAuthStore((s) => s.clearSession);
-  const cta = membershipCta(useAuthStore.getState().user?.status);
 
   return (
     <>
       <nav className="space-y-0.5 p-2">
-        {nav.map((item) => {
+        {memberNav.map((item) => {
           const active = isActive(pathname, item.href, item.exact);
-          const locked = item.locked && !verified;
+          const locked = Boolean(item.locked) && !verified;
+          const className = cn(
+            "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition",
+            active && !locked
+              ? "nav-pill-active font-medium"
+              : "text-muted",
+            locked ? "cursor-not-allowed opacity-55" : "hover:bg-accent-soft hover:text-[var(--foreground)]",
+          );
+
+          if (locked) {
+            return (
+              <span key={item.href + item.labelKey} className={className} aria-disabled="true">
+                <span>{t(item.labelKey)}</span>
+                <Lock className="h-3.5 w-3.5 shrink-0 opacity-70" />
+              </span>
+            );
+          }
+
           return (
-            <Link
-              key={item.href + item.labelKey}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition",
-                active
-                  ? "nav-pill-active font-medium"
-                  : "text-muted hover:bg-accent-soft hover:text-[var(--foreground)]",
-              )}
-            >
+            <Link key={item.href + item.labelKey} href={item.href} onClick={onNavigate} className={className}>
               <span>{t(item.labelKey)}</span>
-              {locked ? <Lock className="h-3.5 w-3.5 shrink-0 opacity-50" /> : null}
             </Link>
           );
         })}
@@ -71,11 +66,11 @@ function MemberNav({ pathname, verified, onNavigate }: MemberNavProps) {
       <div className="mt-auto border-t border-[var(--border)] p-2">
         {!verified ? (
           <Link
-            href={cta.href}
+            href={ROUTES.verification}
             onClick={onNavigate}
             className="btn-primary mb-2 flex w-full justify-center px-3 py-2 text-xs"
           >
-            {t(cta.labelKey)}
+            {t("member.verification")}
           </Link>
         ) : null}
         <Link
@@ -111,7 +106,6 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const verified = isVerifiedMember(user);
-  const cta = membershipCta(user?.status);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notes, setNotes] = useState<NotificationItem[]>([]);
   const [openNotes, setOpenNotes] = useState(false);
@@ -175,8 +169,8 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
 
             <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
               {!verified ? (
-                <Link href={cta.href} className="btn-primary hidden px-3 py-1.5 text-xs sm:inline-flex">
-                  {t(cta.labelKey)}
+                <Link href={ROUTES.verification} className="btn-primary hidden px-3 py-1.5 text-xs sm:inline-flex">
+                  {t("member.verification")}
                 </Link>
               ) : null}
               <div className="relative">

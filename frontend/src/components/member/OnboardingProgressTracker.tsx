@@ -28,11 +28,12 @@ const NEXT_ACTION_KEYS = [
 ] as const;
 
 const UNLOCK_KEYS = [
-  "member.unlockAcademy",
-  "member.unlockAnalysis",
-  "member.unlockSignals",
-  "member.unlockJournal",
-  "member.unlockTelegram",
+  "member.psychology",
+  "member.technical",
+  "nav.signals",
+  "member.compounding",
+  "member.calendar",
+  "member.tools",
 ] as const;
 
 type Props = {

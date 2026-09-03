@@ -41,8 +41,6 @@ export async function adminUpdateHookVideo(input: {
 export async function adminUploadHookVideo(file: File) {
   const form = new FormData();
   form.append("file", file);
-  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads?purpose=video", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads/video", form);
   return data;
 }

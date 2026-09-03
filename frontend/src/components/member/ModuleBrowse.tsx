@@ -77,7 +77,15 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
     <div className="space-y-6">
       <PageHeader
         kicker={verified ? t("member.unlocked") : t("member.preview")}
-        title={t(module === "academy" ? "nav.academy" : module === "psychology" ? "member.psychology" : module === "daily_analysis" ? "member.dailyAnalysisShort" : "member.education")}
+        title={t(
+          module === "academy"
+            ? "nav.academy"
+            : module === "psychology"
+              ? "member.psychology"
+              : module === "daily_analysis"
+                ? "member.technical"
+                : "member.education",
+        )}
         description={
           verified ? t("member.browseVerified") : t("member.browseLocked")
         }
