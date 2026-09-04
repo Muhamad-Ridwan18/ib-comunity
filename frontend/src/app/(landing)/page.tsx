@@ -7,11 +7,13 @@ import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPla
 import { LandingDeskPreview } from "@/components/landing/LandingDeskPreview";
 import type { MarketQuote } from "@/components/landing/landing-types";
 import { LandingXauusdEducation } from "@/components/marketing/LandingXauusdEducation";
-import { AppLogo } from "@/components/layout/AppLogo";
-import { ROUTES } from "@/constants";
+import { APP_NAME, ROUTES } from "@/constants";
 import { track } from "@/lib/analytics";
 import { getHookVideo, type HookVideo } from "@/services/landing";
 import { useT } from "@/i18n/useT";
+
+/** Hero mark size — change this to scale the logo. */
+const HERO_LOGO_CLASS = "h-16 w-auto md:h-20";
 
 export default function LandingPage() {
   const { t, locale } = useT();
@@ -125,15 +127,22 @@ export default function LandingPage() {
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-14 pt-14 md:grid-cols-[1.02fr_0.98fr] md:pb-20 md:pt-16">
           <div className="animate-rise">
-            <h1 className="sr-only">Santara Pips</h1>
-            <AppLogo
-              className="pointer-events-none gap-3.5"
-              markClassName="h-12 w-12 rounded-xl text-sm md:h-14 md:w-14 md:text-base"
-              nameClassName="text-3xl font-semibold tracking-tight md:text-5xl"
-            />
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-muted md:text-lg">
-              {copy.heroSub}
-            </p>
+            <div className="flex items-center gap-3 md:gap-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-santara.png"
+                alt=""
+                aria-hidden
+                className={`${HERO_LOGO_CLASS} shrink-0 object-contain`}
+              />
+              <span className="select-none text-2xl font-light text-muted/50 md:text-4xl" aria-hidden>
+                |
+              </span>
+              <div className="min-w-0">
+                <h1 className="font-display text-3xl font-semibold tracking-tight md:text-5xl">{APP_NAME}</h1>
+                <p className="mt-1.5 text-sm leading-snug text-muted md:mt-2 md:text-base">{copy.heroSub}</p>
+              </div>
+            </div>
             <div className="mt-7 flex flex-wrap gap-2.5">
               <Link href={ROUTES.register} className="btn-primary gap-2 px-5 py-2.5" onClick={() => track("cta_click", { source: "hero" })}>
                 {copy.joinNow}
@@ -194,21 +203,24 @@ export default function LandingPage() {
             className="animate-rise-delay relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(140deg,#0b1326,#0b1532)] p-4 text-white shadow-[0_24px_80px_rgba(10,20,48,0.5)]"
           >
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/40 blur-3xl" />
-            <LandingDeskPreview locale={locale} quotes={quotes} />
-            <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
+            <div className="-mx-1 overflow-hidden rounded-xl border border-white/10 sm:mx-0">
               {hookVideo?.video_url ? (
                 <LandingHookVideoPlayer
                   video={hookVideo}
                   fallbackTitle={t("landing.hookTitle")}
+                  className="aspect-[16/10] w-full"
                   autoPlay={false}
                   loop={false}
                 />
               ) : (
-                <div className="flex aspect-video items-center justify-center gap-2 bg-[#0d1833]/90 text-white/90">
+                <div className="flex aspect-[16/10] items-center justify-center gap-2 bg-[#0d1833]/90 text-white/90">
                   <Play className="h-5 w-5 fill-current" />
                   <p className="text-sm font-medium">{t("landing.hookTitle")}</p>
                 </div>
               )}
+            </div>
+            <div className="mt-3">
+              <LandingDeskPreview locale={locale} quotes={quotes} />
             </div>
           </div>
         </div>
