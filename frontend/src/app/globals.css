@@ -88,9 +88,10 @@ body {
     linear-gradient(to bottom, var(--background), var(--background));
 }
 
-/* Bootstrap-like container-fluid: full width with side padding only */
+/* Responsive container: full on small screens, capped around xl */
 .container-fluid {
   width: 100%;
+  max-width: 80rem; /* ~xl / max-w-7xl */
   margin-inline: auto;
   padding-inline: 1rem;
 }
@@ -104,12 +105,6 @@ body {
 @media (min-width: 1024px) {
   .container-fluid {
     padding-inline: 2rem;
-  }
-}
-
-@media (min-width: 1536px) {
-  .container-fluid {
-    padding-inline: 2.5rem;
   }
 }
 
