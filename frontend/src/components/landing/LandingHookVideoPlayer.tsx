@@ -42,8 +42,8 @@ export function LandingHookVideoPlayer({
 
   const title = video.title || fallbackTitle;
   const frameClass = className ?? "aspect-video w-full";
-  const controls = showControls ?? !autoPlay;
-  const useCustomControls = !autoPlay && video.kind === "file";
+  const useCustomControls = video.kind === "file";
+  const controls = showControls ?? (!autoPlay && !useCustomControls);
 
   useEffect(() => {
     setPlaying(false);

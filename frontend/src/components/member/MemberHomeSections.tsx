@@ -18,11 +18,12 @@ function qrFallbackUrl(link: string) {
 }
 
 const VIDEO_FRAME = "aspect-video w-full";
+const VIDEO_WRAP = "mx-auto w-full max-w-4xl overflow-hidden rounded-xl border border-[var(--border)]";
 
 export function MemberHomeSections({ content, firstName }: Props) {
   const { t } = useT();
   const [copied, setCopied] = useState(false);
-  const [activeVideo, setActiveVideo] = useState<ActiveVideo>(content.welcome ? "welcome" : null);
+  const [activeVideo, setActiveVideo] = useState<ActiveVideo>(null);
 
   const copyLink = async (link: string) => {
     try {
@@ -52,13 +53,15 @@ export function MemberHomeSections({ content, firstName }: Props) {
           <div className="mb-3">
             <p className="section-kicker">{t("member.welcomeVideoKicker")}</p>
             <h2 className="font-display mt-1 text-lg font-semibold tracking-tight">{content.welcome.title}</h2>
+            <p className="mt-1 text-xs text-muted">{t("member.tutorialTapToPlay")}</p>
           </div>
-          <div className="mx-auto max-w-md overflow-hidden rounded-lg border border-[var(--border)]">
+          <div className={VIDEO_WRAP}>
             <LandingHookVideoPlayer
               video={content.welcome}
               fallbackTitle={content.welcome.title}
               className={VIDEO_FRAME}
-              autoPlay
+              autoPlay={false}
+              loop={false}
               paused={activeVideo !== null && activeVideo !== "welcome"}
               onPlay={handleWelcomePlay}
             />
@@ -120,14 +123,13 @@ export function MemberHomeSections({ content, firstName }: Props) {
             <h2 className="font-display mt-1 text-lg font-semibold tracking-tight">{content.tutorial.title}</h2>
             <p className="mt-1 text-xs text-muted">{t("member.tutorialTapToPlay")}</p>
           </div>
-          <div className="mx-auto max-w-md overflow-hidden rounded-lg border border-[var(--border)]">
+          <div className={VIDEO_WRAP}>
             <LandingHookVideoPlayer
               video={content.tutorial}
               fallbackTitle={content.tutorial.title}
               className={VIDEO_FRAME}
               autoPlay={false}
               loop={false}
-              showSoundToggle={false}
               paused={activeVideo !== null && activeVideo !== "tutorial"}
               onPlay={handleTutorialPlay}
             />
