@@ -23,7 +23,7 @@ export function AboutSantaraProfile() {
     <div className="bg-[var(--background)]">
       <section className="relative overflow-hidden border-b border-[var(--border)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_80%_0%,rgba(0,82,255,0.16),transparent_55%)]" />
-        <div className="relative mx-auto max-w-6xl px-4 py-12 md:py-16">
+        <div className="relative container-fluid py-12 md:py-16">
           <p className="section-kicker">{c.whatIs.kicker}</p>
           <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight md:text-5xl">{c.brandLine}</h1>
           <p className="mt-2 text-sm font-medium uppercase tracking-[0.2em] text-muted md:text-base">{c.tagline}</p>
@@ -49,7 +49,7 @@ export function AboutSantaraProfile() {
       </section>
 
       <section className="border-b border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <p className="section-kicker">{c.notJustEntry.kicker}</p>
           <h2 className="section-title mt-2 max-w-3xl">{c.notJustEntry.title}</h2>
           <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-muted md:text-base">
@@ -63,7 +63,7 @@ export function AboutSantaraProfile() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+      <section className="container-fluid py-12 md:py-14">
         <div className="flex items-center gap-2">
           <LineChart className="h-4 w-4 text-accent" />
           <p className="section-kicker">{c.technical.kicker}</p>
@@ -81,7 +81,7 @@ export function AboutSantaraProfile() {
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-accent" />
             <p className="section-kicker">{c.risk.kicker}</p>
@@ -102,7 +102,7 @@ export function AboutSantaraProfile() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+      <section className="container-fluid py-12 md:py-14">
         <div className="flex items-center gap-2">
           <Target className="h-4 w-4 text-accent" />
           <p className="section-kicker">{c.independence.kicker}</p>
@@ -121,7 +121,7 @@ export function AboutSantaraProfile() {
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <p className="section-kicker">{c.experience.kicker}</p>
           <h2 className="section-title mt-2">{c.experience.title}</h2>
           <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-muted md:text-base">
@@ -132,7 +132,7 @@ export function AboutSantaraProfile() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+      <section className="container-fluid py-12 md:py-14">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-accent" />
           <p className="section-kicker">{c.community.kicker}</p>
@@ -146,7 +146,7 @@ export function AboutSantaraProfile() {
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-accent" />
             <p className="section-kicker">{c.ai.kicker}</p>
@@ -160,7 +160,7 @@ export function AboutSantaraProfile() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+      <section className="container-fluid py-12 md:py-14">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-accent" />
           <p className="section-kicker">{c.philosophy.kicker}</p>
@@ -179,7 +179,7 @@ export function AboutSantaraProfile() {
         </p>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-12 md:pb-16">
+      <section className="container-fluid pb-12 md:pb-16">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 md:p-6">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Disclaimer</p>
           <p className="mt-3 text-xs leading-relaxed text-muted md:text-sm">{c.disclaimer}</p>

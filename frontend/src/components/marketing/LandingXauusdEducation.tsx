@@ -19,14 +19,14 @@ export function LandingXauusdEducation() {
 
   return (
     <div className="border-t border-[var(--border)] bg-[var(--background)]">
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-16">
+      <section className="container-fluid py-12 md:py-16">
         <p className="section-kicker">{c.kicker}</p>
         <h2 className="section-title mt-2 max-w-3xl">{c.title}</h2>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted md:text-base">{c.subtitle}</p>
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <p className="section-kicker">{c.intro.kicker}</p>
           <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-muted md:text-base">
             {c.intro.paragraphs.map((p) => (
@@ -36,7 +36,7 @@ export function LandingXauusdEducation() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+      <section className="container-fluid py-12 md:py-14">
         <p className="section-kicker">{c.whatIs.kicker}</p>
         <h3 className="section-title mt-2 max-w-3xl">{c.whatIs.title}</h3>
         <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-muted md:text-base">
@@ -72,7 +72,7 @@ export function LandingXauusdEducation() {
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <div className="flex items-center gap-2">
             <GitCompare className="h-4 w-4 text-accent" />
             <p className="section-kicker">{c.compare.kicker}</p>
@@ -98,7 +98,7 @@ export function LandingXauusdEducation() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+      <section className="container-fluid py-12 md:py-14">
         <p className="section-kicker">{c.binary.kicker}</p>
         <h3 className="section-title mt-2 max-w-3xl">{c.binary.title}</h3>
         <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-muted md:text-base">
@@ -113,7 +113,7 @@ export function LandingXauusdEducation() {
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-accent" />
             <p className="section-kicker">{c.mindset.kicker}</p>
@@ -131,7 +131,7 @@ export function LandingXauusdEducation() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+      <section className="container-fluid py-12 md:py-14">
         <div className="flex items-center gap-2">
           <Target className="h-4 w-4 text-accent" />
           <p className="section-kicker">{c.process.kicker}</p>
@@ -149,7 +149,7 @@ export function LandingXauusdEducation() {
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--card)]">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
+        <div className="container-fluid py-12 md:py-14">
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-accent" />
             <p className="section-kicker">{c.curriculum.kicker}</p>
@@ -169,7 +169,7 @@ export function LandingXauusdEducation() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 pb-16 md:py-16">
+      <section className="container-fluid py-12 pb-16 md:py-16">
         <div className="rounded-3xl border border-[var(--border)] bg-[linear-gradient(135deg,var(--accent-soft),transparent_60%)] p-6 md:p-10">
           <div className="flex items-start gap-3">
             <BarChart3 className="mt-1 h-5 w-5 shrink-0 text-accent" />

@@ -35,7 +35,7 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-[var(--border)] py-14">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 lg:grid-cols-[1.15fr_0.7fr_0.7fr_0.9fr]">
+      <div className="container-fluid grid gap-10 lg:grid-cols-[1.15fr_0.7fr_0.7fr_0.9fr]">
         <div>
           <p className="font-display text-xl font-semibold">{APP_NAME}</p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">{labels.about}</p>
@@ -90,7 +90,7 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-2 border-t border-[var(--border)] px-4 pt-6 text-xs text-muted md:flex-row md:items-center md:justify-between">
+      <div className="container-fluid mt-10 flex flex-col gap-2 border-t border-[var(--border)] pt-6 text-xs text-muted md:flex-row md:items-center md:justify-between">
         <p>© {new Date().getFullYear()} {APP_NAME}</p>
         <p>{t("landing.footerBody")}</p>
       </div>

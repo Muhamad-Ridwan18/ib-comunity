@@ -108,7 +108,7 @@ export default function LandingPage() {
 
         {marketLive && displayQuotes.length > 0 ? (
           <div className="border-b border-[var(--border)]/70 bg-[var(--card)]/55 backdrop-blur">
-            <div className="mx-auto max-w-6xl overflow-hidden px-4">
+            <div className="container-fluid overflow-hidden">
               <div className="market-ticker py-2.5">
                 {[...displayQuotes, ...displayQuotes].map((quote, i) => {
                   const positive = quote.change >= 0;
@@ -133,7 +133,7 @@ export default function LandingPage() {
           </div>
         ) : null}
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-12 md:pb-16 md:pt-14">
+        <div className="container-fluid relative pb-12 pt-12 md:pb-16 md:pt-14">
           <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
             <div className="animate-rise">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c5a059]/35 bg-[#c5a059]/10 px-3 py-1 text-[11px] font-semibold text-[#c5a059]">
@@ -242,7 +242,7 @@ export default function LandingPage() {
         <LandingXauusdEducation />
       </div>
 
-      <section className="mx-auto max-w-6xl px-4 pb-24 pt-4">
+      <section className="container-fluid pb-24 pt-4">
         <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(135deg,#0052ff,#003bb8)] px-6 py-12 text-center text-white md:px-14">
           <div className="pointer-events-none absolute -left-12 top-0 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -right-10 bottom-0 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
