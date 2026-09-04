@@ -2,18 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, CirclePlay, Play } from "lucide-react";
+import { ArrowRight, CirclePlay, Play, Star } from "lucide-react";
 import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
 import { LandingDeskPreview } from "@/components/landing/LandingDeskPreview";
 import type { MarketQuote } from "@/components/landing/landing-types";
 import { LandingXauusdEducation } from "@/components/marketing/LandingXauusdEducation";
-import { APP_NAME, ROUTES } from "@/constants";
+import { ROUTES } from "@/constants";
 import { track } from "@/lib/analytics";
 import { getHookVideo, type HookVideo } from "@/services/landing";
 import { useT } from "@/i18n/useT";
-
-/** Hero mark size — change this to scale the logo. */
-const HERO_LOGO_CLASS = "h-28 w-auto md:h-40";
 
 export default function LandingPage() {
   const { t, locale } = useT();
@@ -68,41 +65,52 @@ export default function LandingPage() {
   const copy =
     locale === "id"
       ? {
+          badge: "#1 Community Trading",
+          heroTitleA: "Santara",
+          heroTitleB: "Pips",
           heroSub: "Grow Your Pips, The Santara Way.",
+          heroBody:
+            "Komunitas trading dengan edukasi, analisis pasar, dan sinyal yang membantu Anda tumbuh lebih terarah.",
           joinNow: "Daftar Gratis",
           demo: "Lihat Demo",
           marketLive: "Data pasar · update ~45 detik",
           marketUnavailable: "Data pasar sementara tidak tersedia",
+          snapshot: "Snapshot Pasar",
           ctaTitle: "Siap mulai perjalanan trading Anda?",
           ctaBody:
             "Daftar gratis, pelajari materi edukasi, lalu selesaikan verifikasi saat siap membuka fitur premium.",
           ctaBtn: "Daftar Sekarang",
         }
       : {
+          badge: "#1 Community Trading",
+          heroTitleA: "Santara",
+          heroTitleB: "Pips",
           heroSub: "Grow Your Pips, The Santara Way.",
+          heroBody:
+            "A trading community with education, market analysis, and signals that help you grow with clearer direction.",
           joinNow: "Register Free",
           demo: "Watch Demo",
           marketLive: "Market data · ~45s refresh",
           marketUnavailable: "Market data temporarily unavailable",
+          snapshot: "Market Snapshot",
           ctaTitle: "Ready to start your trading journey?",
           ctaBody:
             "Register free, study the education material, then complete verification when you're ready for premium access.",
           ctaBtn: "Register Now",
         };
 
+  const displayQuotes = quotes.length > 0 ? quotes : [];
+
   return (
     <>
       <section className="relative overflow-hidden border-b border-[var(--border)]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_75%_10%,rgba(0,82,255,0.22),transparent_58%),radial-gradient(ellipse_40%_35%_at_20%_0%,rgba(0,82,255,0.14),transparent_60%)] dark:bg-[radial-gradient(ellipse_60%_50%_at_75%_10%,rgba(59,130,246,0.28),transparent_58%),radial-gradient(ellipse_40%_35%_at_20%_0%,rgba(59,130,246,0.16),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_18%_18%,rgba(197,160,89,0.12),transparent_55%),radial-gradient(ellipse_50%_40%_at_85%_10%,rgba(0,82,255,0.2),transparent_58%)] dark:bg-[radial-gradient(ellipse_55%_45%_at_18%_18%,rgba(197,160,89,0.14),transparent_55%),radial-gradient(ellipse_50%_40%_at_85%_10%,rgba(59,130,246,0.22),transparent_58%)]" />
 
-        {marketLive && quotes.length > 0 ? (
+        {marketLive && displayQuotes.length > 0 ? (
           <div className="border-b border-[var(--border)]/70 bg-[var(--card)]/55 backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1.5">
-              <p className="text-[10px] font-medium text-muted">{copy.marketLive}</p>
-            </div>
-            <div className="mx-auto flex max-w-6xl overflow-hidden px-4">
-              <div className="market-ticker py-2">
-                {[...quotes, ...quotes].map((quote, i) => {
+            <div className="mx-auto max-w-6xl overflow-hidden px-4">
+              <div className="market-ticker py-2.5">
+                {[...displayQuotes, ...displayQuotes].map((quote, i) => {
                   const positive = quote.change >= 0;
                   return (
                     <div
@@ -125,101 +133,105 @@ export default function LandingPage() {
           </div>
         ) : null}
 
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-14 pt-14 md:grid-cols-[1.02fr_0.98fr] md:pb-20 md:pt-16">
-          <div className="animate-rise">
-            <div className="flex items-center gap-3 md:gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo-santara.png"
-                alt=""
-                aria-hidden
-                className={`${HERO_LOGO_CLASS} shrink-0 object-contain`}
-              />
-              <span className="select-none text-2xl font-light text-muted/50 md:text-4xl" aria-hidden>
-                |
+        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-12 md:pb-16 md:pt-14">
+          <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
+            <div className="animate-rise">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c5a059]/35 bg-[#c5a059]/10 px-3 py-1 text-[11px] font-semibold text-[#c5a059]">
+                <Star className="h-3 w-3 fill-current" />
+                {copy.badge}
               </span>
-              <div className="min-w-0">
-                <h1 className="font-display text-3xl font-semibold tracking-tight md:text-5xl">{APP_NAME}</h1>
-                <p className="mt-1.5 text-sm leading-snug text-muted md:mt-2 md:text-base">{copy.heroSub}</p>
+
+              <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
+                {copy.heroTitleA}{" "}
+                <span className="text-[#c5a059]">{copy.heroTitleB}</span>
+              </h1>
+              <p className="mt-3 text-base font-medium text-[var(--foreground)] md:text-lg">{copy.heroSub}</p>
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-muted md:text-[15px]">{copy.heroBody}</p>
+
+              <div className="mt-7 flex flex-wrap gap-2.5">
+                <Link
+                  href={ROUTES.register}
+                  className="btn-primary gap-2 px-5 py-2.5"
+                  onClick={() => track("cta_click", { source: "hero" })}
+                >
+                  {copy.joinNow}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a href="#hook" className="btn-ghost gap-2 px-5 py-2.5">
+                  <CirclePlay className="h-4 w-4" />
+                  {copy.demo}
+                </a>
               </div>
             </div>
-            <div className="mt-7 flex flex-wrap gap-2.5">
-              <Link href={ROUTES.register} className="btn-primary gap-2 px-5 py-2.5" onClick={() => track("cta_click", { source: "hero" })}>
-                {copy.joinNow}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a href="#education" className="btn-ghost gap-2 px-5 py-2.5">
-                <CirclePlay className="h-4 w-4" />
-                {copy.demo}
-              </a>
-            </div>
 
-            {marketLive && quotes.length > 0 ? (
-              <div className="mt-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 p-3 backdrop-blur">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-                    {locale === "id" ? "Snapshot Pasar" : "Market Snapshot"}
-                  </p>
+            <div
+              id="hook"
+              className="animate-rise-delay relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(140deg,#0b1326,#0b1532)] p-2 text-white shadow-[0_24px_80px_rgba(10,20,48,0.5)] sm:p-3"
+            >
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/35 blur-3xl" />
+              <div className="relative overflow-hidden rounded-2xl border border-white/10">
+                {hookVideo?.video_url ? (
+                  <LandingHookVideoPlayer
+                    video={hookVideo}
+                    fallbackTitle={t("landing.hookTitle")}
+                    className="aspect-[16/10] w-full md:aspect-[16/9]"
+                    autoPlay={false}
+                    loop={false}
+                  />
+                ) : (
+                  <div className="flex aspect-[16/10] items-center justify-center gap-2 bg-[#0d1833]/90 text-white/90 md:aspect-[16/9]">
+                    <Play className="h-5 w-5 fill-current" />
+                    <p className="text-sm font-medium">{t("landing.hookTitle")}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 grid items-start gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:gap-8">
+            <div className="animate-rise rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 p-4 backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.snapshot}</p>
+                {marketLive ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-500">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     {copy.marketLive}
                   </span>
-                </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {quotes.map((quote) => {
+                ) : null}
+              </div>
+
+              {displayQuotes.length > 0 ? (
+                <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                  {displayQuotes.slice(0, 4).map((quote) => {
                     const positive = quote.change >= 0;
                     return (
                       <div
                         key={quote.symbol}
-                        className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-2.5"
+                        className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-3"
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <p className="text-xs font-semibold">{quote.symbol}</p>
-                            <p className="text-[10px] text-muted">{quote.name}</p>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold">{quote.symbol}</p>
+                            <p className="mt-0.5 truncate text-[11px] text-muted">{quote.name}</p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs font-semibold">
-                              {quote.close >= 100 ? quote.close.toLocaleString() : quote.close.toFixed(4)}
-                            </p>
-                            <p className={`text-[10px] font-medium ${positive ? "text-emerald-500" : "text-rose-500"}`}>
-                              {positive ? "+" : ""}
-                              {quote.percent_change.toFixed(2)}%
-                            </p>
-                          </div>
+                          <p className={`shrink-0 text-xs font-semibold ${positive ? "text-emerald-500" : "text-rose-500"}`}>
+                            {positive ? "+" : ""}
+                            {quote.percent_change.toFixed(2)}%
+                          </p>
                         </div>
+                        <p className="mt-2 text-lg font-semibold tabular-nums tracking-tight">
+                          {quote.close >= 100 ? quote.close.toLocaleString() : quote.close.toFixed(4)}
+                        </p>
                       </div>
                     );
                   })}
                 </div>
-              </div>
-            ) : (
-              <p className="mt-6 text-xs text-muted">{copy.marketUnavailable}</p>
-            )}
-          </div>
-
-          <div
-            id="hook"
-            className="animate-rise-delay relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[linear-gradient(140deg,#0b1326,#0b1532)] p-4 text-white shadow-[0_24px_80px_rgba(10,20,48,0.5)]"
-          >
-            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/40 blur-3xl" />
-            <div className="-mx-1 overflow-hidden rounded-xl border border-white/10 sm:mx-0">
-              {hookVideo?.video_url ? (
-                <LandingHookVideoPlayer
-                  video={hookVideo}
-                  fallbackTitle={t("landing.hookTitle")}
-                  className="aspect-[16/10] w-full"
-                  autoPlay={false}
-                  loop={false}
-                />
               ) : (
-                <div className="flex aspect-[16/10] items-center justify-center gap-2 bg-[#0d1833]/90 text-white/90">
-                  <Play className="h-5 w-5 fill-current" />
-                  <p className="text-sm font-medium">{t("landing.hookTitle")}</p>
-                </div>
+                <p className="mt-4 text-xs text-muted">{copy.marketUnavailable}</p>
               )}
             </div>
-            <div className="mt-3">
+
+            <div className="animate-rise-delay">
               <LandingDeskPreview locale={locale} quotes={quotes} />
             </div>
           </div>

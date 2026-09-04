@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { APP_NAME, ROUTES } from "@/constants";
 import { cn } from "@/lib/utils";
-import { useBrandingStore } from "@/store/branding";
+
+const STATIC_LOGO = "/logo-santara.png";
 
 type AppLogoProps = {
   href?: string;
@@ -14,27 +15,14 @@ type AppLogoProps = {
 };
 
 export function AppLogo({ href = ROUTES.home, compact, className, markClassName, nameClassName }: AppLogoProps) {
-  const logoUrl = useBrandingStore((s) => s.logoUrl);
-
   return (
     <Link href={href} className={cn("group flex items-center gap-2.5", className)}>
-      {logoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={logoUrl}
-          alt={APP_NAME}
-          className={cn("h-8 w-8 rounded-lg object-contain", markClassName)}
-        />
-      ) : (
-        <span
-          className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-[11px] font-bold text-[var(--btn-fg)]",
-            markClassName,
-          )}
-        >
-          SP
-        </span>
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={STATIC_LOGO}
+        alt={APP_NAME}
+        className={cn("h-9 w-auto object-contain md:h-10", markClassName)}
+      />
       {!compact ? (
         <span
           className={cn(
@@ -42,7 +30,8 @@ export function AppLogo({ href = ROUTES.home, compact, className, markClassName,
             nameClassName,
           )}
         >
-          {APP_NAME}
+          <span className="text-[var(--foreground)]">Santara </span>
+          <span className="text-[#c5a059]">Pips</span>
         </span>
       ) : null}
     </Link>

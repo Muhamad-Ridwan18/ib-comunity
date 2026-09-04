@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { MarketQuote } from "@/components/landing/landing-types";
+import { ROUTES } from "@/constants";
 
 const FALLBACK_QUOTES: MarketQuote[] = [
   { symbol: "XAU/USD", name: "Gold", close: 2350.4, change: 12.8, percent_change: 0.55 },
@@ -87,8 +89,8 @@ function PerformanceChart({ values }: { values: number[] }) {
       area.closePath();
 
       const fill = ctx.createLinearGradient(0, padY, 0, baseline);
-      fill.addColorStop(0, "rgba(77, 136, 255, 0.42)");
-      fill.addColorStop(1, "rgba(77, 136, 255, 0.04)");
+      fill.addColorStop(0, "rgba(74, 222, 128, 0.35)");
+      fill.addColorStop(1, "rgba(74, 222, 128, 0.02)");
       ctx.fillStyle = fill;
       ctx.fill(area);
 
@@ -97,16 +99,19 @@ function PerformanceChart({ values }: { values: number[] }) {
         if (i === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
       });
-      ctx.strokeStyle = "#6ee7b7";
+      ctx.strokeStyle = "#4ade80";
       ctx.lineWidth = 2.5;
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
+      ctx.shadowColor = "rgba(74, 222, 128, 0.55)";
+      ctx.shadowBlur = 10;
       ctx.stroke();
+      ctx.shadowBlur = 0;
 
       const last = points[points.length - 1];
       ctx.beginPath();
       ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = "#6ee7b7";
+      ctx.fillStyle = "#4ade80";
       ctx.fill();
       ctx.strokeStyle = "#052e1a";
       ctx.lineWidth = 1.5;
@@ -168,6 +173,7 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
           performance: "Performa",
           latestSignals: "Sinyal Terbaru",
           live: "Live",
+          viewAll: "Lihat Semua Sinyal",
         }
       : {
           winrate: "Winrate",
@@ -177,13 +183,14 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
           performance: "Performance",
           latestSignals: "Latest Signals",
           live: "Live",
+          viewAll: "View All Signals",
         };
 
   const stats = [
-    { label: labels.winrate, value: "78.4%" },
-    { label: labels.rr, value: "1:2.7" },
-    { label: labels.signals, value: "342" },
-    { label: labels.members, value: "10.2k" },
+    { label: labels.winrate, value: "78.4%", change: 0.8 },
+    { label: labels.rr, value: "1:2.7", change: 0.4 },
+    { label: labels.signals, value: "342", change: 1.1 },
+    { label: labels.members, value: "10.2k", change: 0.6 },
   ];
 
   const signalNotes = SIGNAL_NOTES[locale];
@@ -231,88 +238,101 @@ export function LandingDeskPreview({ locale, quotes }: Props) {
   }, [lead.close]);
 
   return (
-    <div className="relative rounded-2xl border border-white/10 bg-[#0d1833]/90 p-4 backdrop-blur">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-white/80">Santara Pips</p>
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-white/15 px-2 py-1 text-[10px] text-white/80">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          </span>
-          {labels.live}
-        </span>
-      </div>
-
-      <div className="mt-4 grid grid-cols-4 gap-2">
+    <div className="relative rounded-2xl border border-white/10 bg-[#0d1833]/95 p-4 text-white shadow-[0_20px_60px_rgba(8,16,40,0.45)] backdrop-blur">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {stats.map((x) => (
-          <div key={x.label} className="rounded-xl border border-white/10 bg-white/5 px-2 py-2">
-            <p className="text-[10px] text-white/60">{x.label}</p>
-            <p className="mt-0.5 text-xs font-semibold tabular-nums">{x.value}</p>
+          <div key={x.label} className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-2.5">
+            <p className="text-[10px] text-white/55">{x.label}</p>
+            <div className="mt-1 flex items-end justify-between gap-1">
+              <p className="text-sm font-semibold tabular-nums">{x.value}</p>
+              <div className="h-6 w-10 shrink-0">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+                  <polyline
+                    fill="none"
+                    stroke="#4ade80"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                    points={sparklinePoints(x.change, tick)}
+                  />
+                </svg>
+              </div>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <p className="text-xs text-white/70">{labels.performance}</p>
-            <p className="text-[10px] text-white/45">{lead.symbol.replace("/", "")}</p>
+      <div className="mt-3 grid gap-3 lg:grid-cols-[1.35fr_0.85fr]">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">{labels.performance}</p>
+              <p className="mt-0.5 text-xs font-medium text-white/70">{lead.symbol}</p>
+            </div>
+            <div className="text-right">
+              <p
+                className={`text-sm font-semibold tabular-nums transition-colors duration-150 ${
+                  flash ? "text-emerald-200" : "text-white"
+                }`}
+              >
+                {formatPrice(liveClose)}
+              </p>
+              <p
+                className={`text-[11px] font-medium tabular-nums ${
+                  lead.change >= 0 ? "text-emerald-300" : "text-rose-300"
+                }`}
+              >
+                {performanceDelta}
+              </p>
+            </div>
           </div>
-          <div className="text-right">
-            <p
-              className={`text-xs font-semibold tabular-nums transition-colors duration-150 ${
-                flash ? "text-emerald-200" : "text-white"
-              }`}
-            >
-              {formatPrice(liveClose)}
-            </p>
-            <p
-              className={`text-[10px] font-medium tabular-nums ${
-                lead.change >= 0 ? "text-emerald-300" : "text-rose-300"
-              }`}
-            >
-              {performanceDelta}
-            </p>
+
+          <div className="relative mt-3 h-40 overflow-hidden rounded-lg border border-white/10 bg-[#081024] sm:h-44">
+            <PerformanceChart values={priceHistory} />
+            <div className="desk-chart-scan pointer-events-none absolute inset-0 z-[1]" aria-hidden />
           </div>
         </div>
 
-        <div className="relative mt-3 h-28 overflow-hidden rounded-lg border border-white/10 bg-[#081024]">
-          <PerformanceChart values={priceHistory} />
-          <div className="desk-chart-scan pointer-events-none absolute inset-0 z-[1]" aria-hidden />
-        </div>
-      </div>
-
-      <div className="mt-4">
-        <p className="mb-2 text-[10px] uppercase tracking-[0.18em] text-white/50">{labels.latestSignals}</p>
-        <div className="grid grid-cols-2 gap-2">
-          {liveQuotes.slice(0, 2).map((quote, i) => {
-            const positive = quote.change >= 0;
-            return (
-              <div key={quote.symbol} className="rounded-lg border border-white/10 bg-white/5 px-2 py-2">
-                <div className="flex items-center justify-between gap-1">
-                  <p className="truncate text-[11px] font-semibold">{quote.symbol.replace("/", "")}</p>
-                  <span className={`text-[10px] font-semibold ${positive ? "text-emerald-300" : "text-rose-300"}`}>
-                    {positive ? "BUY" : "SELL"}
-                  </span>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+          <p className="mb-2 text-[10px] uppercase tracking-[0.16em] text-white/50">{labels.latestSignals}</p>
+          <div className="space-y-2">
+            {liveQuotes.slice(0, 2).map((quote, i) => {
+              const positive = quote.change >= 0;
+              return (
+                <div key={quote.symbol} className="rounded-lg border border-white/10 bg-[#081024]/70 px-2.5 py-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <p className="truncate text-[11px] font-semibold">{quote.symbol}</p>
+                    <span className={`text-[10px] font-semibold ${positive ? "text-emerald-300" : "text-rose-300"}`}>
+                      {positive ? "BUY" : "SELL"}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate text-[10px] tabular-nums text-white/80">{formatPrice(quote.close)}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-white/50">{signalNotes[i] ?? quote.name}</p>
+                  <div className="mt-2 h-7">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+                      <polyline
+                        fill="none"
+                        stroke={positive ? "#4ade80" : "#fb7185"}
+                        strokeWidth="5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                        points={sparklinePoints(quote.percent_change, tick + i * 3)}
+                      />
+                    </svg>
+                  </div>
                 </div>
-                <p className="mt-0.5 truncate text-[10px] tabular-nums text-white/80">{formatPrice(quote.close)}</p>
-                <p className="mt-0.5 truncate text-[10px] text-white/50">{signalNotes[i] ?? quote.name}</p>
-                <div className="mt-2 h-8">
-                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-                    <polyline
-                      fill="none"
-                      stroke={positive ? "#4ade80" : "#fb7185"}
-                      strokeWidth="5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      vectorEffect="non-scaling-stroke"
-                      points={sparklinePoints(quote.percent_change, tick + i * 3)}
-                    />
-                  </svg>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <Link
+            href={ROUTES.signals}
+            className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-[#7eb6ff] hover:text-white"
+          >
+            {labels.viewAll}
+            <span aria-hidden>→</span>
+          </Link>
         </div>
       </div>
     </div>
