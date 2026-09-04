@@ -1,4 +1,4 @@
-import { ROUTES } from "@/constants";
+import { EXTERNAL_LINKS, ROUTES } from "@/constants";
 
 export type MemberNavItem = {
   href: string;
@@ -6,6 +6,8 @@ export type MemberNavItem = {
   exact?: boolean;
   /** Locked until MT5 verification is approved. */
   locked?: boolean;
+  /** Open in a new tab (external URL). */
+  external?: boolean;
 };
 
 export const memberNav: MemberNavItem[] = [
@@ -15,6 +17,11 @@ export const memberNav: MemberNavItem[] = [
   { href: ROUTES.analysis, labelKey: "member.technical", locked: true },
   { href: ROUTES.signals, labelKey: "nav.signals", locked: true },
   { href: ROUTES.compounding, labelKey: "member.compounding", locked: true },
-  { href: ROUTES.calendar, labelKey: "member.calendar", locked: true },
+  {
+    href: EXTERNAL_LINKS.forexFactoryCalendar,
+    labelKey: "member.calendar",
+    locked: true,
+    external: true,
+  },
   { href: ROUTES.tools, labelKey: "member.tools", locked: true },
 ];

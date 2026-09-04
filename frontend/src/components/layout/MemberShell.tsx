@@ -55,7 +55,18 @@ function MemberNav({ pathname, verified, onNavigate }: MemberNavProps) {
             );
           }
 
-          return (
+          return item.external ? (
+            <a
+              key={item.href + item.labelKey}
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={onNavigate}
+              className={className}
+            >
+              <span>{t(item.labelKey)}</span>
+            </a>
+          ) : (
             <Link key={item.href + item.labelKey} href={item.href} onClick={onNavigate} className={className}>
               <span>{t(item.labelKey)}</span>
             </Link>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Calculator, CalendarDays, Wrench } from "lucide-react";
 import { LockedModule } from "@/components/member/LockedModule";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { ROUTES } from "@/constants";
+import { EXTERNAL_LINKS, ROUTES } from "@/constants";
 import { useAuthStore } from "@/store/auth";
 import { isVerifiedMember } from "@/lib/membership";
 import { useT } from "@/i18n/useT";
@@ -22,12 +22,14 @@ export default function MemberToolsPage() {
       icon: Calculator,
       title: t("member.compounding"),
       body: t("member.compoundingDesc"),
+      external: false,
     },
     {
-      href: ROUTES.calendar,
+      href: EXTERNAL_LINKS.forexFactoryCalendar,
       icon: CalendarDays,
       title: t("member.calendar"),
       body: t("member.calendarDesc"),
+      external: true,
     },
   ];
 
@@ -36,19 +38,33 @@ export default function MemberToolsPage() {
       <PageHeader kicker={t("member.toolsKicker")} title={t("member.tools")} description={t("member.toolsDesc")} />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {tools.map((tool) => (
-          <Link
-            key={tool.href}
-            href={tool.href}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:border-accent/40 hover:bg-accent-soft/20"
-          >
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
-              <tool.icon className="h-5 w-5" />
-            </span>
-            <h2 className="mt-4 font-display text-lg font-semibold">{tool.title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted">{tool.body}</p>
-          </Link>
-        ))}
+        {tools.map((tool) => {
+          const className =
+            "rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:border-accent/40 hover:bg-accent-soft/20";
+          const body = (
+            <>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <tool.icon className="h-5 w-5" />
+              </span>
+              <h2 className="mt-4 font-display text-lg font-semibold">{tool.title}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{tool.body}</p>
+            </>
+          );
+
+          if (tool.external) {
+            return (
+              <a key={tool.href} href={tool.href} target="_blank" rel="noreferrer" className={className}>
+                {body}
+              </a>
+            );
+          }
+
+          return (
+            <Link key={tool.href} href={tool.href} className={className}>
+              {body}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-6">

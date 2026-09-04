@@ -42,6 +42,11 @@ export const ROUTES = {
   admin: "/admin",
 } as const;
 
+/** External tools opened from the member desk. */
+export const EXTERNAL_LINKS = {
+  forexFactoryCalendar: "https://www.forexfactory.com/calendar",
+} as const;
+
 export const USER_STATUS = {
   registered: "registered",
   onboarding: "onboarding",
