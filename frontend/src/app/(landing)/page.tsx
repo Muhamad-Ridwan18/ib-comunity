@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, CirclePlay, Play, ShieldCheck } from "lucide-react";
+import { ArrowRight, CirclePlay, Play } from "lucide-react";
 import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
 import { LandingDeskPreview } from "@/components/landing/LandingDeskPreview";
 import type { MarketQuote } from "@/components/landing/landing-types";
 import { LandingXauusdEducation } from "@/components/marketing/LandingXauusdEducation";
+import { AppLogo } from "@/components/layout/AppLogo";
 import { ROUTES } from "@/constants";
 import { track } from "@/lib/analytics";
 import { getHookVideo, type HookVideo } from "@/services/landing";
@@ -65,36 +66,22 @@ export default function LandingPage() {
   const copy =
     locale === "id"
       ? {
-          trusted: "Edukasi · Analisis · Komunitas",
-          heroTitleA: "Belajar Trading.",
-          heroTitleB: "Analisis Pasar.",
-          heroTitleC: "Komunitas.",
-          heroTitleD: "Bersama Santara Pips.",
-          heroSub:
-            "Grow Your Pips, The Santara Way.",
+          heroSub: "Grow Your Pips, The Santara Way.",
           joinNow: "Daftar Gratis",
           demo: "Lihat Demo",
           marketLive: "Data pasar · update ~45 detik",
           marketUnavailable: "Data pasar sementara tidak tersedia",
-          deskPreview: "Pratinjau desk member",
           ctaTitle: "Siap mulai perjalanan trading Anda?",
           ctaBody:
             "Daftar gratis, pelajari materi edukasi, lalu selesaikan verifikasi saat siap membuka fitur premium.",
           ctaBtn: "Daftar Sekarang",
         }
       : {
-          trusted: "Education · Analysis · Community",
-          heroTitleA: "Learn Trading.",
-          heroTitleB: "Market Analysis.",
-          heroTitleC: "Community.",
-          heroTitleD: "With Santara Pips.",
-          heroSub:
-            "Grow Your Pips, The Santara Way.",
+          heroSub: "Grow Your Pips, The Santara Way.",
           joinNow: "Register Free",
           demo: "Watch Demo",
           marketLive: "Market data · ~45s refresh",
           marketUnavailable: "Market data temporarily unavailable",
-          deskPreview: "Member desk preview",
           ctaTitle: "Ready to start your trading journey?",
           ctaBody:
             "Register free, study the education material, then complete verification when you're ready for premium access.",
@@ -138,22 +125,15 @@ export default function LandingPage() {
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-14 pt-14 md:grid-cols-[1.02fr_0.98fr] md:pb-20 md:pt-16">
           <div className="animate-rise">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1 text-[11px] font-semibold text-muted">
-              <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-              {copy.trusted}
-            </span>
-            <h1 className="mt-5 max-w-xl font-display text-4xl font-semibold leading-[1.03] tracking-tight md:text-6xl">
-              {copy.heroTitleA}
-              <br />
-              {copy.heroTitleB}
-              <br />
-              <span className="bg-[linear-gradient(120deg,#0052ff,#65a3ff)] bg-clip-text text-transparent">
-                {copy.heroTitleC}
-              </span>
-              <br />
-              {copy.heroTitleD}
-            </h1>
-            <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted md:text-base">{copy.heroSub}</p>
+            <h1 className="sr-only">Santara Pips</h1>
+            <AppLogo
+              className="pointer-events-none gap-3.5"
+              markClassName="h-12 w-12 rounded-xl text-sm md:h-14 md:w-14 md:text-base"
+              nameClassName="text-3xl font-semibold tracking-tight md:text-5xl"
+            />
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-muted md:text-lg">
+              {copy.heroSub}
+            </p>
             <div className="mt-7 flex flex-wrap gap-2.5">
               <Link href={ROUTES.register} className="btn-primary gap-2 px-5 py-2.5" onClick={() => track("cta_click", { source: "hero" })}>
                 {copy.joinNow}

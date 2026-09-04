@@ -10,9 +10,10 @@ type AppLogoProps = {
   compact?: boolean;
   className?: string;
   markClassName?: string;
+  nameClassName?: string;
 };
 
-export function AppLogo({ href = ROUTES.home, compact, className, markClassName }: AppLogoProps) {
+export function AppLogo({ href = ROUTES.home, compact, className, markClassName, nameClassName }: AppLogoProps) {
   const logoUrl = useBrandingStore((s) => s.logoUrl);
 
   return (
@@ -35,7 +36,12 @@ export function AppLogo({ href = ROUTES.home, compact, className, markClassName 
         </span>
       )}
       {!compact ? (
-        <span className="font-display text-lg font-semibold tracking-tight transition group-hover:text-accent">
+        <span
+          className={cn(
+            "font-display text-lg font-semibold tracking-tight transition group-hover:text-accent",
+            nameClassName,
+          )}
+        >
           {APP_NAME}
         </span>
       ) : null}
