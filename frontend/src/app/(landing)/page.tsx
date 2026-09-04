@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, CirclePlay, Play, Star } from "lucide-react";
+import { ArrowRight, Play, Star } from "lucide-react";
 import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
 import { LandingDeskPreview } from "@/components/landing/LandingDeskPreview";
 import type { MarketQuote } from "@/components/landing/landing-types";
@@ -72,7 +72,6 @@ export default function LandingPage() {
           heroBody:
             "Komunitas trading dengan edukasi, analisis pasar, dan sinyal yang membantu Anda tumbuh lebih terarah.",
           joinNow: "Daftar Gratis",
-          demo: "Lihat Demo",
           marketLive: "Data pasar · update ~45 detik",
           marketUnavailable: "Data pasar sementara tidak tersedia",
           snapshot: "Snapshot Pasar",
@@ -89,7 +88,6 @@ export default function LandingPage() {
           heroBody:
             "A trading community with education, market analysis, and signals that help you grow with clearer direction.",
           joinNow: "Register Free",
-          demo: "Watch Demo",
           marketLive: "Market data · ~45s refresh",
           marketUnavailable: "Market data temporarily unavailable",
           snapshot: "Market Snapshot",
@@ -157,10 +155,6 @@ export default function LandingPage() {
                   {copy.joinNow}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <a href="#hook" className="btn-ghost gap-2 px-5 py-2.5">
-                  <CirclePlay className="h-4 w-4" />
-                  {copy.demo}
-                </a>
               </div>
             </div>
 
