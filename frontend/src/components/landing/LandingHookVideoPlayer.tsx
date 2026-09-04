@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { toAutoplayEmbedUrl, toEmbedUrl } from "@/lib/video-embed";
 import type { HookVideo } from "@/services/landing";
 import { useT } from "@/i18n/useT";
@@ -32,7 +32,8 @@ export function LandingHookVideoPlayer({
 }: Props) {
   const { t } = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(autoPlay ? false : true);
+  const [muted, setMuted] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [embedSrc, setEmbedSrc] = useState(() =>
     autoPlay
       ? toAutoplayEmbedUrl(video.video_url, { muted: false })
@@ -42,6 +43,11 @@ export function LandingHookVideoPlayer({
   const title = video.title || fallbackTitle;
   const frameClass = className ?? "aspect-video w-full";
   const controls = showControls ?? !autoPlay;
+  const useCustomControls = !autoPlay && video.kind === "file";
+
+  useEffect(() => {
+    setPlaying(false);
+  }, [video.video_url, video.kind]);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -98,7 +104,50 @@ export function LandingHookVideoPlayer({
   };
 
   const handleVideoPlay = () => {
+    setPlaying(true);
     onPlay?.();
+  };
+
+  const handleVideoPause = () => {
+    setPlaying(false);
+  };
+
+  const togglePlay = () => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    if (el.paused) {
+      el.muted = muted;
+      void el.play()
+        .then(() => {
+          if (!muted) {
+            el.muted = false;
+            el.volume = 1;
+          }
+        })
+        .catch(() => {
+          el.muted = true;
+          setMuted(true);
+          void el.play().catch(() => {
+            /* ignore */
+          });
+        });
+    } else {
+      el.pause();
+    }
+  };
+
+  const toggleMute = () => {
+    const nextMuted = !muted;
+
+    if (videoRef.current) {
+      videoRef.current.muted = nextMuted;
+      if (!nextMuted) {
+        videoRef.current.volume = 1;
+      }
+    }
+
+    setMuted(nextMuted);
   };
 
   return (
@@ -113,17 +162,68 @@ export function LandingHookVideoPlayer({
           allowFullScreen
         />
       ) : (
-        <video
-          ref={videoRef}
-          className={cn(frameClass, "object-contain")}
-          src={video.video_url}
-          autoPlay={autoPlay && !paused}
-          loop={loop}
-          playsInline
-          controls={controls}
-          preload={autoPlay ? "auto" : "metadata"}
-          onPlay={handleVideoPlay}
-        />
+        <>
+          <video
+            ref={videoRef}
+            className={cn(frameClass, "object-contain")}
+            src={video.video_url}
+            autoPlay={autoPlay && !paused}
+            loop={loop}
+            playsInline
+            muted={muted}
+            controls={controls && !useCustomControls}
+            preload={autoPlay ? "auto" : "metadata"}
+            onPlay={handleVideoPlay}
+            onPause={handleVideoPause}
+            onClick={useCustomControls ? togglePlay : undefined}
+          />
+
+          {useCustomControls ? (
+            <>
+              {!playing ? (
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className="absolute inset-0 z-[2] flex items-center justify-center bg-black/25 transition hover:bg-black/35"
+                  aria-label={t("landing.play")}
+                >
+                  <span className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-black/55 text-white shadow-lg backdrop-blur transition group-hover:scale-105">
+                    <Play className="ml-0.5 h-7 w-7 fill-current" />
+                  </span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className="absolute inset-0 z-[1] cursor-pointer opacity-0"
+                  aria-label={t("landing.pause")}
+                />
+              )}
+
+              <div className="absolute inset-x-0 bottom-0 z-[3] flex items-center gap-2 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-3 pb-3 pt-8">
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25"
+                  aria-label={playing ? t("landing.pause") : t("landing.play")}
+                >
+                  {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
+                </button>
+                <p className="min-w-0 flex-1 truncate text-xs font-medium text-white/90">{title}</p>
+                {showSoundToggle ? (
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25"
+                    aria-label={muted ? t("landing.unmute") : t("landing.mute")}
+                  >
+                    {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  </button>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+        </>
       )}
 
       {showSoundToggle && autoPlay ? (

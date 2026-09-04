@@ -217,7 +217,12 @@ export default function LandingPage() {
             <LandingDeskPreview locale={locale} quotes={quotes} />
             <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
               {hookVideo?.video_url ? (
-                <LandingHookVideoPlayer video={hookVideo} fallbackTitle={t("landing.hookTitle")} />
+                <LandingHookVideoPlayer
+                  video={hookVideo}
+                  fallbackTitle={t("landing.hookTitle")}
+                  autoPlay={false}
+                  loop={false}
+                />
               ) : (
                 <div className="flex aspect-video items-center justify-center gap-2 bg-[#0d1833]/90 text-white/90">
                   <Play className="h-5 w-5 fill-current" />

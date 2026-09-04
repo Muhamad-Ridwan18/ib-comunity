@@ -136,6 +136,8 @@ export const en = {
     footerBody:
       "Private trading desk. Premium modules unlock after MT5 verification under our Introducing Broker.",
     hookTitle: "Desk introduction",
+    play: "Play",
+    pause: "Pause",
     unmute: "Unmute",
     mute: "Mute",
     hookBody: "See why Santara Pips verification unlocks the full member desk.",
