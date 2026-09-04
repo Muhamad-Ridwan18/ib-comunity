@@ -13,7 +13,7 @@ import { getHookVideo, type HookVideo } from "@/services/landing";
 import { useT } from "@/i18n/useT";
 
 /** Hero mark size — change this to scale the logo. */
-const HERO_LOGO_CLASS = "h-16 w-auto md:h-20";
+const HERO_LOGO_CLASS = "h-28 w-auto md:h-40";
 
 export default function LandingPage() {
   const { t, locale } = useT();
