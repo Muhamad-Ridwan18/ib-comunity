@@ -74,6 +74,7 @@ export const id: Messages = {
     support: "Bantuan",
     about: "Tentang",
     login: "Masuk",
+    register: "Daftar",
     joinNow: "Gabung",
     myAccount: "Akun saya",
     overview: "Ringkasan",

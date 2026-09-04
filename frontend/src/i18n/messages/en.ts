@@ -72,6 +72,7 @@ export const en = {
     support: "Support",
     about: "About",
     login: "Login",
+    register: "Register",
     joinNow: "Join Now",
     myAccount: "My Account",
     overview: "Overview",

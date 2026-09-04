@@ -53,17 +53,21 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Link href={ROUTES.login} className="hidden text-sm text-muted hover:text-accent sm:inline">
-              {t("nav.login")}
-            </Link>
             <LocaleToggle />
             <ThemeToggle />
             <Link
+              href={ROUTES.login}
+              className="btn-ghost px-3 py-2 text-sm"
+              onClick={() => track("cta_click", { source: "header_login" })}
+            >
+              {t("nav.login")}
+            </Link>
+            <Link
               href={ROUTES.register}
               className="btn-primary px-4 py-2"
-              onClick={() => track("cta_click", { source: "header" })}
+              onClick={() => track("cta_click", { source: "header_register" })}
             >
-              {t("nav.joinNow")}
+              {t("nav.register")}
             </Link>
           </div>
         </div>
@@ -93,6 +97,16 @@ export function SiteHeader() {
             className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-accent-soft"
           >
             {t("nav.login")}
+          </Link>
+          <Link
+            href={ROUTES.register}
+            onClick={() => {
+              setMobileOpen(false);
+              track("cta_click", { source: "header_register_mobile" });
+            }}
+            className="btn-primary mt-2 flex w-full justify-center px-3 py-2.5"
+          >
+            {t("nav.register")}
           </Link>
         </nav>
       </Sheet>
