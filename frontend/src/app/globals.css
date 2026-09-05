@@ -131,6 +131,89 @@ h3,
   color: var(--foreground);
 }
 
+.prose-editor p.is-editor-empty:first-child::before {
+  color: var(--muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.prose-editor p {
+  margin: 0.35rem 0;
+}
+
+.prose-editor h2 {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.prose-editor h3 {
+  margin: 0.7rem 0 0.3rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.prose-editor ul {
+  margin: 0.4rem 0;
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.prose-editor ol {
+  margin: 0.4rem 0;
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+
+.prose-editor blockquote {
+  margin: 0.5rem 0;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.75rem;
+  color: var(--muted);
+}
+
+.content-html h2 {
+  margin: 1rem 0 0.4rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.content-html h3 {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.content-html p {
+  margin: 0.45rem 0;
+}
+
+.content-html ul {
+  margin: 0.5rem 0;
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.content-html ol {
+  margin: 0.5rem 0;
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+
+.content-html blockquote {
+  margin: 0.75rem 0;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.85rem;
+  color: var(--muted);
+}
+
+.content-html a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 @layer components {
   .field-input {
     @apply w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition;

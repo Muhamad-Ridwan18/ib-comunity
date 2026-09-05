@@ -21,8 +21,10 @@ import {
   AdminFilterSeg,
   AdminPageHeader,
 } from "@/components/admin/AdminChrome";
+import { RichTextEditor } from "@/components/forms/RichTextEditor";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/useT";
+import { CheckCircle2, Loader2, Upload } from "lucide-react";
 
 export default function AdminContentPage() {
   const { t, tr } = useT();
@@ -39,6 +41,8 @@ export default function AdminContentPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadOk, setUploadOk] = useState(false);
   const [catName, setCatName] = useState("");
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ContentType>("article");
@@ -76,6 +80,7 @@ export default function AdminContentPage() {
     setBody("");
     setVideoUrl("");
     setVideoKey(null);
+    setUploadOk(false);
     setType("article");
     setPremium(true);
     setCategoryId("");
@@ -84,6 +89,26 @@ export default function AdminContentPage() {
   const canSave =
     Boolean(title.trim()) &&
     (type === "article" ? Boolean(body.trim()) : Boolean(videoUrl.trim() || videoKey));
+
+  const handleVideoUpload = async (file: File) => {
+    setUploadingVideo(true);
+    setUploadOk(false);
+    setError(null);
+    try {
+      const up = await adminUploadContentVideo(file);
+      if (!up.success || !up.data) {
+        setError(up.message || t("admin.videoUploadFailed"));
+        return;
+      }
+      setVideoKey(up.data.key);
+      setVideoUrl(up.data.url);
+      setUploadOk(true);
+    } catch {
+      setError(t("admin.videoUploadFailed"));
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
 
   return (
     <div>
@@ -204,14 +229,44 @@ export default function AdminContentPage() {
               </select>
 
               {type === "article" ? (
-                <textarea
-                  className="field-input min-h-[120px] text-sm"
-                  placeholder={t("admin.body")}
+                <RichTextEditor
                   value={body}
-                  onChange={(e) => setBody(e.target.value)}
+                  onChange={setBody}
+                  placeholder={t("admin.body")}
+                  minHeightClassName="min-h-[220px]"
                 />
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
+                  <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)]/40 p-3">
+                    <label className="flex cursor-pointer flex-col items-center gap-2 text-center">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft text-accent">
+                        {uploadingVideo ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {uploadingVideo ? t("admin.videoUploading") : t("admin.videoUploadHint")}
+                      </span>
+                      <span className="text-[11px] text-muted">{t("admin.videoUploadLimit")}</span>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                        className="sr-only"
+                        disabled={busy || uploadingVideo}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!file) return;
+                          void handleVideoUpload(file);
+                        }}
+                      />
+                    </label>
+                    {uploadOk && videoUrl ? (
+                      <p className="mt-2 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-emerald-500">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        {t("admin.videoUploadSuccess")}
+                      </p>
+                    ) : null}
+                  </div>
+                  <p className="text-center text-[11px] text-muted">{t("admin.orVideoUrl")}</p>
                   <input
                     className="field-input py-2 text-sm"
                     placeholder={t("admin.videoUrlPlaceholder")}
@@ -219,44 +274,17 @@ export default function AdminContentPage() {
                     onChange={(e) => {
                       setVideoUrl(e.target.value);
                       setVideoKey(null);
+                      setUploadOk(false);
                     }}
                   />
-                  <label className="block">
-                    <span className="mb-1 block text-xs text-muted">{t("admin.videoUploadHint")}</span>
-                    <input
-                      type="file"
-                      accept="video/mp4,video/webm,video/quicktime"
-                      className="block w-full text-xs text-muted file:mr-2 file:rounded-lg file:border-0 file:bg-accent-soft file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-accent"
-                      disabled={busy}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        e.target.value = "";
-                        if (!file) return;
-                        void (async () => {
-                          setBusy(true);
-                          setError(null);
-                          try {
-                            const up = await adminUploadContentVideo(file);
-                            if (!up.success || !up.data) {
-                              setError(up.message || t("admin.saveFailed"));
-                              return;
-                            }
-                            setVideoKey(up.data.key);
-                            setVideoUrl(up.data.url);
-                          } catch {
-                            setError(t("admin.saveFailed"));
-                          } finally {
-                            setBusy(false);
-                          }
-                        })();
-                      }}
-                    />
-                  </label>
-                  <textarea
-                    className="field-input min-h-[72px] text-sm"
-                    placeholder={t("admin.videoCaptionOptional")}
+                  {videoUrl ? (
+                    <video controls playsInline className="max-h-40 w-full rounded-lg border border-[var(--border)] bg-black" src={videoUrl} />
+                  ) : null}
+                  <RichTextEditor
                     value={body}
-                    onChange={(e) => setBody(e.target.value)}
+                    onChange={setBody}
+                    placeholder={t("admin.videoCaptionOptional")}
+                    minHeightClassName="min-h-[120px]"
                   />
                 </div>
               )}
@@ -268,7 +296,7 @@ export default function AdminContentPage() {
               <button
                 type="button"
                 className="btn-primary w-full py-2.5 text-sm"
-                disabled={busy || !canSave}
+                disabled={busy || uploadingVideo || !canSave}
                 onClick={() =>
                   void (async () => {
                     setBusy(true);
@@ -282,7 +310,7 @@ export default function AdminContentPage() {
                         is_premium: premium,
                         status: "draft",
                         category_id: categoryId || null,
-                        excerpt: (body || title).slice(0, 120),
+                        excerpt: (body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || title).slice(0, 120),
                         ...(type === "video"
                           ? videoKey
                             ? { video_key: videoKey, video_url: videoUrl || null }

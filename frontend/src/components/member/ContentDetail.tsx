@@ -10,6 +10,8 @@ import {
   type ContentItem,
 } from "@/services/content";
 import { LockedNotice } from "@/components/member/ContentCard";
+import { ContentHtml } from "@/components/content/ContentHtml";
+import { ContentVideoPlayer } from "@/components/content/ContentVideoPlayer";
 import { useAuthStore } from "@/store/auth";
 import { membershipCta, isVerifiedMember } from "@/lib/membership";
 import { useT } from "@/i18n/useT";
@@ -65,20 +67,8 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
         <LockedNotice />
       ) : (
         <>
-          {item.type === "video" ? (
-            <div className="flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-[var(--border)] bg-[#0b1220]">
-              {item.video_url ? (
-                <video controls className="h-full w-full" src={item.video_url} />
-              ) : (
-                <p className="text-sm text-white/60">{t("member.videoMissing")}</p>
-              )}
-            </div>
-          ) : null}
-          {item.body ? (
-            <article className="max-w-none whitespace-pre-wrap rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm leading-7 sm:p-8">
-              {item.body}
-            </article>
-          ) : null}
+          {item.type === "video" ? <ContentVideoPlayer url={item.video_url} /> : null}
+          {item.body ? <ContentHtml html={item.body} /> : null}
           {verified ? (
             <button
               type="button"
