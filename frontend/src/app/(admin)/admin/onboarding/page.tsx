@@ -163,7 +163,7 @@ export default function AdminOnboardingVideosPage() {
     target: SlotKey,
     draft: VideoDraft,
     setDraft: (v: VideoDraft) => void,
-    fileRef: React.RefObject<HTMLInputElement | null>,
+    fileRef: React.RefObject<HTMLInputElement>,
     saved?: AdminOnboardingVideoSlot,
   ) => {
     const previewUrl = draft.pendingUrl || saved?.video_url || null;
