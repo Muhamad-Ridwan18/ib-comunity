@@ -18,10 +18,16 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
             'full_name' => ['required', 'string', 'min:2', 'max:150'],
+            'whatsapp' => ['required', 'string', 'min:8', 'max:30', 'regex:/^\+?[0-9\s\-()]{8,30}$/'],
             'accept_terms' => ['required', 'accepted'],
         ]);
 
-        $payload = $this->auth->register($data['email'], $data['password'], $data['full_name']);
+        $payload = $this->auth->register(
+            $data['email'],
+            $data['password'],
+            $data['full_name'],
+            $data['whatsapp'],
+        );
 
         return ApiResponse::ok($payload, 'Registered', null, 201);
     }

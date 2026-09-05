@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class AuthService
 {
-    public function register(string $email, string $password, string $fullName): array
+    public function register(string $email, string $password, string $fullName, string $whatsapp): array
     {
         $role = Role::query()->where('name', 'member')->firstOrFail();
 
@@ -23,9 +23,12 @@ class AuthService
             'status' => User::STATUS_REGISTERED,
         ]);
 
+        $phone = preg_replace('/[^\d+]/', '', $whatsapp) ?: $whatsapp;
+
         Profile::query()->create([
             'user_id' => $user->id,
             'full_name' => $fullName,
+            'phone' => $phone,
             'timezone' => 'UTC',
         ]);
 

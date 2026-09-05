@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TermsAcceptanceModal } from "@/components/auth/TermsAcceptanceModal";
 import { register as registerUser } from "@/services/auth";
 import { useAuthStore } from "@/store/auth";
@@ -17,13 +17,12 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { useT } from "@/i18n/useT";
 
-const schema = z.object({
-  full_name: z.string().min(2, "Name is required"),
-  email: z.string().email(),
-  password: z.string().min(8, "Min 8 characters"),
-});
-
-type FormValues = z.infer<typeof schema>;
+type FormValues = {
+  full_name: string;
+  email: string;
+  whatsapp: string;
+  password: string;
+};
 
 export default function RegisterPage() {
   const { t } = useT();
@@ -33,6 +32,22 @@ export default function RegisterPage() {
   const [termsOpen, setTermsOpen] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
+
+  const schema = useMemo(
+    () =>
+      z.object({
+        full_name: z.string().min(2, t("auth.fullName")),
+        email: z.string().email(),
+        whatsapp: z
+          .string()
+          .min(8, t("auth.whatsappInvalid"))
+          .max(30, t("auth.whatsappInvalid"))
+          .regex(/^\+?[0-9\s\-()]{8,30}$/, t("auth.whatsappInvalid")),
+        password: z.string().min(8, "Min 8 characters"),
+      }),
+    [t],
+  );
+
   const {
     register,
     handleSubmit,
@@ -49,6 +64,7 @@ export default function RegisterPage() {
         email: values.email,
         password: values.password,
         full_name: values.full_name,
+        whatsapp: values.whatsapp.trim(),
         accept_terms: true,
       });
       if (!res.success || !res.data) {
@@ -94,6 +110,19 @@ export default function RegisterPage() {
             <label className="block space-y-1.5 text-sm">
               <span className="text-muted">{t("auth.email")}</span>
               <input type="email" className="field-input" autoComplete="email" {...register("email")} />
+              {errors.email ? <span className="text-[var(--danger)]">{errors.email.message}</span> : null}
+            </label>
+            <label className="block space-y-1.5 text-sm">
+              <span className="text-muted">{t("auth.whatsapp")}</span>
+              <input
+                type="tel"
+                inputMode="tel"
+                className="field-input"
+                autoComplete="tel"
+                placeholder={t("auth.whatsappHint")}
+                {...register("whatsapp")}
+              />
+              {errors.whatsapp ? <span className="text-[var(--danger)]">{errors.whatsapp.message}</span> : null}
             </label>
             <label className="block space-y-1.5 text-sm">
               <span className="text-muted">{t("auth.password")}</span>

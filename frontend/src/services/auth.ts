@@ -5,6 +5,7 @@ export async function register(input: {
   email: string;
   password: string;
   full_name: string;
+  whatsapp: string;
   accept_terms: boolean;
 }) {
   const { data } = await api.post<ApiEnvelope<AuthPayload>>("/auth/register", input);
