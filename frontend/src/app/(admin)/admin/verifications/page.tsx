@@ -22,8 +22,18 @@ import { useT } from "@/i18n/useT";
 
 type Detail = {
   request: VerificationRequest;
-  user: { id: string; email: string; status: string; profile?: { full_name: string } };
+  user: {
+    id: string;
+    email: string;
+    status: string;
+    profile?: { full_name: string; phone?: string | null; telegram_username?: string | null };
+  };
 };
+
+function whatsappHref(phone: string) {
+  const digits = phone.replace(/[^\d]/g, "");
+  return digits ? `https://wa.me/${digits}` : null;
+}
 
 export default function AdminVerificationsPage() {
   const { t, ts, tr } = useT();
@@ -146,6 +156,9 @@ export default function AdminVerificationsPage() {
                             {item.user_full_name || item.user_email || t("status.member")}
                           </p>
                           <p className="truncate text-xs text-muted">{item.user_email || "—"}</p>
+                          {item.user_phone ? (
+                            <p className="truncate text-xs text-muted">{item.user_phone}</p>
+                          ) : null}
                           <p className={cn("mt-0.5 text-[11px]", hours > 24 ? "font-medium text-[var(--danger)]" : "text-muted")}>
                             {tr(item.created_at)}
                             {hours > 24 ? ` · ${t("admin.agingSuffix")}` : ""}
@@ -183,6 +196,33 @@ export default function AdminVerificationsPage() {
               </div>
               <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 md:px-6">
                 <dl className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.phoneWhatsApp")}</dt>
+                    <dd className="mt-1">
+                      {detail.user.profile?.phone ? (
+                        <div className="space-y-1">
+                          <a
+                            href={`tel:${detail.user.profile.phone.replace(/[^\d+]/g, "")}`}
+                            className="font-mono text-base font-medium text-accent hover:underline"
+                          >
+                            {detail.user.profile.phone}
+                          </a>
+                          {whatsappHref(detail.user.profile.phone) ? (
+                            <a
+                              href={whatsappHref(detail.user.profile.phone)!}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block text-xs font-medium text-accent hover:underline"
+                            >
+                              {t("admin.openWhatsApp")}
+                            </a>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <span className="text-muted">{t("admin.noPhone")}</span>
+                      )}
+                    </dd>
+                  </div>
                   <div>
                     <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.mt5Short")}</dt>
                     <dd className="mt-1 font-mono text-base font-medium">{detail.request.mt5_account}</dd>

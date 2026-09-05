@@ -66,6 +66,7 @@ class VerificationService
                 $row = $item->toApiArray();
                 $row['user_email'] = $item->user?->email ?? '';
                 $row['user_full_name'] = $item->user?->profile?->full_name ?? '';
+                $row['user_phone'] = $item->user?->profile?->phone ?? '';
 
                 return $row;
             })

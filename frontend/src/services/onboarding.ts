@@ -21,6 +21,7 @@ export type VerificationRequest = {
   created_at: string;
   user_email?: string;
   user_full_name?: string;
+  user_phone?: string;
 };
 
 export type OnboardingProgress = {
