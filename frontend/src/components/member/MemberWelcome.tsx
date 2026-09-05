@@ -42,7 +42,7 @@ export function NewMemberWelcome() {
           {t("membership.becomeMember")}
           <ArrowRight className="h-4 w-4" />
         </Link>
-        <Link href={ROUTES.academy} className="btn-ghost" onClick={() => setOpen(false)}>
+        <Link href={ROUTES.psychology} className="btn-ghost" onClick={() => setOpen(false)}>
           {t("member.browseFreeContent")}
         </Link>
       </div>
@@ -71,14 +71,14 @@ export function VerifiedWelcome() {
         <h2 className="font-display mt-1 text-xl font-semibold">{t("member.verifiedWelcomeTitle")}</h2>
         <p className="mt-2 text-sm text-muted">{t("member.verifiedWelcomeBody")}</p>
         <ul className="mt-4 space-y-1.5 text-sm text-muted">
-          <li>· {t("member.unlockAcademy")}</li>
+          <li>· {t("member.psychology")}</li>
           <li>· {t("member.unlockAnalysis")}</li>
           <li>· {t("member.unlockSignals")}</li>
           <li>· {t("member.unlockTelegram")}</li>
         </ul>
         <div className="mt-6 flex flex-wrap gap-2">
-          <Link href={ROUTES.academy} className="btn-primary" onClick={() => setOpen(false)}>
-            {t("member.browseAcademy")}
+          <Link href={ROUTES.psychology} className="btn-primary" onClick={() => setOpen(false)}>
+            {t("member.psychology")}
           </Link>
           <Link href={ROUTES.signals} className="btn-ghost" onClick={() => setOpen(false)}>
             {t("member.viewSignals")}

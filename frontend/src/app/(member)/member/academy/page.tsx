@@ -1,7 +1,6 @@
-"use client";
-
-import { ModuleBrowse } from "@/components/member/ModuleBrowse";
+import { redirect } from "next/navigation";
+import { ROUTES } from "@/constants";
 
 export default function AcademyPage() {
-  return <ModuleBrowse module="academy" hrefBase="/member/academy" />;
+  redirect(ROUTES.psychology);
 }

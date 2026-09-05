@@ -1,10 +1,11 @@
-import { ContentDetail } from "@/components/member/ContentDetail";
+import { redirect } from "next/navigation";
+import { ROUTES } from "@/constants";
 
 export default async function AcademyDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  return <ContentDetail slug={slug} backHref="/member/academy" />;
+  await params;
+  redirect(ROUTES.psychology);
 }

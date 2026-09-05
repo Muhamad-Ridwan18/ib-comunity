@@ -31,7 +31,6 @@ export default function AdminContentPage() {
   const MODULES = [
     { value: "psychology", label: t("member.psychology") },
     { value: "daily_analysis", label: t("member.technical") },
-    { value: "academy", label: t("nav.academy") },
     { value: "landing", label: t("admin.moduleLanding") },
   ];
   const moduleLabel = (value: string) => MODULES.find((m) => m.value === value)?.label || value;
