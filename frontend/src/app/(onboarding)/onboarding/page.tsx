@@ -46,6 +46,7 @@ function OnboardingInner() {
   const user = useAuthStore((s) => s.user);
 
   const [progress, setProgress] = useState<OnboardingProgress | null>(null);
+  const [viewStep, setViewStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +81,7 @@ function OnboardingInner() {
         return;
       }
       setProgress(res.data);
+      setViewStep(res.data.current_step);
       if (res.data.latest_verification) {
         setMt5(res.data.latest_verification.mt5_account);
         setServer(res.data.latest_verification.broker_server);
@@ -107,6 +109,7 @@ function OnboardingInner() {
         return;
       }
       setProgress(res.data);
+      setViewStep(res.data.current_step);
       track("onboarding_step", { step: res.data.current_step });
       await refreshUser();
     } catch {
@@ -126,6 +129,7 @@ function OnboardingInner() {
         return;
       }
       setProgress(res.data);
+      setViewStep(res.data.current_step);
       track("onboarding_start");
       await refreshUser();
     } catch {
@@ -211,9 +215,18 @@ function OnboardingInner() {
   }
 
   const step = progress.current_step;
+  const view = Math.min(Math.max(viewStep, 1), step);
   const rejected = progress.status === "rejected";
   const pending = progress.status === "pending_verification";
+  const canGoBack = !rejected && !pending && view > 1;
+  const reviewingPast = !rejected && !pending && view < step;
   const supportHref = `${ROUTES.support}?topic=${encodeURIComponent(t("member.verificationHelpTopic"))}`;
+
+  const goBack = () => setViewStep((s) => Math.max(1, Math.min(s, step) - 1));
+  const goNext = () => setViewStep((s) => Math.min(step, Math.min(s, step) + 1));
+  const selectStep = (n: number) => {
+    if (n >= 1 && n <= step) setViewStep(n);
+  };
 
   const submitMt5 = () => {
     const account = mt5.trim();
@@ -241,7 +254,11 @@ function OnboardingInner() {
           <p className="px-3 pb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
             {t("onboarding.steps")}
           </p>
-          <StepRail progress={progress} />
+          <StepRail
+            progress={progress}
+            viewStep={pending || rejected ? step : view}
+            onSelectStep={pending || rejected ? undefined : selectStep}
+          />
         </aside>
 
         <div className="flex min-h-[28rem] flex-col">
@@ -302,7 +319,7 @@ function OnboardingInner() {
             ) : null}
 
             <div className={`mt-6 ${busy ? "pointer-events-none opacity-60" : ""}`}>
-              {!rejected && step === 1 && (
+              {!rejected && !pending && view === 1 && (
                 <StepBody title={t("onboarding.step1Title")}>
                   <p className="mb-4 text-sm text-muted">{t("onboarding.returnAfterExternal")}</p>
                   <a
@@ -313,13 +330,20 @@ function OnboardingInner() {
                   >
                     {t("onboarding.openTutorial")}
                   </a>
-                  <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep1)}>
-                    {t("onboarding.markWatched")}
-                  </button>
+                  {reviewingPast ? (
+                    <button type="button" className="btn-primary ml-3" onClick={goNext}>
+                      {t("onboarding.nextStep")}
+                    </button>
+                  ) : (
+                    <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep1)}>
+                      {t("onboarding.markWatched")}
+                    </button>
+                  )}
+                  <StepNav canGoBack={canGoBack} onBack={goBack} backLabel={t("onboarding.backStep")} />
                 </StepBody>
               )}
 
-              {!rejected && step === 2 && (
+              {!rejected && !pending && view === 2 && (
                 <StepBody title={t("onboarding.step2Title")}>
                   <p className="mb-4 text-sm text-muted">{t("onboarding.returnAfterExternal")}</p>
                   <a
@@ -330,35 +354,55 @@ function OnboardingInner() {
                   >
                     {t("onboarding.openIbRegister")}
                   </a>
-                  <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep2)}>
-                    {t("onboarding.iveRegistered")}
-                  </button>
+                  {reviewingPast ? (
+                    <button type="button" className="btn-primary ml-3" onClick={goNext}>
+                      {t("onboarding.nextStep")}
+                    </button>
+                  ) : (
+                    <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep2)}>
+                      {t("onboarding.iveRegistered")}
+                    </button>
+                  )}
+                  <StepNav canGoBack={canGoBack} onBack={goBack} backLabel={t("onboarding.backStep")} />
                 </StepBody>
               )}
 
-              {!rejected && step === 3 && (
+              {!rejected && !pending && view === 3 && (
                 <StepBody title={t("onboarding.step3Title")}>
                   <div className="mt-4 max-w-md space-y-3">
                     <label className="block space-y-1.5 text-sm">
                       <span className="text-muted">{t("onboarding.mt5Account")}</span>
-                      <input className="field-input" value={mt5} onChange={(e) => setMt5(e.target.value)} />
+                      <input
+                        className="field-input"
+                        value={mt5}
+                        onChange={(e) => setMt5(e.target.value)}
+                        disabled={reviewingPast}
+                      />
                     </label>
                     <label className="block space-y-1.5 text-sm">
                       <span className="text-muted">{t("onboarding.brokerServer")}</span>
-                      <input className="field-input" value={server} onChange={(e) => setServer(e.target.value)} />
+                      <input
+                        className="field-input"
+                        value={server}
+                        onChange={(e) => setServer(e.target.value)}
+                        disabled={reviewingPast}
+                      />
                     </label>
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      onClick={submitMt5}
-                    >
-                      {t("onboarding.saveContinue")}
-                    </button>
+                    {reviewingPast ? (
+                      <button type="button" className="btn-primary" onClick={goNext}>
+                        {t("onboarding.nextStep")}
+                      </button>
+                    ) : (
+                      <button type="button" className="btn-primary" onClick={submitMt5}>
+                        {t("onboarding.saveContinue")}
+                      </button>
+                    )}
                   </div>
+                  <StepNav canGoBack={canGoBack} onBack={goBack} backLabel={t("onboarding.backStep")} />
                 </StepBody>
               )}
 
-              {!rejected && step === 4 && (
+              {!rejected && !pending && view === 4 && (
                 <StepBody title={t("onboarding.step4Title")}>
                   <a
                     href={progress.settings.deposit_tutorial_url}
@@ -369,38 +413,48 @@ function OnboardingInner() {
                     {t("onboarding.openDeposit")}
                   </a>
                   <div className="mt-4 max-w-md space-y-3">
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.webp,.pdf"
-                      onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
-                    />
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      onClick={() =>
-                        void run(async () => {
-                          let proof_key: string | undefined;
-                          if (proofFile) {
-                            const up = await uploadProof(proofFile);
-                            if (!up.success || !up.data) throw new Error("upload failed");
-                            proof_key = up.data.key;
-                          }
-                          return completeStep4(proof_key ? { proof_key } : {});
-                        })
-                      }
-                    >
-                      {t("onboarding.continue")}
-                    </button>
+                    {!reviewingPast ? (
+                      <input
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp,.pdf"
+                        onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                      />
+                    ) : null}
+                    {reviewingPast ? (
+                      <button type="button" className="btn-primary" onClick={goNext}>
+                        {t("onboarding.nextStep")}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={() =>
+                          void run(async () => {
+                            let proof_key: string | undefined;
+                            if (proofFile) {
+                              const up = await uploadProof(proofFile);
+                              if (!up.success || !up.data) throw new Error("upload failed");
+                              proof_key = up.data.key;
+                            }
+                            return completeStep4(proof_key ? { proof_key } : {});
+                          })
+                        }
+                      >
+                        {t("onboarding.continue")}
+                      </button>
+                    )}
                   </div>
+                  <StepNav canGoBack={canGoBack} onBack={goBack} backLabel={t("onboarding.backStep")} />
                 </StepBody>
               )}
 
-              {!rejected && step === 5 && !pending && (
+              {!rejected && !pending && view === 5 && (
                 <StepBody title={t("onboarding.step5Title")}>
                   <p className="text-sm text-muted">{t("onboarding.step5Body")}</p>
                   <button type="button" className="btn-primary mt-4" onClick={() => void run(completeStep5)}>
                     {t("onboarding.submitVerification")}
                   </button>
+                  <StepNav canGoBack={canGoBack} onBack={goBack} backLabel={t("onboarding.backStep")} />
                 </StepBody>
               )}
 
@@ -424,6 +478,25 @@ function OnboardingInner() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function StepNav({
+  canGoBack,
+  onBack,
+  backLabel,
+}: {
+  canGoBack: boolean;
+  onBack: () => void;
+  backLabel: string;
+}) {
+  if (!canGoBack) return null;
+  return (
+    <div className="mt-6 border-t border-[var(--border)] pt-4">
+      <button type="button" className="btn-ghost" onClick={onBack}>
+        {backLabel}
+      </button>
     </div>
   );
 }

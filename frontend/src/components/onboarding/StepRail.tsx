@@ -16,25 +16,31 @@ function stepDone(progress: OnboardingProgress, n: number) {
   );
 }
 
-export function StepRail({ progress }: { progress: OnboardingProgress }) {
+export function StepRail({
+  progress,
+  viewStep,
+  onSelectStep,
+}: {
+  progress: OnboardingProgress;
+  viewStep?: number;
+  onSelectStep?: (step: number) => void;
+}) {
   const { t } = useT();
   const current = progress.current_step;
+  const activeStep = viewStep ?? current;
+  const canNavigate = Boolean(onSelectStep);
+
   return (
     <ol className="space-y-1">
       {ONBOARDING_STEP_KEYS.map((key, i) => {
         const n = i + 1;
         const done = stepDone(progress, n);
-        const active = current === n;
-        return (
-          <li
-            key={key}
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
-              active && "bg-accent-soft text-accent",
-              done && !active && "text-muted",
-              !done && !active && "text-muted/70",
-            )}
-          >
+        const active = activeStep === n;
+        const reachable = n <= current;
+        const interactive = canNavigate && reachable;
+
+        const content = (
+          <>
             <span
               className={cn(
                 "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-xs font-semibold",
@@ -46,6 +52,36 @@ export function StepRail({ progress }: { progress: OnboardingProgress }) {
               {done && !active ? "✓" : n}
             </span>
             <span className={cn(active && "font-medium")}>{t(key)}</span>
+          </>
+        );
+
+        return (
+          <li key={key}>
+            {interactive ? (
+              <button
+                type="button"
+                onClick={() => onSelectStep?.(n)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition",
+                  active && "bg-accent-soft text-accent",
+                  done && !active && "text-muted hover:bg-[var(--surface-2)]",
+                  !done && !active && "text-muted/70 hover:bg-[var(--surface-2)]",
+                )}
+              >
+                {content}
+              </button>
+            ) : (
+              <div
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
+                  active && "bg-accent-soft text-accent",
+                  done && !active && "text-muted",
+                  !done && !active && "text-muted/70",
+                )}
+              >
+                {content}
+              </div>
+            )}
           </li>
         );
       })}
