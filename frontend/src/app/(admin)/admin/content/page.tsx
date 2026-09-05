@@ -49,7 +49,11 @@ export default function AdminContentPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoKey, setVideoKey] = useState<string | null>(null);
   const [premium, setPremium] = useState(true);
+  const [publishNow, setPublishNow] = useState(true);
   const [categoryId, setCategoryId] = useState("");
+
+  const memberMenuPath =
+    module === "psychology" ? "/member/psychology" : module === "daily_analysis" ? "/member/analysis" : null;
 
   const load = async () => {
     setError(null);
@@ -82,6 +86,7 @@ export default function AdminContentPage() {
     setUploadOk(false);
     setType("article");
     setPremium(true);
+    setPublishNow(true);
     setCategoryId("");
   };
 
@@ -199,6 +204,11 @@ export default function AdminContentPage() {
           <div className="px-4 py-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.createDraft")}</p>
             <p className="mt-1 text-xs text-muted">{t("admin.contentTypeHint")}</p>
+            {memberMenuPath ? (
+              <p className="mt-2 rounded-lg border border-accent/20 bg-accent-soft/40 px-2.5 py-2 text-xs leading-relaxed text-accent">
+                {t("admin.contentAppearsIn", { menu: moduleLabel(module), path: memberMenuPath })}
+              </p>
+            ) : null}
             <div className="mt-3 space-y-2.5">
               <input
                 className="field-input py-2 text-sm"
@@ -292,6 +302,10 @@ export default function AdminContentPage() {
                 <input type="checkbox" checked={premium} onChange={(e) => setPremium(e.target.checked)} />
                 {t("status.premium")}
               </label>
+              <label className="flex items-center gap-2 text-sm text-muted">
+                <input type="checkbox" checked={publishNow} onChange={(e) => setPublishNow(e.target.checked)} />
+                {t("admin.publishNow")}
+              </label>
               <button
                 type="button"
                 className="btn-primary w-full py-2.5 text-sm"
@@ -307,7 +321,7 @@ export default function AdminContentPage() {
                         title: title.trim(),
                         body: body.trim() || null,
                         is_premium: premium,
-                        status: "draft",
+                        status: publishNow ? "published" : "draft",
                         category_id: categoryId || null,
                         excerpt: (body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || title).slice(0, 120),
                         ...(type === "video"
@@ -326,7 +340,7 @@ export default function AdminContentPage() {
                   })()
                 }
               >
-                {t("admin.saveDraft")}
+                {publishNow ? t("admin.saveAndPublish") : t("admin.saveDraft")}
               </button>
             </div>
           </div>

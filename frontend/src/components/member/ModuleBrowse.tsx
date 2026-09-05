@@ -87,7 +87,15 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
                 : "member.education",
         )}
         description={
-          verified ? t("member.browseVerified") : t("member.browseLocked")
+          verified
+            ? t(
+                module === "psychology"
+                  ? "member.psychologyBrowseDesc"
+                  : module === "daily_analysis"
+                    ? "member.technicalBrowseDesc"
+                    : "member.browseVerified",
+              )
+            : t("member.browseLocked")
         }
         actions={
           <MemberFilterSeg
@@ -157,7 +165,13 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
           {!loading && items.length === 0 ? (
             <EmptyState
               title={t("member.noContentTitle")}
-              description={t("member.noContentBody")}
+              description={t(
+                module === "psychology"
+                  ? "member.psychologyEmptyBody"
+                  : module === "daily_analysis"
+                    ? "member.technicalEmptyBody"
+                    : "member.noContentBody",
+              )}
               actionLabel={verified ? undefined : t(cta.labelKey)}
               actionHref={verified ? undefined : cta.href}
             />
