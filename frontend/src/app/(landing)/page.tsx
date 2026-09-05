@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, Play, Star } from "lucide-react";
 import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
-import { LandingDeskPreview } from "@/components/landing/LandingDeskPreview";
 import type { MarketQuote } from "@/components/landing/landing-types";
 import { LandingXauusdEducation } from "@/components/marketing/LandingXauusdEducation";
 import { ROUTES } from "@/constants";
@@ -72,9 +71,6 @@ export default function LandingPage() {
           heroBody:
             "Komunitas trading dengan edukasi, analisis pasar, dan sinyal yang membantu Anda tumbuh lebih terarah.",
           joinNow: "Daftar Gratis",
-          marketLive: "Data pasar · update ~45 detik",
-          marketUnavailable: "Data pasar sementara tidak tersedia",
-          snapshot: "Snapshot Pasar",
           ctaTitle: "Siap mulai perjalanan trading Anda?",
           ctaBody:
             "Daftar gratis, pelajari materi edukasi, lalu selesaikan verifikasi saat siap membuka fitur premium.",
@@ -88,9 +84,6 @@ export default function LandingPage() {
           heroBody:
             "A trading community with education, market analysis, and signals that help you grow with clearer direction.",
           joinNow: "Register Free",
-          marketLive: "Market data · ~45s refresh",
-          marketUnavailable: "Market data temporarily unavailable",
-          snapshot: "Market Snapshot",
           ctaTitle: "Ready to start your trading journey?",
           ctaBody:
             "Register free, study the education material, then complete verification when you're ready for premium access.",
@@ -179,54 +172,6 @@ export default function LandingPage() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-
-          <div className="mt-10 grid items-start gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:gap-8">
-            <div className="animate-rise rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 p-4 backdrop-blur">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.snapshot}</p>
-                {marketLive ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-500">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    {copy.marketLive}
-                  </span>
-                ) : null}
-              </div>
-
-              {displayQuotes.length > 0 ? (
-                <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                  {displayQuotes.slice(0, 4).map((quote) => {
-                    const positive = quote.change >= 0;
-                    return (
-                      <div
-                        key={quote.symbol}
-                        className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/70 px-3 py-3"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold">{quote.symbol}</p>
-                            <p className="mt-0.5 truncate text-[11px] text-muted">{quote.name}</p>
-                          </div>
-                          <p className={`shrink-0 text-xs font-semibold ${positive ? "text-emerald-500" : "text-rose-500"}`}>
-                            {positive ? "+" : ""}
-                            {quote.percent_change.toFixed(2)}%
-                          </p>
-                        </div>
-                        <p className="mt-2 text-lg font-semibold tabular-nums tracking-tight">
-                          {quote.close >= 100 ? quote.close.toLocaleString() : quote.close.toFixed(4)}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="mt-4 text-xs text-muted">{copy.marketUnavailable}</p>
-              )}
-            </div>
-
-            <div className="animate-rise-delay">
-              <LandingDeskPreview locale={locale} quotes={quotes} />
             </div>
           </div>
         </div>
