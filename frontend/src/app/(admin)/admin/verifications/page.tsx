@@ -200,10 +200,38 @@ export default function AdminVerificationsPage() {
                     <dd className="mt-1">{tr(detail.request.created_at)}</dd>
                   </div>
                 </dl>
-                {detail.request.proof_key ? (
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 text-sm">
+                {detail.request.proof_url || detail.request.proof_key ? (
+                  <div className="space-y-2">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.proofOnFile")}</p>
-                    <p className="mt-1 break-all font-mono text-xs text-muted">{detail.request.proof_key}</p>
+                    {detail.request.proof_url && /\.(jpe?g|png|webp|gif)(\?|$)/i.test(detail.request.proof_url) ? (
+                      <a
+                        href={detail.request.proof_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-2)]"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={detail.request.proof_url}
+                          alt={t("admin.proof")}
+                          className="max-h-80 w-full object-contain bg-black/5"
+                        />
+                        <p className="border-t border-[var(--border)] px-3 py-2 text-xs text-accent hover:underline">
+                          {t("admin.openProofFull")}
+                        </p>
+                      </a>
+                    ) : detail.request.proof_url ? (
+                      <a
+                        href={detail.request.proof_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 text-sm font-medium text-accent hover:underline"
+                      >
+                        {t("admin.openProofFile")}
+                      </a>
+                    ) : (
+                      <p className="break-all font-mono text-xs text-muted">{detail.request.proof_key}</p>
+                    )}
                   </div>
                 ) : (
                   <p className="text-sm text-muted">{t("admin.noProof")}</p>

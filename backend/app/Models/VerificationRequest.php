@@ -50,12 +50,18 @@ class VerificationRequest extends Model
 
     public function toApiArray(): array
     {
+        $proofUrl = null;
+        if ($this->proof_key) {
+            $proofUrl = app(\App\Services\Upload\UploadService::class)->urlForKey($this->proof_key);
+        }
+
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
             'mt5_account' => $this->mt5_account,
             'broker_server' => $this->broker_server,
             'proof_key' => $this->proof_key,
+            'proof_url' => $proofUrl,
             'status' => $this->status,
             'rejection_reason' => $this->rejection_reason,
             'reviewed_by' => $this->reviewed_by,

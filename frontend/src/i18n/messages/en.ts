@@ -549,6 +549,8 @@ export const en = {
     serverShort: "Server",
     accountStatus: "Account",
     proofOnFile: "Proof on file",
+    openProofFull: "Open full size",
+    openProofFile: "Open proof file",
     requiredWhenRejecting: "Required when rejecting",
     agingSuffix: "aging",
     itemsCategories: "{items} items · {categories} categories",

@@ -550,6 +550,8 @@ export const id: Messages = {
     serverShort: "Server",
     accountStatus: "Akun",
     proofOnFile: "Bukti tersimpan",
+    openProofFull: "Buka ukuran penuh",
+    openProofFile: "Buka file bukti",
     requiredWhenRejecting: "Wajib diisi saat menolak",
     agingSuffix: "lama",
     itemsCategories: "{items} item · {categories} kategori",

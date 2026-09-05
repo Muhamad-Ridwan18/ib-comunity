@@ -63,17 +63,9 @@ class VerificationService
             ->limit($perPage)
             ->get()
             ->map(function (VerificationRequest $item) {
-                $row = [
-                    'id' => $item->id,
-                    'user_id' => $item->user_id,
-                    'mt5_account' => $item->mt5_account,
-                    'broker_server' => $item->broker_server,
-                    'proof_key' => $item->proof_key,
-                    'status' => $item->status,
-                    'created_at' => $item->created_at?->toISOString(),
-                    'user_email' => $item->user?->email ?? '',
-                    'user_full_name' => $item->user?->profile?->full_name ?? '',
-                ];
+                $row = $item->toApiArray();
+                $row['user_email'] = $item->user?->email ?? '';
+                $row['user_full_name'] = $item->user?->profile?->full_name ?? '';
 
                 return $row;
             })

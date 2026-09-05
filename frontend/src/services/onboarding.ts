@@ -14,6 +14,7 @@ export type VerificationRequest = {
   mt5_account: string;
   broker_server: string;
   proof_key?: string | null;
+  proof_url?: string | null;
   status: "pending" | "approved" | "rejected";
   rejection_reason?: string | null;
   reviewed_at?: string | null;
