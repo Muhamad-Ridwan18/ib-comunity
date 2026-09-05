@@ -145,3 +145,12 @@ export async function adminDeleteContent(id: string) {
   const { data } = await api.delete<ApiEnvelope<null>>(`/admin/contents/${id}`);
   return data;
 }
+
+export async function adminUploadContentVideo(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads/video", form, {
+    timeout: 120_000,
+  });
+  return data;
+}

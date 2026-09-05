@@ -400,6 +400,13 @@ class ContentService
             $videoUrl = $input['video_url'];
         }
 
+        if ($type === Content::TYPE_VIDEO) {
+            $hasVideo = filled($videoUrl) || ! empty($input['video_key']);
+            if (! $hasVideo && ! $existing?->video_url) {
+                throw new RuntimeException('Video URL or upload is required for video content', 422);
+            }
+        }
+
         $content = $existing ?? new Content(['id' => (string) Str::uuid(), 'created_by' => $authorId]);
         $content->fill([
             'category_id' => $categoryId,

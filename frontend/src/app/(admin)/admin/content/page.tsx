@@ -9,8 +9,11 @@ import {
   adminListCategories,
   adminListContents,
   adminPublishContent,
+  adminUploadContentVideo,
   type Category,
   type ContentItem,
+  type ContentModule,
+  type ContentType,
 } from "@/services/content";
 import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
 import {
@@ -24,22 +27,24 @@ import { useT } from "@/i18n/useT";
 export default function AdminContentPage() {
   const { t, tr } = useT();
   const MODULES = [
-    { value: "academy", label: t("nav.academy") },
     { value: "psychology", label: t("member.psychology") },
-    { value: "daily_analysis", label: t("member.dailyAnalysisShort") },
+    { value: "daily_analysis", label: t("member.technical") },
+    { value: "academy", label: t("nav.academy") },
     { value: "landing", label: t("admin.moduleLanding") },
   ];
   const moduleLabel = (value: string) => MODULES.find((m) => m.value === value)?.label || value;
   const [categories, setCategories] = useState<Category[]>([]);
   const [contents, setContents] = useState<ContentItem[]>([]);
-  const [module, setModule] = useState("academy");
+  const [module, setModule] = useState<ContentModule>("psychology");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [catName, setCatName] = useState("");
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<"article" | "video">("article");
+  const [type, setType] = useState<ContentType>("article");
   const [body, setBody] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoKey, setVideoKey] = useState<string | null>(null);
   const [premium, setPremium] = useState(true);
   const [categoryId, setCategoryId] = useState("");
 
@@ -66,6 +71,20 @@ export default function AdminContentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [module]);
 
+  const resetForm = () => {
+    setTitle("");
+    setBody("");
+    setVideoUrl("");
+    setVideoKey(null);
+    setType("article");
+    setPremium(true);
+    setCategoryId("");
+  };
+
+  const canSave =
+    Boolean(title.trim()) &&
+    (type === "article" ? Boolean(body.trim()) : Boolean(videoUrl.trim() || videoKey));
+
   return (
     <div>
       <AdminPageHeader
@@ -73,9 +92,9 @@ export default function AdminContentPage() {
         description={
           loading
             ? t("common.loading")
-            : t("admin.itemsCategories", { items: contents.length, categories: categories.length })
+            : t("admin.contentDesc")
         }
-        actions={<AdminFilterSeg value={module} options={MODULES} onChange={setModule} />}
+        actions={<AdminFilterSeg value={module} options={MODULES} onChange={(v) => setModule(v as ContentModule)} />}
       />
 
       {error ? (
@@ -84,10 +103,11 @@ export default function AdminContentPage() {
         </p>
       ) : null}
 
-      <div className="grid lg:grid-cols-[minmax(16rem,19rem)_minmax(0,1fr)]">
+      <div className="grid lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
         <aside className="border-b border-[var(--border)] bg-[var(--card)] lg:border-b-0 lg:border-r">
           <div className="border-b border-[var(--border)] px-4 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.categories")}</p>
+            <p className="mt-1 text-xs text-muted">{t("admin.contentModuleHint", { module: moduleLabel(module) })}</p>
             <div className="mt-2 flex gap-2">
               <input
                 className="field-input py-2 text-sm"
@@ -154,6 +174,7 @@ export default function AdminContentPage() {
 
           <div className="px-4 py-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.createDraft")}</p>
+            <p className="mt-1 text-xs text-muted">{t("admin.contentTypeHint")}</p>
             <div className="mt-3 space-y-2.5">
               <input
                 className="field-input py-2 text-sm"
@@ -164,7 +185,7 @@ export default function AdminContentPage() {
               <select
                 className="field-input py-2 text-sm"
                 value={type}
-                onChange={(e) => setType(e.target.value as "article" | "video")}
+                onChange={(e) => setType(e.target.value as ContentType)}
               >
                 <option value="article">{t("member.article")}</option>
                 <option value="video">{t("member.video")}</option>
@@ -181,12 +202,65 @@ export default function AdminContentPage() {
                   </option>
                 ))}
               </select>
-              <textarea
-                className="field-input min-h-[100px] text-sm"
-                placeholder={t("admin.body")}
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-              />
+
+              {type === "article" ? (
+                <textarea
+                  className="field-input min-h-[120px] text-sm"
+                  placeholder={t("admin.body")}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    className="field-input py-2 text-sm"
+                    placeholder={t("admin.videoUrlPlaceholder")}
+                    value={videoUrl}
+                    onChange={(e) => {
+                      setVideoUrl(e.target.value);
+                      setVideoKey(null);
+                    }}
+                  />
+                  <label className="block">
+                    <span className="mb-1 block text-xs text-muted">{t("admin.videoUploadHint")}</span>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime"
+                      className="block w-full text-xs text-muted file:mr-2 file:rounded-lg file:border-0 file:bg-accent-soft file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-accent"
+                      disabled={busy}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        void (async () => {
+                          setBusy(true);
+                          setError(null);
+                          try {
+                            const up = await adminUploadContentVideo(file);
+                            if (!up.success || !up.data) {
+                              setError(up.message || t("admin.saveFailed"));
+                              return;
+                            }
+                            setVideoKey(up.data.key);
+                            setVideoUrl(up.data.url);
+                          } catch {
+                            setError(t("admin.saveFailed"));
+                          } finally {
+                            setBusy(false);
+                          }
+                        })();
+                      }}
+                    />
+                  </label>
+                  <textarea
+                    className="field-input min-h-[72px] text-sm"
+                    placeholder={t("admin.videoCaptionOptional")}
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                  />
+                </div>
+              )}
+
               <label className="flex items-center gap-2 text-sm text-muted">
                 <input type="checkbox" checked={premium} onChange={(e) => setPremium(e.target.checked)} />
                 {t("status.premium")}
@@ -194,7 +268,7 @@ export default function AdminContentPage() {
               <button
                 type="button"
                 className="btn-primary w-full py-2.5 text-sm"
-                disabled={busy || !title.trim()}
+                disabled={busy || !canSave}
                 onClick={() =>
                   void (async () => {
                     setBusy(true);
@@ -203,15 +277,19 @@ export default function AdminContentPage() {
                       await adminCreateContent({
                         module,
                         type,
-                        title,
-                        body,
+                        title: title.trim(),
+                        body: body.trim() || null,
                         is_premium: premium,
                         status: "draft",
                         category_id: categoryId || null,
-                        excerpt: body.slice(0, 120),
+                        excerpt: (body || title).slice(0, 120),
+                        ...(type === "video"
+                          ? videoKey
+                            ? { video_key: videoKey, video_url: videoUrl || null }
+                            : { video_url: videoUrl.trim() }
+                          : { video_url: null }),
                       });
-                      setTitle("");
-                      setBody("");
+                      resetForm();
                       await load();
                     } catch {
                       setError(t("admin.saveFailed"));
@@ -228,6 +306,11 @@ export default function AdminContentPage() {
         </aside>
 
         <div className="min-w-0">
+          <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-2.5 md:px-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+              {moduleLabel(module)} · {contents.length} {t("admin.items")}
+            </p>
+          </div>
           <div className="hidden grid-cols-[1.6fr_0.6fr_0.7fr_0.7fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
             <span>{t("admin.contentTitleField")}</span>
             <span>{t("admin.type")}</span>
