@@ -59,11 +59,11 @@ class OnboardingController extends Controller
     public function completeStep4(Request $request)
     {
         $data = $request->validate([
-            'proof_key' => ['nullable', 'string', 'max:255'],
+            'proof_key' => ['required', 'string', 'max:255'],
         ]);
 
         return $this->fromService(
-            fn () => $this->onboarding->completeStep4($request->user(), $data['proof_key'] ?? null),
+            fn () => $this->onboarding->completeStep4($request->user(), $data['proof_key']),
             'Step 4 completed'
         );
     }

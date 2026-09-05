@@ -6,6 +6,16 @@ export type OnboardingSettings = {
   telegram_invite_url: string;
   broker_tutorial_url: string;
   deposit_tutorial_url: string;
+  broker_tutorial?: {
+    title: string;
+    video_url: string;
+    kind: "embed" | "file";
+  } | null;
+  deposit_tutorial?: {
+    title: string;
+    video_url: string;
+    kind: "embed" | "file";
+  } | null;
 };
 
 export type VerificationRequest = {
@@ -62,8 +72,8 @@ export async function submitStep3(input: { mt5_account: string; broker_server: s
   return data;
 }
 
-export async function completeStep4(input?: { proof_key?: string }) {
-  const { data } = await api.post<ApiEnvelope<OnboardingProgress>>("/onboarding/step/4", input ?? {});
+export async function completeStep4(input: { proof_key: string }) {
+  const { data } = await api.post<ApiEnvelope<OnboardingProgress>>("/onboarding/step/4", input);
   return data;
 }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\BrandingController;
 use App\Http\Controllers\Api\V1\AdminBonusController;
 use App\Http\Controllers\Api\V1\AdminContentController;
 use App\Http\Controllers\Api\V1\AdminMemberHomeController;
+use App\Http\Controllers\Api\V1\AdminOnboardingVideosController;
 use App\Http\Controllers\Api\V1\AdminLandingHookVideoController;
 use App\Http\Controllers\Api\V1\AdminJournalController;
 use App\Http\Controllers\Api\V1\AdminSignalController;
@@ -176,6 +177,9 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/member/home', [AdminMemberHomeController::class, 'show']);
             Route::put('/member/home', [AdminMemberHomeController::class, 'update']);
+
+            Route::get('/onboarding/videos', [AdminOnboardingVideosController::class, 'show']);
+            Route::put('/onboarding/videos', [AdminOnboardingVideosController::class, 'update']);
 
             Route::get('/plans', [BillingController::class, 'plans']);
         });

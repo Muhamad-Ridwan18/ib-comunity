@@ -20,6 +20,7 @@ const links: { href: string; labelKey: string; exact?: boolean }[] = [
   { href: "/admin/landing", labelKey: "nav.landing" },
   { href: "/admin/branding", labelKey: "nav.branding" },
   { href: "/admin/member-home", labelKey: "nav.memberHome" },
+  { href: "/admin/onboarding", labelKey: "nav.onboardingVideos" },
   { href: "/admin/signals", labelKey: "nav.signals" },
   { href: "/admin/bonuses", labelKey: "nav.bonuses" },
   { href: "/admin/tickets", labelKey: "nav.tickets" },

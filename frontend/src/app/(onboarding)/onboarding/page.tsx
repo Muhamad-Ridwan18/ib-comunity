@@ -21,6 +21,7 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleToggle } from "@/components/common/LocaleToggle";
 import { AppLogo } from "@/components/layout/AppLogo";
 import { StepRail, WaitingTimeline } from "@/components/onboarding/StepRail";
+import { LandingHookVideoPlayer } from "@/components/landing/LandingHookVideoPlayer";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { AuthGate } from "@/components/common/AuthGate";
 import { ROUTES, USER_STATUS } from "@/constants";
@@ -321,21 +322,27 @@ function OnboardingInner() {
             <div className={`mt-6 ${busy ? "pointer-events-none opacity-60" : ""}`}>
               {!rejected && !pending && view === 1 && (
                 <StepBody title={t("onboarding.step1Title")}>
-                  <p className="mb-4 text-sm text-muted">{t("onboarding.returnAfterExternal")}</p>
-                  <a
-                    href={progress.settings.broker_tutorial_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-ghost inline-flex"
-                  >
-                    {t("onboarding.openTutorial")}
-                  </a>
+                  <p className="mb-4 text-sm text-muted">{t("onboarding.watchThenContinue")}</p>
+                  {progress.settings.broker_tutorial ? (
+                    <div className="mb-4 overflow-hidden rounded-xl border border-[var(--border)]">
+                      <LandingHookVideoPlayer
+                        video={progress.settings.broker_tutorial}
+                        fallbackTitle={t("onboarding.step1Title")}
+                        autoPlay={false}
+                        loop={false}
+                      />
+                    </div>
+                  ) : (
+                    <p className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-3 text-sm text-muted">
+                      {t("onboarding.videoUnavailable")}
+                    </p>
+                  )}
                   {reviewingPast ? (
-                    <button type="button" className="btn-primary ml-3" onClick={goNext}>
+                    <button type="button" className="btn-primary" onClick={goNext}>
                       {t("onboarding.nextStep")}
                     </button>
                   ) : (
-                    <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep1)}>
+                    <button type="button" className="btn-primary" onClick={() => void run(completeStep1)}>
                       {t("onboarding.markWatched")}
                     </button>
                   )}
@@ -345,21 +352,13 @@ function OnboardingInner() {
 
               {!rejected && !pending && view === 2 && (
                 <StepBody title={t("onboarding.step2Title")}>
-                  <p className="mb-4 text-sm text-muted">{t("onboarding.returnAfterExternal")}</p>
-                  <a
-                    href={progress.settings.ib_register_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-ghost inline-flex"
-                  >
-                    {t("onboarding.openIbRegister")}
-                  </a>
+                  <p className="mb-4 text-sm text-muted">{t("onboarding.step2Body")}</p>
                   {reviewingPast ? (
-                    <button type="button" className="btn-primary ml-3" onClick={goNext}>
+                    <button type="button" className="btn-primary" onClick={goNext}>
                       {t("onboarding.nextStep")}
                     </button>
                   ) : (
-                    <button type="button" className="btn-primary ml-3" onClick={() => void run(completeStep2)}>
+                    <button type="button" className="btn-primary" onClick={() => void run(completeStep2)}>
                       {t("onboarding.iveRegistered")}
                     </button>
                   )}
@@ -404,21 +403,35 @@ function OnboardingInner() {
 
               {!rejected && !pending && view === 4 && (
                 <StepBody title={t("onboarding.step4Title")}>
-                  <a
-                    href={progress.settings.deposit_tutorial_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-ghost inline-flex"
-                  >
-                    {t("onboarding.openDeposit")}
-                  </a>
+                  <p className="mb-4 text-sm text-muted">{t("onboarding.watchThenContinue")}</p>
+                  {progress.settings.deposit_tutorial ? (
+                    <div className="mb-4 overflow-hidden rounded-xl border border-[var(--border)]">
+                      <LandingHookVideoPlayer
+                        video={progress.settings.deposit_tutorial}
+                        fallbackTitle={t("onboarding.step4Title")}
+                        autoPlay={false}
+                        loop={false}
+                      />
+                    </div>
+                  ) : (
+                    <p className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-3 text-sm text-muted">
+                      {t("onboarding.videoUnavailable")}
+                    </p>
+                  )}
                   <div className="mt-4 max-w-md space-y-3">
                     {!reviewingPast ? (
-                      <input
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.webp,.pdf"
-                        onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
-                      />
+                      <label className="block space-y-1.5 text-sm">
+                        <span className="text-muted">
+                          {t("onboarding.proofRequiredLabel")} <span className="text-[var(--danger)]">*</span>
+                        </span>
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.webp,.pdf"
+                          required
+                          onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                        />
+                        <span className="block text-xs text-muted">{t("onboarding.proofRequiredHint")}</span>
+                      </label>
                     ) : null}
                     {reviewingPast ? (
                       <button type="button" className="btn-primary" onClick={goNext}>
@@ -428,17 +441,17 @@ function OnboardingInner() {
                       <button
                         type="button"
                         className="btn-primary"
-                        onClick={() =>
+                        onClick={() => {
+                          if (!proofFile) {
+                            setError(t("onboarding.proofRequired"));
+                            return;
+                          }
                           void run(async () => {
-                            let proof_key: string | undefined;
-                            if (proofFile) {
-                              const up = await uploadProof(proofFile);
-                              if (!up.success || !up.data) throw new Error("upload failed");
-                              proof_key = up.data.key;
-                            }
-                            return completeStep4(proof_key ? { proof_key } : {});
-                          })
-                        }
+                            const up = await uploadProof(proofFile);
+                            if (!up.success || !up.data) throw new Error("upload failed");
+                            return completeStep4({ proof_key: up.data.key });
+                          });
+                        }}
                       >
                         {t("onboarding.continue")}
                       </button>

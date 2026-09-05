@@ -11,7 +11,10 @@ use RuntimeException;
 
 class OnboardingService
 {
-    public function __construct(private SettingsService $settings) {}
+    public function __construct(
+        private SettingsService $settings,
+        private OnboardingVideosService $videos,
+    ) {}
 
     public function get(User $user): array
     {
@@ -103,8 +106,13 @@ class OnboardingService
         return $this->buildProgress($user->fresh());
     }
 
-    public function completeStep4(User $user, ?string $proofKey = null): array
+    public function completeStep4(User $user, string $proofKey): array
     {
+        $key = trim($proofKey);
+        if ($key === '') {
+            throw new RuntimeException('Deposit proof is required', 422);
+        }
+
         [, $progress] = $this->loadMutable($user);
 
         if (! $progress->step3_done_at) {
@@ -117,9 +125,11 @@ class OnboardingService
                 ->orderByDesc('created_at')
                 ->first();
 
-            if ($latest && ($key = trim((string) $proofKey)) !== '') {
-                $latest->update(['proof_key' => $key]);
+            if (! $latest) {
+                throw new RuntimeException('Submit MT5 details first', 409);
             }
+
+            $latest->update(['proof_key' => $key]);
 
             $progress->update([
                 'step4_done_at' => now(),
@@ -185,7 +195,7 @@ class OnboardingService
         $data = [
             'current_step' => (int) $progress->current_step,
             'status' => $user->status,
-            'settings' => $this->settings->getPublic(),
+            'settings' => array_merge($this->settings->getPublic(), $this->videos->getPublic()),
         ];
 
         foreach (['step1_done_at', 'step2_done_at', 'step3_done_at', 'step4_done_at', 'step5_done_at', 'completed_at'] as $field) {
