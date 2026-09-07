@@ -59,6 +59,31 @@ class SettingsService
         return is_scalar($row->value) ? (string) $row->value : $fallback;
     }
 
+    public function setString(string $key, string $value): void
+    {
+        Setting::query()->updateOrCreate(
+            ['key' => $key],
+            ['value' => json_encode($value)]
+        );
+    }
+
+    public function getTelegramInviteUrl(): string
+    {
+        return $this->getString(self::KEY_TELEGRAM_INVITE_URL, '');
+    }
+
+    public function setTelegramInviteUrl(string $url): array
+    {
+        $url = trim($url);
+        if ($url !== '' && ! filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new \RuntimeException('Validation failed', 422);
+        }
+
+        $this->setString(self::KEY_TELEGRAM_INVITE_URL, $url);
+
+        return ['telegram_invite_url' => $url];
+    }
+
     public function aiFailThreshold(): int
     {
         $raw = $this->getString(self::KEY_AI_FAIL_THRESHOLD, '3');

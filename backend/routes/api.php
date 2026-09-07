@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\V1\AdminMemberHomeController;
 use App\Http\Controllers\Api\V1\AdminOnboardingVideosController;
 use App\Http\Controllers\Api\V1\AdminLandingHookVideoController;
 use App\Http\Controllers\Api\V1\AdminJournalController;
-use App\Http\Controllers\Api\V1\AdminSignalController;
+use App\Http\Controllers\Api\V1\AdminTelegramController;
 use App\Http\Controllers\Api\V1\AdminTicketController;
 use App\Http\Controllers\Api\V1\AdminUserController;
 use App\Http\Controllers\Api\V1\AiController;
@@ -146,10 +146,8 @@ Route::prefix('v1')->group(function () {
             Route::delete('/contents/{id}', [AdminContentController::class, 'destroy']);
             Route::post('/contents/{id}/publish', [AdminContentController::class, 'publish']);
 
-            Route::get('/signals', [AdminSignalController::class, 'index']);
-            Route::post('/signals', [AdminSignalController::class, 'store']);
-            Route::put('/signals/{id}', [AdminSignalController::class, 'update']);
-            Route::patch('/signals/{id}/status', [AdminSignalController::class, 'patchStatus']);
+            Route::get('/signals', [AdminTelegramController::class, 'show']);
+            Route::put('/signals', [AdminTelegramController::class, 'update']);
 
             Route::get('/journals', [AdminJournalController::class, 'index']);
 

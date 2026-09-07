@@ -57,7 +57,7 @@ class BonusService
 
     public function telegramLink(): array
     {
-        return ['telegram_invite_url' => $this->settings->getPublic()['telegram_invite_url']];
+        return ['telegram_invite_url' => $this->settings->getTelegramInviteUrl()];
     }
 
     private function build(?Bonus $existing, array $input): Bonus

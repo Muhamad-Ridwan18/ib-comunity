@@ -1,24 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ExternalLink, Send } from "lucide-react";
 import { LockedModule } from "@/components/member/LockedModule";
-import { RiskDisclosureGate } from "@/components/member/RiskDisclosureGate";
-import { listSignals, type SignalItem } from "@/services/signals";
+import { getTelegramLink } from "@/services/bonus";
 import { useAuthStore } from "@/store/auth";
 import { isVerifiedMember } from "@/lib/membership";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { SkeletonRows } from "@/components/ui/Skeleton";
-import { StatusBadge, statusTone } from "@/components/ui/StatusBadge";
-import { MemberFilterSeg, MemberList, MemberListRow } from "@/components/member/MemberChrome";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useT } from "@/i18n/useT";
 
 export default function SignalsPage() {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
   const unlocked = isVerifiedMember(user);
-  const [items, setItems] = useState<SignalItem[]>([]);
-  const [status, setStatus] = useState("");
+  const [telegram, setTelegram] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,12 +29,15 @@ export default function SignalsPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await listSignals({ status: status || undefined });
+        const res = await getTelegramLink();
         if (!alive) return;
-        if (res.success && res.data) setItems(res.data);
-        else setError(res.message || t("member.noSignalsBody"));
+        if (res.success && res.data?.telegram_invite_url) {
+          setTelegram(res.data.telegram_invite_url);
+        } else {
+          setError(res.message || t("member.signalsTelegramUnavailable"));
+        }
       } catch {
-        if (alive) setError(t("member.noSignalsBody"));
+        if (alive) setError(t("member.signalsTelegramUnavailable"));
       } finally {
         if (alive) setLoading(false);
       }
@@ -45,70 +45,43 @@ export default function SignalsPage() {
     return () => {
       alive = false;
     };
-  }, [unlocked, status, t]);
+  }, [unlocked, t]);
 
   if (!unlocked) return <LockedModule title={t("member.signalsTitle")} />;
 
   return (
-    <RiskDisclosureGate>
-      <div className="space-y-6">
+    <div className="space-y-6">
       <PageHeader
         kicker={t("member.liveDesk")}
         title={t("member.signalsTitle")}
         description={t("member.signalsDesc")}
-        actions={
-          <MemberFilterSeg
-            value={status}
-            onChange={setStatus}
-            options={[
-              { value: "", label: t("common.all") },
-              { value: "active", label: t("status.active") },
-              { value: "closed", label: t("status.closed") },
-              { value: "cancelled", label: t("status.cancelled") },
-            ]}
-          />
-        }
       />
 
       {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-      {loading ? <SkeletonRows count={4} /> : null}
+      {loading ? <Skeleton className="h-40" /> : null}
 
-      {!loading && items.length === 0 ? (
-        <EmptyState title={t("member.noSignalsTitle")} description={t("member.noSignalsBody")} />
+      {!loading && !telegram ? (
+        <EmptyState title={t("member.noSignalsTitle")} description={t("member.signalsTelegramUnavailable")} />
       ) : null}
 
-      {!loading && items.length > 0 ? (
-        <MemberList>
-          {items.map((s) => (
-            <MemberListRow key={s.id}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="font-display text-lg font-semibold tracking-tight">
-                    {s.pair}{" "}
-                    <span className={s.direction === "buy" ? "text-accent" : "text-[var(--danger)]"}>
-                      {s.direction.toUpperCase()}
-                    </span>
-                  </p>
-                  <p className="mt-1 text-sm text-muted">
-                    {t("member.entry")} {s.entry}
-                    {s.sl != null ? ` · SL ${s.sl}` : ""}
-                    {s.tp != null ? ` · TP ${s.tp}` : ""}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <StatusBadge label={s.status} tone={statusTone(s.status)} />
-                  {s.result ? <StatusBadge label={s.result} tone={statusTone(s.result)} /> : null}
-                </div>
-              </div>
-              {s.analysis ? <p className="mt-3 text-sm leading-relaxed text-muted">{s.analysis}</p> : null}
-              <p className="mt-3 text-xs text-muted">
-                {t("member.published", { date: new Date(s.published_at).toLocaleString() })}
-              </p>
-            </MemberListRow>
-          ))}
-        </MemberList>
+      {!loading && telegram ? (
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
+            <Send className="h-5 w-5" />
+          </div>
+          <h2 className="font-display mt-4 text-xl font-semibold tracking-tight">{t("member.signalsTelegramTitle")}</h2>
+          <p className="mt-2 max-w-lg text-sm text-muted">{t("member.signalsTelegramBody")}</p>
+          <a
+            href={telegram}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-primary mt-6 inline-flex items-center gap-2 px-5 py-2.5"
+          >
+            {t("member.openSignalsTelegram")}
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
       ) : null}
-      </div>
-    </RiskDisclosureGate>
+    </div>
   );
 }
