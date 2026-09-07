@@ -17,7 +17,8 @@ export const memberNav: MemberNavItem[] = [
   { href: ROUTES.moneyManagement, labelKey: "member.moneyManagement", locked: true },
   { href: ROUTES.analysis, labelKey: "member.technical", locked: true },
   { href: ROUTES.signals, labelKey: "nav.signals", locked: true },
-  { href: ROUTES.compounding, labelKey: "member.compounding", locked: true },
+  // Compounding calculator temporarily hidden from sidebar
+  // { href: ROUTES.compounding, labelKey: "member.compounding", locked: true },
   {
     href: EXTERNAL_LINKS.forexFactoryCalendar,
     labelKey: "member.calendar",
