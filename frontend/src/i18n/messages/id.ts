@@ -478,7 +478,7 @@ export const id: Messages = {
     verificationsDesc: "Tinjau pengajuan MT5 Santara Pips dan putuskan dengan cepat.",
     contentTitle: "Konten",
     contentDesc:
-      "Buat materi Psikologi atau Teknikal. Setiap konten bisa berupa artikel atau video, lalu tampil di menu member yang sesuai.",
+      "Buat materi Psikologi, Money Management, atau Teknikal. Setiap konten bisa berupa artikel atau video, lalu tampil di menu member yang sesuai.",
     contentModuleHint: "Kategori untuk modul {module}",
     contentTypeHint: "Pilih artikel (teks) atau video (URL / upload).",
     contentAppearsIn: "Setelah dipublish, konten muncul di menu member {menu} ({path}).",

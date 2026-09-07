@@ -476,7 +476,7 @@ export const en = {
     verificationsDesc: "Review Santara Pips MT5 submissions and decide quickly.",
     contentTitle: "Content",
     contentDesc:
-      "Create Psychology or Technical materials. Each item can be an article or a video, then appears in the matching member menu.",
+      "Create Psychology, Money Management, or Technical materials. Each item can be an article or a video, then appears in the matching member menu.",
     contentModuleHint: "Categories for the {module} module",
     contentTypeHint: "Choose article (text) or video (URL / upload).",
     contentAppearsIn: "After publishing, content appears in the {menu} member menu ({path}).",
