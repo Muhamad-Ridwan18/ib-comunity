@@ -15,6 +15,8 @@ class Content extends Model
 
     public const MODULE_PSYCHOLOGY = 'psychology';
 
+    public const MODULE_MONEY_MANAGEMENT = 'money_management';
+
     public const MODULE_DAILY_ANALYSIS = 'daily_analysis';
 
     public const MODULE_LANDING = 'landing';

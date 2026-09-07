@@ -30,6 +30,7 @@ export default function AdminContentPage() {
   const { t, tr } = useT();
   const MODULES = [
     { value: "psychology", label: t("member.psychology") },
+    { value: "money_management", label: t("member.moneyManagement") },
     { value: "daily_analysis", label: t("member.technical") },
     { value: "landing", label: t("admin.moduleLanding") },
   ];
@@ -53,7 +54,13 @@ export default function AdminContentPage() {
   const [categoryId, setCategoryId] = useState("");
 
   const memberMenuPath =
-    module === "psychology" ? "/member/psychology" : module === "daily_analysis" ? "/member/analysis" : null;
+    module === "psychology"
+      ? "/member/psychology"
+      : module === "money_management"
+        ? "/member/money-management"
+        : module === "daily_analysis"
+          ? "/member/analysis"
+          : null;
 
   const load = async () => {
     setError(null);

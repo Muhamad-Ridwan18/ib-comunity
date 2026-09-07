@@ -30,6 +30,7 @@ export const ROUTES = {
   verification: "/member/verification",
   academy: "/member/academy",
   psychology: "/member/psychology",
+  moneyManagement: "/member/money-management",
   analysis: "/member/analysis",
   signals: "/member/signals",
   compounding: "/member/compounding",

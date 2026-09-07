@@ -10,6 +10,7 @@ import { track } from "@/lib/analytics";
 
 const UNLOCK_KEYS = [
   "member.psychology",
+  "member.moneyManagement",
   "member.technical",
   "nav.signals",
   "member.compounding",

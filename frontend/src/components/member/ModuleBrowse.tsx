@@ -82,18 +82,22 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
             ? "nav.academy"
             : module === "psychology"
               ? "member.psychology"
-              : module === "daily_analysis"
-                ? "member.technical"
-                : "member.education",
+              : module === "money_management"
+                ? "member.moneyManagement"
+                : module === "daily_analysis"
+                  ? "member.technical"
+                  : "member.education",
         )}
         description={
           verified
             ? t(
                 module === "psychology"
                   ? "member.psychologyBrowseDesc"
-                  : module === "daily_analysis"
-                    ? "member.technicalBrowseDesc"
-                    : "member.browseVerified",
+                  : module === "money_management"
+                    ? "member.moneyManagementBrowseDesc"
+                    : module === "daily_analysis"
+                      ? "member.technicalBrowseDesc"
+                      : "member.browseVerified",
               )
             : t("member.browseLocked")
         }
@@ -168,9 +172,11 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
               description={t(
                 module === "psychology"
                   ? "member.psychologyEmptyBody"
-                  : module === "daily_analysis"
-                    ? "member.technicalEmptyBody"
-                    : "member.noContentBody",
+                  : module === "money_management"
+                    ? "member.moneyManagementEmptyBody"
+                    : module === "daily_analysis"
+                      ? "member.technicalEmptyBody"
+                      : "member.noContentBody",
               )}
               actionLabel={verified ? undefined : t(cta.labelKey)}
               actionHref={verified ? undefined : cta.href}

@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 import type { ApiEnvelope } from "@/types/auth";
 
-export type ContentModule = "academy" | "psychology" | "daily_analysis" | "landing";
+export type ContentModule = "academy" | "psychology" | "money_management" | "daily_analysis" | "landing";
 export type ContentType = "video" | "article";
 
 export type Category = {

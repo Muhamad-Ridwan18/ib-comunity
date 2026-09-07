@@ -435,6 +435,7 @@ class ContentService
         if (! in_array($module, [
             Content::MODULE_ACADEMY,
             Content::MODULE_PSYCHOLOGY,
+            Content::MODULE_MONEY_MANAGEMENT,
             Content::MODULE_DAILY_ANALYSIS,
             Content::MODULE_LANDING,
         ], true)) {
