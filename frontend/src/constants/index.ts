@@ -28,6 +28,7 @@ export const ROUTES = {
   onboarding: "/onboarding",
   member: "/member",
   verification: "/member/verification",
+  tutorial: "/member/tutorial",
   academy: "/member/academy",
   psychology: "/member/psychology",
   moneyManagement: "/member/money-management",

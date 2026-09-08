@@ -13,6 +13,7 @@ export type MemberNavItem = {
 export const memberNav: MemberNavItem[] = [
   { href: ROUTES.member, labelKey: "nav.home", exact: true },
   { href: ROUTES.verification, labelKey: "member.verification" },
+  { href: ROUTES.tutorial, labelKey: "member.tutorial" },
   { href: ROUTES.psychology, labelKey: "member.psychology", locked: true },
   { href: ROUTES.moneyManagement, labelKey: "member.moneyManagement", locked: true },
   { href: ROUTES.analysis, labelKey: "member.technical", locked: true },

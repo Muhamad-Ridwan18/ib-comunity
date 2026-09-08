@@ -13,6 +13,8 @@ class Content extends Model
 
     public const MODULE_ACADEMY = 'academy';
 
+    public const MODULE_TUTORIAL = 'tutorial';
+
     public const MODULE_PSYCHOLOGY = 'psychology';
 
     public const MODULE_MONEY_MANAGEMENT = 'money_management';

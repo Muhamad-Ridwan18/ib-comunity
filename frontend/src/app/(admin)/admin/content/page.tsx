@@ -29,6 +29,7 @@ import { CheckCircle2, Loader2, Upload } from "lucide-react";
 export default function AdminContentPage() {
   const { t, tr } = useT();
   const MODULES = [
+    { value: "tutorial", label: t("member.tutorial") },
     { value: "psychology", label: t("member.psychology") },
     { value: "money_management", label: t("member.moneyManagement") },
     { value: "daily_analysis", label: t("member.technical") },
@@ -54,13 +55,15 @@ export default function AdminContentPage() {
   const [categoryId, setCategoryId] = useState("");
 
   const memberMenuPath =
-    module === "psychology"
-      ? "/member/psychology"
-      : module === "money_management"
-        ? "/member/money-management"
-        : module === "daily_analysis"
-          ? "/member/analysis"
-          : null;
+    module === "tutorial"
+      ? "/member/tutorial"
+      : module === "psychology"
+        ? "/member/psychology"
+        : module === "money_management"
+          ? "/member/money-management"
+          : module === "daily_analysis"
+            ? "/member/analysis"
+            : null;
 
   const load = async () => {
     setError(null);
@@ -305,10 +308,14 @@ export default function AdminContentPage() {
                 </div>
               )}
 
-              <label className="flex items-center gap-2 text-sm text-muted">
-                <input type="checkbox" checked={premium} onChange={(e) => setPremium(e.target.checked)} />
-                {t("status.premium")}
-              </label>
+              {module === "tutorial" ? (
+                <p className="text-xs text-muted">{t("admin.tutorialAlwaysFree")}</p>
+              ) : (
+                <label className="flex items-center gap-2 text-sm text-muted">
+                  <input type="checkbox" checked={premium} onChange={(e) => setPremium(e.target.checked)} />
+                  {t("status.premium")}
+                </label>
+              )}
               <label className="flex items-center gap-2 text-sm text-muted">
                 <input type="checkbox" checked={publishNow} onChange={(e) => setPublishNow(e.target.checked)} />
                 {t("admin.publishNow")}
@@ -327,7 +334,7 @@ export default function AdminContentPage() {
                         type,
                         title: title.trim(),
                         body: body.trim() || null,
-                        is_premium: premium,
+                        is_premium: module === "tutorial" ? false : premium,
                         status: publishNow ? "published" : "draft",
                         category_id: categoryId || null,
                         excerpt: (body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || title).slice(0, 120),

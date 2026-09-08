@@ -377,9 +377,16 @@ class ContentService
             throw new RuntimeException('Validation failed', 422);
         }
 
+        $module = $input['module'] ?? $existing?->module;
+
         $premium = array_key_exists('is_premium', $input)
             ? (bool) $input['is_premium']
             : ($existing?->is_premium ?? true);
+
+        // Tutorials must stay readable before MT5 verification.
+        if ($module === Content::MODULE_TUTORIAL) {
+            $premium = false;
+        }
 
         $categoryId = $input['category_id'] ?? $existing?->category_id;
         if ($categoryId && ! Category::query()->find($categoryId)) {
@@ -434,6 +441,7 @@ class ContentService
     {
         if (! in_array($module, [
             Content::MODULE_ACADEMY,
+            Content::MODULE_TUTORIAL,
             Content::MODULE_PSYCHOLOGY,
             Content::MODULE_MONEY_MANAGEMENT,
             Content::MODULE_DAILY_ANALYSIS,

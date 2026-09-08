@@ -22,10 +22,36 @@ import { useT } from "@/i18n/useT";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
+const MODULE_TITLE_KEYS: Partial<Record<ContentModule, string>> = {
+  academy: "nav.academy",
+  tutorial: "member.tutorial",
+  psychology: "member.psychology",
+  money_management: "member.moneyManagement",
+  daily_analysis: "member.technical",
+};
+
+const MODULE_DESC_KEYS: Partial<Record<ContentModule, string>> = {
+  tutorial: "member.tutorialBrowseDesc",
+  psychology: "member.psychologyBrowseDesc",
+  money_management: "member.moneyManagementBrowseDesc",
+  daily_analysis: "member.technicalBrowseDesc",
+};
+
+const MODULE_EMPTY_KEYS: Partial<Record<ContentModule, string>> = {
+  tutorial: "member.tutorialEmptyBody",
+  psychology: "member.psychologyEmptyBody",
+  money_management: "member.moneyManagementEmptyBody",
+  daily_analysis: "member.technicalEmptyBody",
+};
+
+/** Modules readable without MT5 verification. */
+const OPEN_MODULES: ContentModule[] = ["tutorial"];
+
 export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; hrefBase: string }) {
   const { t } = useT();
   const user = useAuthStore((s) => s.user);
-  const verified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
+  const isVerified = user?.status === "verified" || user?.role === "admin" || user?.role === "super_admin";
+  const verified = isVerified || OPEN_MODULES.includes(module);
   const cta = membershipCta(user?.status);
   const [items, setItems] = useState<ContentItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -77,29 +103,9 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
     <div className="space-y-6">
       <PageHeader
         kicker={verified ? t("member.unlocked") : t("member.preview")}
-        title={t(
-          module === "academy"
-            ? "nav.academy"
-            : module === "psychology"
-              ? "member.psychology"
-              : module === "money_management"
-                ? "member.moneyManagement"
-                : module === "daily_analysis"
-                  ? "member.technical"
-                  : "member.education",
-        )}
+        title={t(MODULE_TITLE_KEYS[module] ?? "member.education")}
         description={
-          verified
-            ? t(
-                module === "psychology"
-                  ? "member.psychologyBrowseDesc"
-                  : module === "money_management"
-                    ? "member.moneyManagementBrowseDesc"
-                    : module === "daily_analysis"
-                      ? "member.technicalBrowseDesc"
-                      : "member.browseVerified",
-              )
-            : t("member.browseLocked")
+          verified ? t(MODULE_DESC_KEYS[module] ?? "member.browseVerified") : t("member.browseLocked")
         }
         actions={
           <MemberFilterSeg
@@ -169,15 +175,7 @@ export function ModuleBrowse({ module, hrefBase }: { module: ContentModule; href
           {!loading && items.length === 0 ? (
             <EmptyState
               title={t("member.noContentTitle")}
-              description={t(
-                module === "psychology"
-                  ? "member.psychologyEmptyBody"
-                  : module === "money_management"
-                    ? "member.moneyManagementEmptyBody"
-                    : module === "daily_analysis"
-                      ? "member.technicalEmptyBody"
-                      : "member.noContentBody",
-              )}
+              description={t(MODULE_EMPTY_KEYS[module] ?? "member.noContentBody")}
               actionLabel={verified ? undefined : t(cta.labelKey)}
               actionHref={verified ? undefined : cta.href}
             />
