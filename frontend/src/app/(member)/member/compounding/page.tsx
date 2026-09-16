@@ -16,22 +16,22 @@ export default function CompoundingCalculatorPage() {
   const user = useAuthStore((s) => s.user);
   const unlocked = isVerifiedMember(user);
   const [initial, setInitial] = useState("1000");
-  const [monthlyPct, setMonthlyPct] = useState("5");
-  const [months, setMonths] = useState("12");
-  const [monthlyDeposit, setMonthlyDeposit] = useState("0");
+  const [dailyPct, setDailyPct] = useState("0.5");
+  const [days, setDays] = useState("30");
+  const [dailyDeposit, setDailyDeposit] = useState("0");
 
   const result = useMemo(() => {
     const start = Number(initial) || 0;
-    const rate = (Number(monthlyPct) || 0) / 100;
-    const period = Math.max(0, Math.floor(Number(months) || 0));
-    const deposit = Number(monthlyDeposit) || 0;
+    const rate = (Number(dailyPct) || 0) / 100;
+    const period = Math.max(0, Math.floor(Number(days) || 0));
+    const deposit = Number(dailyDeposit) || 0;
     let balance = start;
-    const rows: { month: number; balance: number; gain: number }[] = [];
+    const rows: { day: number; balance: number; gain: number }[] = [];
 
-    for (let m = 1; m <= period; m += 1) {
+    for (let d = 1; d <= period; d += 1) {
       const before = balance + deposit;
       balance = before * (1 + rate);
-      rows.push({ month: m, balance, gain: balance - before });
+      rows.push({ day: d, balance, gain: balance - before });
     }
 
     return {
@@ -39,7 +39,7 @@ export default function CompoundingCalculatorPage() {
       profit: balance - start - deposit * period,
       rows,
     };
-  }, [initial, monthlyPct, months, monthlyDeposit]);
+  }, [initial, dailyPct, days, dailyDeposit]);
 
   if (!unlocked) return <LockedModule title={t("member.compounding")} />;
 
@@ -59,21 +59,21 @@ export default function CompoundingCalculatorPage() {
               <input className="field-input" inputMode="decimal" value={initial} onChange={(e) => setInitial(e.target.value)} />
             </label>
             <label className="block space-y-1.5 text-sm">
-              <span className="text-muted">{t("member.compoundingMonthlyDeposit")}</span>
+              <span className="text-muted">{t("member.compoundingDailyDeposit")}</span>
               <input
                 className="field-input"
                 inputMode="decimal"
-                value={monthlyDeposit}
-                onChange={(e) => setMonthlyDeposit(e.target.value)}
+                value={dailyDeposit}
+                onChange={(e) => setDailyDeposit(e.target.value)}
               />
             </label>
             <label className="block space-y-1.5 text-sm">
-              <span className="text-muted">{t("member.compoundingMonthlyReturn")}</span>
-              <input className="field-input" inputMode="decimal" value={monthlyPct} onChange={(e) => setMonthlyPct(e.target.value)} />
+              <span className="text-muted">{t("member.compoundingDailyReturn")}</span>
+              <input className="field-input" inputMode="decimal" value={dailyPct} onChange={(e) => setDailyPct(e.target.value)} />
             </label>
             <label className="block space-y-1.5 text-sm">
-              <span className="text-muted">{t("member.compoundingMonths")}</span>
-              <input className="field-input" inputMode="numeric" value={months} onChange={(e) => setMonths(e.target.value)} />
+              <span className="text-muted">{t("member.compoundingDays")}</span>
+              <input className="field-input" inputMode="numeric" value={days} onChange={(e) => setDays(e.target.value)} />
             </label>
           </div>
 
@@ -97,15 +97,15 @@ export default function CompoundingCalculatorPage() {
             <table className="min-w-full text-sm">
               <thead className="sticky top-0 bg-[var(--card)] text-left text-xs uppercase tracking-wide text-muted">
                 <tr>
-                  <th className="px-4 py-2">{t("member.compoundingMonth")}</th>
+                  <th className="px-4 py-2">{t("member.compoundingDay")}</th>
                   <th className="px-4 py-2">{t("member.compoundingGain")}</th>
                   <th className="px-4 py-2">{t("member.compoundingBalance")}</th>
                 </tr>
               </thead>
               <tbody>
                 {result.rows.map((row) => (
-                  <tr key={row.month} className="border-t border-[var(--border)]">
-                    <td className="px-4 py-2 tabular-nums">{row.month}</td>
+                  <tr key={row.day} className="border-t border-[var(--border)]">
+                    <td className="px-4 py-2 tabular-nums">{row.day}</td>
                     <td className="px-4 py-2 tabular-nums">{formatMoney(row.gain)}</td>
                     <td className="px-4 py-2 tabular-nums">{formatMoney(row.balance)}</td>
                   </tr>

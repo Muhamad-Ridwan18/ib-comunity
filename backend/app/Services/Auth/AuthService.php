@@ -58,7 +58,12 @@ class AuthService
 
     public function issueTokens(User $user): array
     {
-        $user->tokens()->where('name', 'access')->delete();
+        // Prune expired tokens only, so sessions on other devices stay signed in.
+        $user->tokens()
+            ->where('name', 'access')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', now())
+            ->delete();
 
         $accessToken = $user->createToken('access', ['*'], now()->addMinutes((int) config('santara.jwt_access_ttl_minutes', 15)))->plainTextToken;
 
