@@ -44,6 +44,7 @@ export default function AdminContentPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
   const [uploadOk, setUploadOk] = useState(false);
@@ -104,6 +105,7 @@ export default function AdminContentPage() {
     setUploadOk(false);
     setPdfUploadOk(false);
     setPdfProgress(0);
+    setVideoProgress(0);
     setType("article");
     setPremium(true);
     setPublishNow(true);
@@ -118,14 +120,16 @@ export default function AdminContentPage() {
 
   const handleVideoUpload = async (file: File) => {
     setUploadingVideo(true);
+    setVideoProgress(0);
     setUploadOk(false);
     setError(null);
     try {
-      const up = await adminUploadContentVideo(file);
+      const up = await adminUploadContentVideo(file, (percent) => setVideoProgress(percent));
       if (!up.success || !up.data) {
         setError(up.message || t("admin.videoUploadFailed"));
         return;
       }
+      setVideoProgress(100);
       setVideoKey(up.data.key);
       setVideoUrl(up.data.url);
       setUploadOk(true);
@@ -351,7 +355,9 @@ export default function AdminContentPage() {
                         {uploadingVideo ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
                       </span>
                       <span className="text-sm font-medium">
-                        {uploadingVideo ? t("admin.videoUploading") : t("admin.videoUploadHint")}
+                        {uploadingVideo
+                          ? t("admin.videoUploadingProgress", { n: videoProgress })
+                          : t("admin.videoUploadHint")}
                       </span>
                       <span className="text-[11px] text-muted">{t("admin.videoUploadLimit")}</span>
                       <input
@@ -367,6 +373,17 @@ export default function AdminContentPage() {
                         }}
                       />
                     </label>
+                    {uploadingVideo ? (
+                      <div className="mt-3 space-y-1.5">
+                        <div className="h-2 overflow-hidden rounded-full bg-[var(--border)]">
+                          <div
+                            className="h-full rounded-full bg-accent transition-[width] duration-150 ease-out"
+                            style={{ width: `${videoProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-center text-[11px] tabular-nums text-muted">{videoProgress}%</p>
+                      </div>
+                    ) : null}
                     {uploadOk && videoUrl ? (
                       <p className="mt-2 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-emerald-500">
                         <CheckCircle2 className="h-3.5 w-3.5" />

@@ -154,11 +154,22 @@ export async function adminDeleteContent(id: string) {
   return data;
 }
 
-export async function adminUploadContentVideo(file: File) {
+export async function adminUploadContentVideo(
+  file: File,
+  onProgress?: (percent: number) => void,
+) {
   const form = new FormData();
   form.append("file", file);
   const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads/video", form, {
-    timeout: 120_000,
+    timeout: 600_000,
+    onUploadProgress: (event) => {
+      if (!onProgress) return;
+      if (!event.total || event.total <= 0) {
+        onProgress(0);
+        return;
+      }
+      onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+    },
   });
   return data;
 }
@@ -171,7 +182,7 @@ export async function adminUploadContentPdf(
   form.append("file", file);
   form.append("purpose", "document");
   const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads", form, {
-    timeout: 120_000,
+    timeout: 600_000,
     onUploadProgress: (event) => {
       if (!onProgress) return;
       if (!event.total || event.total <= 0) {

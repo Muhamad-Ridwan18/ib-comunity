@@ -16,7 +16,7 @@ class UploadService
         'thumbnail' => ['max' => 5 * 1024 * 1024],
         'attachment' => ['max' => 10 * 1024 * 1024],
         'temp' => ['max' => 5 * 1024 * 1024],
-        'video' => ['max' => 100 * 1024 * 1024, 'ext' => ['mp4', 'webm', 'mov']],
+        'video' => ['max' => 500 * 1024 * 1024, 'ext' => ['mp4', 'webm', 'mov']],
         'document' => ['max' => 25 * 1024 * 1024, 'ext' => ['pdf']],
         'logo' => ['max' => 2 * 1024 * 1024, 'ext' => ['png', 'webp', 'jpg', 'jpeg', 'svg']],
     ];
