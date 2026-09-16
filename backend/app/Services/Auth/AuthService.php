@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
@@ -114,5 +115,55 @@ class AuthService
                 ->where('token_hash', hash('sha256', $refreshToken))
                 ->update(['revoked_at' => now()]);
         }
+    }
+
+    /**
+     * @param  array{email?: string, full_name?: string, password?: string, current_password?: string}  $input
+     */
+    public function updateProfile(User $user, array $input): array
+    {
+        if (array_key_exists('email', $input) && $input['email'] !== null) {
+            $email = strtolower(trim((string) $input['email']));
+            if ($email === '') {
+                throw ValidationException::withMessages(['email' => ['Email is required.']]);
+            }
+            $taken = User::query()
+                ->where('email', $email)
+                ->where('id', '!=', $user->id)
+                ->exists();
+            if ($taken) {
+                throw ValidationException::withMessages(['email' => ['Email is already taken.']]);
+            }
+            $user->email = $email;
+        }
+
+        if (! empty($input['password'])) {
+            $current = (string) ($input['current_password'] ?? '');
+            if ($current === '' || ! Hash::check($current, $user->password)) {
+                throw ValidationException::withMessages(['current_password' => ['Current password is incorrect.']]);
+            }
+            $user->password = $input['password'];
+        }
+
+        $user->save();
+
+        if (array_key_exists('full_name', $input) && $input['full_name'] !== null) {
+            $name = trim((string) $input['full_name']);
+            if ($name === '') {
+                throw ValidationException::withMessages(['full_name' => ['Username is required.']]);
+            }
+            $profile = $user->profile;
+            if ($profile) {
+                $profile->update(['full_name' => $name]);
+            } else {
+                Profile::query()->create([
+                    'user_id' => $user->id,
+                    'full_name' => $name,
+                    'timezone' => 'UTC',
+                ]);
+            }
+        }
+
+        return $user->fresh(['profile', 'role', 'memberLevel', 'currentSubscription.plan'])->toApiArray();
     }
 }

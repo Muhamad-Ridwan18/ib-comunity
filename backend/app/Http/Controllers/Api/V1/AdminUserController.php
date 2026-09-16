@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\V1\Concerns\HandlesServiceErrors;
 use App\Http\Controllers\Controller;
+use App\Models\Profile;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Verification\VerificationService;
 use App\Support\PaginationMeta;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
 {
@@ -27,7 +30,10 @@ class AdminUserController extends Controller
             $query->where('status', $status);
         }
         if ($q = $request->query('q')) {
-            $query->where('email', 'like', '%'.$q.'%');
+            $query->where(function ($builder) use ($q) {
+                $builder->where('email', 'like', '%'.$q.'%')
+                    ->orWhereHas('profile', fn ($p) => $p->where('full_name', 'like', '%'.$q.'%'));
+            });
         }
 
         $total = (clone $query)->count();
@@ -53,7 +59,7 @@ class AdminUserController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $user = User::query()->find($id);
+        $user = User::query()->with('profile')->find($id);
         if (! $user) {
             return \App\Support\ApiResponse::fail('Not found', 404);
         }
@@ -61,13 +67,16 @@ class AdminUserController extends Controller
         $data = $request->validate([
             'status' => ['nullable', 'string'],
             'role' => ['nullable', 'string'],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'full_name' => ['nullable', 'string', 'min:2', 'max:150'],
+            'password' => ['nullable', 'string', 'min:8'],
         ]);
 
         if (isset($data['role'])) {
             if ($request->user()->role?->name !== 'super_admin') {
                 return \App\Support\ApiResponse::fail('Forbidden', 403);
             }
-            $role = \App\Models\Role::query()->where('name', $data['role'])->first();
+            $role = Role::query()->where('name', $data['role'])->first();
             if ($role) {
                 $user->role_id = $role->id;
             }
@@ -77,9 +86,35 @@ class AdminUserController extends Controller
             $user->status = $data['status'];
         }
 
+        if (! empty($data['email'])) {
+            $user->email = strtolower(trim($data['email']));
+        }
+
+        if (! empty($data['password'])) {
+            $user->password = $data['password'];
+        }
+
         $user->save();
 
-        return $this->fromService(fn () => $user->fresh(['profile', 'role', 'memberLevel'])->toApiArray(), 'User updated');
+        if (array_key_exists('full_name', $data) && $data['full_name'] !== null) {
+            $name = trim($data['full_name']);
+            if ($name !== '') {
+                if ($user->profile) {
+                    $user->profile->update(['full_name' => $name]);
+                } else {
+                    Profile::query()->create([
+                        'user_id' => $user->id,
+                        'full_name' => $name,
+                        'timezone' => 'UTC',
+                    ]);
+                }
+            }
+        }
+
+        return $this->fromService(
+            fn () => $user->fresh(['profile', 'role', 'memberLevel'])->toApiArray(),
+            'User updated'
+        );
     }
 
     public function lock(string $id)

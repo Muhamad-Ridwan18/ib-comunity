@@ -63,6 +63,7 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::patch('/auth/me', [AuthController::class, 'updateProfile']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/member/home', [MemberHomeController::class, 'show']);
 
@@ -128,6 +129,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/verifications/{id}', [VerificationController::class, 'adminShow']);
             Route::post('/verifications/{id}/approve', [VerificationController::class, 'approve']);
             Route::post('/verifications/{id}/reject', [VerificationController::class, 'reject']);
+            Route::delete('/verifications/{id}', [VerificationController::class, 'destroy']);
 
             Route::post('/users/{id}/lock', [AdminUserController::class, 'lock']);
             Route::post('/users/{id}/unlock', [AdminUserController::class, 'unlock']);

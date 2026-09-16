@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   approveVerification,
+  deleteVerification,
   getAdminVerification,
   listAdminVerifications,
   rejectVerification,
@@ -294,61 +295,87 @@ export default function AdminVerificationsPage() {
                   </label>
                 ) : null}
               </div>
-              {detail.request.status === "pending" ? (
-                <div className="sticky bottom-0 flex gap-2 border-t border-[var(--border)] bg-[var(--card)] px-5 py-4 md:px-6">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className="btn-primary flex-1 py-2.5"
-                    onClick={() =>
-                      void (async () => {
-                        if (!selected) return;
-                        setBusy(true);
-                        setError(null);
-                        try {
-                          await approveVerification(selected);
-                          setDetail(null);
-                          setSelected(null);
-                          await load();
-                        } catch {
-                          setError(t("admin.actionFailed"));
-                        } finally {
-                          setBusy(false);
-                        }
-                      })()
-                    }
-                  >
-                    {t("admin.approve")}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className="flex-1 rounded-xl border border-[var(--danger)] px-4 py-2.5 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger)]/5 disabled:opacity-50"
-                    onClick={() =>
-                      void (async () => {
-                        if (!selected || !reason.trim()) {
-                          setError(t("admin.rejectionRequired"));
-                          return;
-                        }
-                        setBusy(true);
-                        setError(null);
-                        try {
-                          await rejectVerification(selected, reason.trim());
-                          setDetail(null);
-                          setSelected(null);
-                          await load();
-                        } catch {
-                          setError(t("admin.actionFailed"));
-                        } finally {
-                          setBusy(false);
-                        }
-                      })()
-                    }
-                  >
-                    {t("admin.reject")}
-                  </button>
-                </div>
-              ) : null}
+              <div className="sticky bottom-0 flex flex-wrap items-center gap-2 border-t border-[var(--border)] bg-[var(--card)] px-5 py-4 md:px-6">
+                {detail.request.status === "pending" ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      className="btn-primary flex-1 py-2.5"
+                      onClick={() =>
+                        void (async () => {
+                          if (!selected) return;
+                          setBusy(true);
+                          setError(null);
+                          try {
+                            await approveVerification(selected);
+                            setDetail(null);
+                            setSelected(null);
+                            await load();
+                          } catch {
+                            setError(t("admin.actionFailed"));
+                          } finally {
+                            setBusy(false);
+                          }
+                        })()
+                      }
+                    >
+                      {t("admin.approve")}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      className="flex-1 rounded-xl border border-[var(--danger)] px-4 py-2.5 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger)]/5 disabled:opacity-50"
+                      onClick={() =>
+                        void (async () => {
+                          if (!selected || !reason.trim()) {
+                            setError(t("admin.rejectionRequired"));
+                            return;
+                          }
+                          setBusy(true);
+                          setError(null);
+                          try {
+                            await rejectVerification(selected, reason.trim());
+                            setDetail(null);
+                            setSelected(null);
+                            await load();
+                          } catch {
+                            setError(t("admin.actionFailed"));
+                          } finally {
+                            setBusy(false);
+                          }
+                        })()
+                      }
+                    >
+                      {t("admin.reject")}
+                    </button>
+                  </>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={busy || !selected}
+                  className="ml-auto font-medium text-[var(--danger)] hover:underline disabled:opacity-50"
+                  onClick={() =>
+                    void (async () => {
+                      if (!selected) return;
+                      setBusy(true);
+                      setError(null);
+                      try {
+                        await deleteVerification(selected);
+                        setDetail(null);
+                        setSelected(null);
+                        await load();
+                      } catch {
+                        setError(t("admin.deleteFailed"));
+                      } finally {
+                        setBusy(false);
+                      }
+                    })()
+                  }
+                >
+                  {t("common.delete")}
+                </button>
+              </div>
             </>
           )
         }

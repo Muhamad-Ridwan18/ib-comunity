@@ -121,6 +121,11 @@ export async function rejectVerification(id: string, reason: string) {
   return data;
 }
 
+export async function deleteVerification(id: string) {
+  const { data } = await api.delete<ApiEnvelope<null>>(`/admin/verifications/${id}`);
+  return data;
+}
+
 export async function lockUser(id: string) {
   const { data } = await api.post<ApiEnvelope<null>>(`/admin/users/${id}/lock`);
   return data;

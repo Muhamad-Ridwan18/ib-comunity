@@ -10,6 +10,7 @@ type AuthState = {
   hydrated: boolean;
   setSession: (user: User, accessToken: string, refreshToken: string) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
+  setUser: (user: User) => void;
   clearSession: () => void;
   hydrate: () => void;
 };
@@ -29,6 +30,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem("ib_access_token", accessToken);
     localStorage.setItem("ib_refresh_token", refreshToken);
     set({ accessToken, refreshToken });
+  },
+  setUser: (user) => {
+    localStorage.setItem("ib_user", JSON.stringify(user));
+    set({ user });
   },
   clearSession: () => {
     localStorage.removeItem("ib_access_token");

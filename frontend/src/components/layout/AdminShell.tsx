@@ -15,6 +15,7 @@ import { useT } from "@/i18n/useT";
 
 const links: { href: string; labelKey: string; exact?: boolean }[] = [
   { href: ROUTES.admin, labelKey: "nav.overview", exact: true },
+  { href: "/admin/users", labelKey: "nav.users" },
   { href: "/admin/verifications", labelKey: "nav.verifications" },
   { href: "/admin/content", labelKey: "nav.content" },
   { href: "/admin/landing", labelKey: "nav.landing" },

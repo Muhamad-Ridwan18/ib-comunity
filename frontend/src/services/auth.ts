@@ -26,6 +26,16 @@ export async function me() {
   return data;
 }
 
+export async function updateProfile(input: {
+  email?: string;
+  full_name?: string;
+  current_password?: string;
+  password?: string;
+}) {
+  const { data } = await api.patch<ApiEnvelope<User>>("/auth/me", input);
+  return data;
+}
+
 export async function logout(refreshToken?: string) {
   const { data } = await api.post<ApiEnvelope<null>>("/auth/logout", {
     refresh_token: refreshToken,

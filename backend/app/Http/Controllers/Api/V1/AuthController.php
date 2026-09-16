@@ -52,6 +52,26 @@ class AuthController extends Controller
         return ApiResponse::ok($request->user()->toApiArray());
     }
 
+    public function updateProfile(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['sometimes', 'email', 'max:255'],
+            'full_name' => ['sometimes', 'string', 'min:2', 'max:150'],
+            'current_password' => ['nullable', 'string'],
+            'password' => ['nullable', 'string', 'min:8'],
+        ]);
+
+        if (! empty($data['password']) && empty($data['current_password'])) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Current password is required to set a new password.'],
+            ]);
+        }
+
+        $user = $this->auth->updateProfile($request->user(), $data);
+
+        return ApiResponse::ok($user, 'Profile updated');
+    }
+
     public function logout(Request $request)
     {
         $this->auth->logout($request->user(), $request->input('refresh_token'));

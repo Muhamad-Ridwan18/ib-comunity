@@ -6,6 +6,7 @@ use App\Models\OnboardingProgress;
 use App\Models\User;
 use App\Models\VerificationRequest;
 use App\Services\Notification\NotificationService;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 class VerificationService
@@ -176,6 +177,41 @@ class VerificationService
             $reason,
             '/onboarding'
         );
+    }
+
+    public function delete(string $id): void
+    {
+        $req = VerificationRequest::query()->find($id);
+        if (! $req) {
+            throw new RuntimeException('Not found', 404);
+        }
+
+        $user = User::query()->find($req->user_id);
+        $wasPending = $req->status === VerificationRequest::STATUS_PENDING;
+
+        if ($req->proof_key && Storage::disk('public')->exists($req->proof_key)) {
+            Storage::disk('public')->delete($req->proof_key);
+        }
+
+        $req->delete();
+
+        // Pending submission removed — let the member re-enter MT5 steps.
+        if ($wasPending && $user && $user->status === User::STATUS_PENDING) {
+            $progress = OnboardingProgress::query()->firstOrCreate(
+                ['user_id' => $user->id],
+                ['current_step' => 3]
+            );
+
+            $progress->update([
+                'current_step' => 3,
+                'step3_done_at' => null,
+                'step4_done_at' => null,
+                'step5_done_at' => null,
+                'completed_at' => null,
+            ]);
+
+            $user->update(['status' => User::STATUS_ONBOARDING]);
+        }
     }
 
     public function lockUser(string $userId): void

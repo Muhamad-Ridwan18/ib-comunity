@@ -66,4 +66,13 @@ class VerificationController extends Controller
             return null;
         }, 'Verification rejected');
     }
+
+    public function destroy(string $id)
+    {
+        return $this->fromService(function () use ($id) {
+            $this->verification->delete($id);
+
+            return null;
+        }, 'Verification deleted');
+    }
 }
