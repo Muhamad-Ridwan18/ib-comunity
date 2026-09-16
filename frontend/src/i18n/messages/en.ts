@@ -513,7 +513,7 @@ export const en = {
     saveAndPublish: "Save & publish",
     videoUrlPlaceholder: "Video URL (YouTube / Vimeo / file)",
     videoUploadHint: "Click to upload video (MP4 / WebM / MOV)",
-    videoUploadLimit: "Max 500 MB",
+    videoUploadLimit: "Max 120 MB",
     videoUploading: "Uploading video…",
     videoUploadingProgress: "Uploading video… {n}%",
     videoUploadSuccess: "Video uploaded successfully",

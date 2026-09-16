@@ -515,7 +515,7 @@ export const id: Messages = {
     saveAndPublish: "Simpan & publish",
     videoUrlPlaceholder: "URL video (YouTube / Vimeo / file)",
     videoUploadHint: "Klik untuk upload video (MP4 / WebM / MOV)",
-    videoUploadLimit: "Maks. 500 MB",
+    videoUploadLimit: "Maks. 120 MB",
     videoUploading: "Mengunggah video…",
     videoUploadingProgress: "Mengunggah video… {n}%",
     videoUploadSuccess: "Video berhasil diunggah",
