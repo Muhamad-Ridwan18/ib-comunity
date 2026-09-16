@@ -63,6 +63,11 @@ class AdminContentController extends Controller
         ));
     }
 
+    public function show(string $id)
+    {
+        return $this->fromService(fn () => $this->content->adminGet($id));
+    }
+
     public function store(Request $request)
     {
         return $this->fromService(

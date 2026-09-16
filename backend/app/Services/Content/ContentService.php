@@ -14,7 +14,10 @@ use RuntimeException;
 
 class ContentService
 {
-    public function __construct(private UploadService $uploads) {}
+    public function __construct(
+        private UploadService $uploads,
+        private PdfArticleExtractor $pdfExtractor,
+    ) {}
 
     /** @param array{verified?: bool, is_admin?: bool, user_id?: ?string} $viewer */
     public function listCategories(?string $module, bool $admin = false): array
@@ -125,6 +128,16 @@ class ContentService
         }
 
         return $this->toDto($content, $viewer, true, $bookmarked);
+    }
+
+    public function adminGet(string $id): array
+    {
+        $content = Content::query()->with('category')->find($id);
+        if (! $content) {
+            throw new RuntimeException('Not found', 404);
+        }
+
+        return $this->toDto($content, ['verified' => true, 'is_admin' => true], true, false);
     }
 
     public function createContent(User $author, array $input): array
@@ -415,7 +428,9 @@ class ContentService
 
         $fileKey = $existing?->file_key;
         $fileUrl = $existing?->file_url;
+        $pdfJustUploaded = false;
         if (! empty($input['file_key'])) {
+            $pdfJustUploaded = $input['file_key'] !== ($existing?->file_key);
             $fileKey = $input['file_key'];
             $fileUrl = $this->uploads->urlForKey($input['file_key']);
         } elseif (array_key_exists('file_url', $input)) {
@@ -432,10 +447,16 @@ class ContentService
             }
         }
 
+        $body = $input['body'] ?? $existing?->body;
         if ($type === Content::TYPE_ARTICLE) {
-            $body = trim((string) ($input['body'] ?? ($existing?->body ?? '')));
+            $bodyText = trim(strip_tags((string) $body));
+            if ($pdfJustUploaded && $fileKey && $bodyText === '') {
+                $body = $this->pdfExtractor->htmlFromKey($fileKey);
+            }
+
+            $hasBody = trim(strip_tags((string) $body)) !== '';
             $hasPdf = filled($fileUrl) || ! empty($input['file_key']) || filled($existing?->file_url);
-            if ($body === '' && ! $hasPdf) {
+            if (! $hasBody && ! $hasPdf) {
                 throw new RuntimeException('Article body or PDF file is required', 422);
             }
         }
@@ -448,7 +469,7 @@ class ContentService
             'title' => $title,
             'slug' => $slug,
             'excerpt' => $input['excerpt'] ?? $existing?->excerpt,
-            'body' => $input['body'] ?? $existing?->body,
+            'body' => $body,
             'thumbnail_url' => $thumbnailUrl,
             'video_url' => $videoUrl,
             'file_key' => $fileKey,
@@ -457,6 +478,12 @@ class ContentService
             'is_premium' => $premium,
             'status' => $status,
         ]);
+
+        // Auto-fill excerpt from extracted/article body when missing.
+        if ($type === Content::TYPE_ARTICLE && blank($content->excerpt) && filled($content->body)) {
+            $plain = trim(preg_replace('/\s+/', ' ', strip_tags($content->body)) ?? '');
+            $content->excerpt = mb_substr($plain !== '' ? $plain : $title, 0, 120);
+        }
 
         if ($status === Content::STATUS_PUBLISHED && ! $content->published_at) {
             $content->published_at = now();

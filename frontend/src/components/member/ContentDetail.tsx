@@ -9,7 +9,6 @@ import {
   saveHistory,
   type ContentItem,
 } from "@/services/content";
-import { Download } from "lucide-react";
 import { LockedNotice } from "@/components/member/ContentCard";
 import { ContentHtml } from "@/components/content/ContentHtml";
 import { ContentVideoPlayer } from "@/components/content/ContentVideoPlayer";
@@ -69,26 +68,6 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
       ) : (
         <>
           {item.type === "video" ? <ContentVideoPlayer url={item.video_url} /> : null}
-          {item.file_url ? (
-            <div className="space-y-3">
-              <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-2)]">
-                <iframe
-                  title={item.title}
-                  src={item.file_url}
-                  className="h-[min(70vh,40rem)] w-full bg-white"
-                />
-              </div>
-              <a
-                href={item.file_url}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-ghost inline-flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                {t("member.downloadPdf")}
-              </a>
-            </div>
-          ) : null}
           {item.body ? <ContentHtml html={item.body} /> : null}
           {verified ? (
             <button

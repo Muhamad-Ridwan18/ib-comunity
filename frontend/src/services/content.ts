@@ -134,6 +134,11 @@ export async function adminListContents(params?: { module?: string; status?: str
   return data;
 }
 
+export async function adminGetContent(id: string) {
+  const { data } = await api.get<ApiEnvelope<ContentItem>>(`/admin/contents/${id}`);
+  return data;
+}
+
 export async function adminCreateContent(input: Record<string, unknown>) {
   const { data } = await api.post<ApiEnvelope<ContentItem>>("/admin/contents", input);
   return data;
@@ -181,7 +186,9 @@ export async function adminUploadContentPdf(
   const form = new FormData();
   form.append("file", file);
   form.append("purpose", "document");
-  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads", form, {
+  const { data } = await api.post<
+    ApiEnvelope<{ key: string; url: string; extracted_html?: string | null; extract_error?: string | null }>
+  >("/admin/uploads", form, {
     timeout: 600_000,
     onUploadProgress: (event) => {
       if (!onProgress) return;

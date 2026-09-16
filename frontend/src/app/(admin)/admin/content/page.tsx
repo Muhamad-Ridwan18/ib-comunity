@@ -6,9 +6,11 @@ import {
   adminCreateContent,
   adminDeleteCategory,
   adminDeleteContent,
+  adminGetContent,
   adminListCategories,
   adminListContents,
   adminPublishContent,
+  adminUpdateContent,
   adminUploadContentPdf,
   adminUploadContentVideo,
   type Category,
@@ -60,6 +62,9 @@ export default function AdminContentPage() {
   const [premium, setPremium] = useState(true);
   const [publishNow, setPublishNow] = useState(true);
   const [categoryId, setCategoryId] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
 
   const memberMenuPath =
     module === "tutorial"
@@ -91,11 +96,14 @@ export default function AdminContentPage() {
 
   useEffect(() => {
     setCategoryId("");
+    resetForm();
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [module]);
 
   const resetForm = () => {
+    setEditingId(null);
+    setEditingSlug(null);
     setTitle("");
     setBody("");
     setVideoUrl("");
@@ -111,6 +119,61 @@ export default function AdminContentPage() {
     setPublishNow(true);
     setCategoryId("");
   };
+
+  const startEdit = async (id: string) => {
+    setBusy(true);
+    setError(null);
+    setOk(null);
+    try {
+      const res = await adminGetContent(id);
+      if (!res.success || !res.data) {
+        setError(res.message || t("admin.loadFailed"));
+        return;
+      }
+      const item = res.data;
+      setEditingId(item.id);
+      setEditingSlug(item.slug);
+      setTitle(item.title);
+      setType(item.type);
+      setBody(item.body || "");
+      setVideoUrl(item.video_url || "");
+      setVideoKey(null);
+      setFileUrl(item.file_url || "");
+      setFileKey(item.file_key || null);
+      setUploadOk(Boolean(item.video_url));
+      setPdfUploadOk(Boolean(item.file_url));
+      setPremium(item.is_premium);
+      setPublishNow(item.status === "published");
+      setCategoryId(item.category_id || "");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setError(t("admin.loadFailed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const buildPayload = () => ({
+    module,
+    type,
+    title: title.trim(),
+    body: body.trim() || null,
+    is_premium: module === "tutorial" ? false : premium,
+    status: publishNow ? "published" : "draft",
+    category_id: categoryId || null,
+    excerpt: (body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || title).slice(0, 120),
+    ...(editingSlug ? { slug: editingSlug } : {}),
+    ...(type === "video"
+      ? videoKey
+        ? { video_key: videoKey, video_url: videoUrl || null }
+        : { video_url: videoUrl.trim() }
+      : {
+          video_url: null,
+          ...(fileKey
+            ? { file_key: fileKey, file_url: fileUrl || null }
+            : { file_url: fileUrl.trim() || null, file_key: null }),
+        }),
+  });
 
   const canSave =
     Boolean(title.trim()) &&
@@ -155,6 +218,11 @@ export default function AdminContentPage() {
       setFileKey(up.data.key);
       setFileUrl(up.data.url);
       setPdfUploadOk(true);
+      if (up.data.extracted_html) {
+        setBody(up.data.extracted_html);
+      } else if (up.data.extract_error) {
+        setError(up.data.extract_error);
+      }
     } catch {
       setError(t("admin.pdfUploadFailed"));
     } finally {
@@ -178,6 +246,9 @@ export default function AdminContentPage() {
         <p className="border-b border-[var(--danger)]/20 bg-[var(--danger)]/5 px-4 py-2 text-sm text-[var(--danger)] md:px-6 lg:px-8">
           {error}
         </p>
+      ) : null}
+      {ok ? (
+        <p className="border-b border-accent/20 bg-accent-soft/40 px-4 py-2 text-sm text-accent md:px-6 lg:px-8">{ok}</p>
       ) : null}
 
       <div className="grid lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
@@ -250,8 +321,19 @@ export default function AdminContentPage() {
           </div>
 
           <div className="px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{t("admin.createDraft")}</p>
-            <p className="mt-1 text-xs text-muted">{t("admin.contentTypeHint")}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  {editingId ? t("admin.editContent") : t("admin.createDraft")}
+                </p>
+                <p className="mt-1 text-xs text-muted">{t("admin.contentTypeHint")}</p>
+              </div>
+              {editingId ? (
+                <button type="button" className="shrink-0 text-xs text-muted hover:underline" onClick={resetForm} disabled={busy}>
+                  {t("common.cancel")}
+                </button>
+              ) : null}
+            </div>
             {memberMenuPath ? (
               <p className="mt-2 rounded-lg border border-accent/20 bg-accent-soft/40 px-2.5 py-2 text-xs leading-relaxed text-accent">
                 {t("admin.contentAppearsIn", { menu: moduleLabel(module), path: memberMenuPath })}
@@ -434,27 +516,16 @@ export default function AdminContentPage() {
                   void (async () => {
                     setBusy(true);
                     setError(null);
+                    setOk(null);
                     try {
-                      await adminCreateContent({
-                        module,
-                        type,
-                        title: title.trim(),
-                        body: body.trim() || null,
-                        is_premium: module === "tutorial" ? false : premium,
-                        status: publishNow ? "published" : "draft",
-                        category_id: categoryId || null,
-                        excerpt: (body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || title).slice(0, 120),
-                        ...(type === "video"
-                          ? videoKey
-                            ? { video_key: videoKey, video_url: videoUrl || null }
-                            : { video_url: videoUrl.trim() }
-                          : {
-                              video_url: null,
-                              ...(fileKey
-                                ? { file_key: fileKey, file_url: fileUrl || null }
-                                : { file_url: fileUrl.trim() || null, file_key: null }),
-                            }),
-                      });
+                      const payload = buildPayload();
+                      if (editingId) {
+                        await adminUpdateContent(editingId, payload);
+                        setOk(t("admin.contentUpdated"));
+                      } else {
+                        await adminCreateContent(payload);
+                        setOk(t("admin.contentCreated"));
+                      }
                       resetForm();
                       await load();
                     } catch {
@@ -465,8 +536,17 @@ export default function AdminContentPage() {
                   })()
                 }
               >
-                {publishNow ? t("admin.saveAndPublish") : t("admin.saveDraft")}
+                {editingId
+                  ? t("admin.saveChanges")
+                  : publishNow
+                    ? t("admin.saveAndPublish")
+                    : t("admin.saveDraft")}
               </button>
+              {editingId ? (
+                <button type="button" className="btn-ghost w-full py-2 text-sm" disabled={busy} onClick={resetForm}>
+                  {t("admin.cancelEdit")}
+                </button>
+              ) : null}
             </div>
           </div>
         </aside>
@@ -501,7 +581,10 @@ export default function AdminContentPage() {
               {contents.map((item) => (
                 <li
                   key={item.id}
-                  className="grid gap-2 px-4 py-3 transition hover:bg-[var(--surface-2)] md:grid-cols-[1.6fr_0.6fr_0.7fr_0.7fr_auto] md:items-center md:gap-3 md:px-6"
+                  className={cn(
+                    "grid gap-2 px-4 py-3 transition hover:bg-[var(--surface-2)] md:grid-cols-[1.6fr_0.6fr_0.7fr_0.7fr_auto] md:items-center md:gap-3 md:px-6",
+                    editingId === item.id && "bg-accent-soft/40",
+                  )}
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{item.title}</p>
@@ -523,6 +606,14 @@ export default function AdminContentPage() {
                     <StatusBadge label={item.status} tone={statusTone(item.status)} />
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-sm md:justify-end">
+                    <button
+                      type="button"
+                      className="font-medium text-accent hover:underline"
+                      disabled={busy}
+                      onClick={() => void startEdit(item.id)}
+                    >
+                      {t("admin.edit")}
+                    </button>
                     {item.status !== "published" ? (
                       <button
                         type="button"
@@ -556,6 +647,7 @@ export default function AdminContentPage() {
                           setError(null);
                           try {
                             await adminDeleteContent(item.id);
+                            if (editingId === item.id) resetForm();
                             await load();
                           } catch {
                             setError(t("admin.deleteFailed"));
