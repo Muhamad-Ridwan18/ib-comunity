@@ -34,3 +34,8 @@ export async function adminUnlockUser(id: string) {
   const { data } = await api.post<ApiEnvelope<null>>(`/admin/users/${id}/unlock`);
   return data;
 }
+
+export async function adminDeleteUser(id: string) {
+  const { data } = await api.delete<ApiEnvelope<null>>(`/admin/users/${id}`);
+  return data;
+}

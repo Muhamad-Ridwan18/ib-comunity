@@ -136,6 +136,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/users', [AdminUserController::class, 'index']);
             Route::get('/users/{id}', [AdminUserController::class, 'show']);
             Route::patch('/users/{id}', [AdminUserController::class, 'update']);
+            Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
 
             Route::get('/categories', [AdminContentController::class, 'listCategories']);
             Route::post('/categories', [AdminContentController::class, 'createCategory']);

@@ -499,6 +499,7 @@ export const id: Messages = {
     userUpdated: "User diperbarui.",
     userLocked: "User dikunci.",
     userUnlocked: "User dibuka.",
+    userDeleted: "User dihapus.",
     lock: "Kunci",
     unlock: "Buka kunci",
     role: "Role",

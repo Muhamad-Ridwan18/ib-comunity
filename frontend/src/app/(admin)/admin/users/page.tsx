@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  adminDeleteUser,
   adminGetUser,
   adminListUsers,
   adminLockUser,
@@ -328,6 +329,32 @@ export default function AdminUsersPage() {
                       {t("admin.lock")}
                     </button>
                   )}
+                  <button
+                    type="button"
+                    disabled={busy || !selected}
+                    className="font-medium text-[var(--danger)] hover:underline disabled:opacity-50"
+                    onClick={() =>
+                      void (async () => {
+                        if (!selected) return;
+                        setBusy(true);
+                        setError(null);
+                        setOk(null);
+                        try {
+                          await adminDeleteUser(selected);
+                          setDetail(null);
+                          setSelected(null);
+                          setOk(t("admin.userDeleted"));
+                          await load();
+                        } catch {
+                          setError(t("admin.deleteFailed"));
+                        } finally {
+                          setBusy(false);
+                        }
+                      })()
+                    }
+                  >
+                    {t("common.delete")}
+                  </button>
                 </div>
               </form>
             </>

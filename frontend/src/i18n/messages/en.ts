@@ -497,6 +497,7 @@ export const en = {
     userUpdated: "User updated.",
     userLocked: "User locked.",
     userUnlocked: "User unlocked.",
+    userDeleted: "User deleted.",
     lock: "Lock",
     unlock: "Unlock",
     role: "Role",

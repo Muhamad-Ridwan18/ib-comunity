@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\V1\Concerns\HandlesServiceErrors;
 use App\Http\Controllers\Controller;
 use App\Models\Profile;
+use App\Models\RefreshToken;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Verification\VerificationService;
@@ -133,5 +134,40 @@ class AdminUserController extends Controller
 
             return null;
         }, 'User unlocked');
+    }
+
+    public function destroy(Request $request, string $id)
+    {
+        return $this->fromService(function () use ($request, $id) {
+            $user = User::query()->with('role')->find($id);
+            if (! $user) {
+                throw new \RuntimeException('Not found', 404);
+            }
+
+            if ($request->user()->id === $user->id) {
+                throw new \RuntimeException('You cannot delete your own account', 422);
+            }
+
+            $targetRole = $user->role?->name;
+            if (in_array($targetRole, ['admin', 'super_admin'], true)
+                && $request->user()->role?->name !== 'super_admin') {
+                throw new \RuntimeException('Forbidden', 403);
+            }
+
+            $user->tokens()->delete();
+            RefreshToken::query()
+                ->where('user_id', $user->id)
+                ->whereNull('revoked_at')
+                ->update(['revoked_at' => now()]);
+
+            // Free the unique email so the address can be registered again.
+            $user->forceFill([
+                'email' => 'deleted+'.$user->id.'@deleted.local',
+            ])->save();
+
+            $user->delete();
+
+            return null;
+        }, 'User deleted');
     }
 }
