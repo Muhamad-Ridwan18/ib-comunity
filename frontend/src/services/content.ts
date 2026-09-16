@@ -159,24 +159,63 @@ export async function adminDeleteContent(id: string) {
   return data;
 }
 
+/** Upload progress that stays monotonic and does not reset when XHR omits `total`. */
+function trackUploadProgress(file: File, onProgress?: (percent: number) => void) {
+  let last = 0;
+  const startedAt = Date.now();
+  // Conservative estimate so the bar keeps moving when Cloudflare/XHR events are sparse.
+  const assumedBytesPerSec = 400_000;
+
+  const report = (loaded: number, totalHint?: number) => {
+    if (!onProgress) return;
+    const total = totalHint && totalHint > 0 ? totalHint : file.size || 1;
+    const raw = Math.round((Math.min(loaded, total) / total) * 100);
+    const elapsedSec = Math.max(0.001, (Date.now() - startedAt) / 1000);
+    const estimated = Math.min(92, Math.round(((elapsedSec * assumedBytesPerSec) / total) * 100));
+    const next = Math.min(99, Math.max(last, raw, estimated));
+    if (next !== last) {
+      last = next;
+      onProgress(next);
+    }
+  };
+
+  const tick = window.setInterval(() => {
+    report(Math.min(file.size, ((Date.now() - startedAt) / 1000) * assumedBytesPerSec), file.size);
+  }, 400);
+
+  return {
+    onUploadProgress: (event: { loaded: number; total?: number }) => {
+      report(event.loaded, event.total && event.total > 0 ? event.total : file.size);
+    },
+    done: () => {
+      window.clearInterval(tick);
+      onProgress?.(100);
+    },
+    fail: () => {
+      window.clearInterval(tick);
+    },
+  };
+}
+
 export async function adminUploadContentVideo(
   file: File,
   onProgress?: (percent: number) => void,
 ) {
   const form = new FormData();
   form.append("file", file);
-  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads/video", form, {
-    timeout: 600_000,
-    onUploadProgress: (event) => {
-      if (!onProgress) return;
-      if (!event.total || event.total <= 0) {
-        onProgress(0);
-        return;
-      }
-      onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
-    },
-  });
-  return data;
+  const tracker = trackUploadProgress(file, onProgress);
+  try {
+    const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads/video", form, {
+      timeout: 600_000,
+      maxRedirects: 0,
+      onUploadProgress: tracker.onUploadProgress,
+    });
+    tracker.done();
+    return data;
+  } catch (error) {
+    tracker.fail();
+    throw error;
+  }
 }
 
 export async function adminUploadContentPdf(
@@ -186,16 +225,17 @@ export async function adminUploadContentPdf(
   const form = new FormData();
   form.append("file", file);
   form.append("purpose", "document");
-  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads", form, {
-    timeout: 600_000,
-    onUploadProgress: (event) => {
-      if (!onProgress) return;
-      if (!event.total || event.total <= 0) {
-        onProgress(0);
-        return;
-      }
-      onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
-    },
-  });
-  return data;
+  const tracker = trackUploadProgress(file, onProgress);
+  try {
+    const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads", form, {
+      timeout: 600_000,
+      maxRedirects: 0,
+      onUploadProgress: tracker.onUploadProgress,
+    });
+    tracker.done();
+    return data;
+  } catch (error) {
+    tracker.fail();
+    throw error;
+  }
 }

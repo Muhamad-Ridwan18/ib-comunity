@@ -30,8 +30,16 @@ api.interceptors.request.use((config) => {
   }
 
   // Let the browser set multipart boundary for file uploads.
-  if (config.data instanceof FormData) {
-    delete config.headers["Content-Type"];
+  // Axios v1 AxiosHeaders needs .delete(); a plain delete often leaves application/json.
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    const headers = config.headers as { delete?: (key: string) => void; [key: string]: unknown };
+    if (typeof headers.delete === "function") {
+      headers.delete("Content-Type");
+      headers.delete("content-type");
+    } else {
+      delete headers["Content-Type"];
+      delete headers["content-type"];
+    }
   }
 
   return config;
