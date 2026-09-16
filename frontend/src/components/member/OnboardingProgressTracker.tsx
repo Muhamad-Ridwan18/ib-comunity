@@ -34,6 +34,7 @@ const UNLOCK_KEYS = [
   "nav.signals",
   "member.compounding",
   "member.calendar",
+  "member.tools",
 ] as const;
 
 type Props = {

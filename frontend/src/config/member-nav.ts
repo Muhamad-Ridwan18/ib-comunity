@@ -25,4 +25,5 @@ export const memberNav: MemberNavItem[] = [
     locked: true,
     external: true,
   },
+  { href: ROUTES.tools, labelKey: "member.tools", locked: true },
 ];

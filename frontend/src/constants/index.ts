@@ -36,6 +36,7 @@ export const ROUTES = {
   signals: "/member/signals",
   compounding: "/member/compounding",
   calendar: "/member/calendar",
+  tools: "/member/tools",
   journal: "/member/journal",
   bonus: "/member/bonus",
   profile: "/member/profile",

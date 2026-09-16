@@ -36,15 +36,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async redirects() {
-    return [
-      {
-        source: "/member/tools",
-        destination: "/member/compounding",
-        permanent: true,
-      },
-    ];
-  },
   async rewrites() {
     // Local BFF proxy only — production should call NEXT_PUBLIC_API_URL directly.
     if (isProd) return [];

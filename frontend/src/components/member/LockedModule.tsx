@@ -15,6 +15,7 @@ const UNLOCK_KEYS = [
   "nav.signals",
   "member.compounding",
   "member.calendar",
+  "member.tools",
 ] as const;
 
 export function LockedModule({ title }: { title: string }) {
