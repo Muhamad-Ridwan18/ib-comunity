@@ -186,9 +186,7 @@ export async function adminUploadContentPdf(
   const form = new FormData();
   form.append("file", file);
   form.append("purpose", "document");
-  const { data } = await api.post<
-    ApiEnvelope<{ key: string; url: string; extracted_html?: string | null; extract_error?: string | null }>
-  >("/admin/uploads", form, {
+  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads", form, {
     timeout: 600_000,
     onUploadProgress: (event) => {
       if (!onProgress) return;

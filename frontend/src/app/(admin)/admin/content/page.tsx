@@ -218,11 +218,6 @@ export default function AdminContentPage() {
       setFileKey(up.data.key);
       setFileUrl(up.data.url);
       setPdfUploadOk(true);
-      if (up.data.extracted_html) {
-        setBody(up.data.extracted_html);
-      } else if (up.data.extract_error) {
-        setError(up.data.extract_error);
-      }
     } catch {
       setError(t("admin.pdfUploadFailed"));
     } finally {

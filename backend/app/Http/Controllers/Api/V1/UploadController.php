@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\V1\Concerns\HandlesServiceErrors;
 use App\Http\Controllers\Controller;
-use App\Services\Content\PdfArticleExtractor;
 use App\Services\Upload\UploadService;
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -13,10 +12,7 @@ class UploadController extends Controller
 {
     use HandlesServiceErrors;
 
-    public function __construct(
-        private UploadService $uploads,
-        private PdfArticleExtractor $pdfExtractor,
-    ) {}
+    public function __construct(private UploadService $uploads) {}
 
     public function store(Request $request)
     {
@@ -41,24 +37,15 @@ class UploadController extends Controller
 
         $purpose = $this->resolvePurpose($request, self::ADMIN_PURPOSES);
 
-        return $this->fromService(function () use ($request, $purpose) {
-            $stored = $this->uploads->store(
+        return $this->fromService(
+            fn () => $this->uploads->store(
                 $request->file('file'),
                 $purpose,
                 true
-            );
-
-            if ($purpose === 'document') {
-                try {
-                    $stored['extracted_html'] = $this->pdfExtractor->htmlFromKey($stored['key']);
-                } catch (RuntimeException $e) {
-                    $stored['extracted_html'] = null;
-                    $stored['extract_error'] = $e->getMessage();
-                }
-            }
-
-            return $stored;
-        }, 'Uploaded', 201);
+            ),
+            'Uploaded',
+            201
+        );
     }
 
     public function storeAdminVideo(Request $request)

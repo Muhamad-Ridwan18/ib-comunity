@@ -14,10 +14,7 @@ use RuntimeException;
 
 class ContentService
 {
-    public function __construct(
-        private UploadService $uploads,
-        private PdfArticleExtractor $pdfExtractor,
-    ) {}
+    public function __construct(private UploadService $uploads) {}
 
     /** @param array{verified?: bool, is_admin?: bool, user_id?: ?string} $viewer */
     public function listCategories(?string $module, bool $admin = false): array
@@ -428,9 +425,7 @@ class ContentService
 
         $fileKey = $existing?->file_key;
         $fileUrl = $existing?->file_url;
-        $pdfJustUploaded = false;
         if (! empty($input['file_key'])) {
-            $pdfJustUploaded = $input['file_key'] !== ($existing?->file_key);
             $fileKey = $input['file_key'];
             $fileUrl = $this->uploads->urlForKey($input['file_key']);
         } elseif (array_key_exists('file_url', $input)) {
@@ -447,16 +442,10 @@ class ContentService
             }
         }
 
-        $body = $input['body'] ?? $existing?->body;
         if ($type === Content::TYPE_ARTICLE) {
-            $bodyText = trim(strip_tags((string) $body));
-            if ($pdfJustUploaded && $fileKey && $bodyText === '') {
-                $body = $this->pdfExtractor->htmlFromKey($fileKey);
-            }
-
-            $hasBody = trim(strip_tags((string) $body)) !== '';
+            $body = trim((string) ($input['body'] ?? ($existing?->body ?? '')));
             $hasPdf = filled($fileUrl) || ! empty($input['file_key']) || filled($existing?->file_url);
-            if (! $hasBody && ! $hasPdf) {
+            if ($body === '' && ! $hasPdf) {
                 throw new RuntimeException('Article body or PDF file is required', 422);
             }
         }
@@ -469,7 +458,7 @@ class ContentService
             'title' => $title,
             'slug' => $slug,
             'excerpt' => $input['excerpt'] ?? $existing?->excerpt,
-            'body' => $body,
+            'body' => $input['body'] ?? $existing?->body,
             'thumbnail_url' => $thumbnailUrl,
             'video_url' => $videoUrl,
             'file_key' => $fileKey,
@@ -478,12 +467,6 @@ class ContentService
             'is_premium' => $premium,
             'status' => $status,
         ]);
-
-        // Auto-fill excerpt from extracted/article body when missing.
-        if ($type === Content::TYPE_ARTICLE && blank($content->excerpt) && filled($content->body)) {
-            $plain = trim(preg_replace('/\s+/', ' ', strip_tags($content->body)) ?? '');
-            $content->excerpt = mb_substr($plain !== '' ? $plain : $title, 0, 120);
-        }
 
         if ($status === Content::STATUS_PUBLISHED && ! $content->published_at) {
             $content->published_at = now();
