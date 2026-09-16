@@ -47,6 +47,8 @@ class Content extends Model
         'body',
         'thumbnail_url',
         'video_url',
+        'file_key',
+        'file_url',
         'duration_sec',
         'is_premium',
         'min_plan_code',

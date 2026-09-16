@@ -306,6 +306,12 @@ class ContentService
             if ($content->video_url) {
                 $dto['video_url'] = $content->video_url;
             }
+            if ($content->file_url) {
+                $dto['file_url'] = $content->file_url;
+            }
+            if ($content->file_key) {
+                $dto['file_key'] = $content->file_key;
+            }
         }
 
         return $dto;
@@ -407,10 +413,30 @@ class ContentService
             $videoUrl = $input['video_url'];
         }
 
+        $fileKey = $existing?->file_key;
+        $fileUrl = $existing?->file_url;
+        if (! empty($input['file_key'])) {
+            $fileKey = $input['file_key'];
+            $fileUrl = $this->uploads->urlForKey($input['file_key']);
+        } elseif (array_key_exists('file_url', $input)) {
+            $fileUrl = $input['file_url'];
+            if ($input['file_url'] === null || $input['file_url'] === '') {
+                $fileKey = null;
+            }
+        }
+
         if ($type === Content::TYPE_VIDEO) {
             $hasVideo = filled($videoUrl) || ! empty($input['video_key']);
             if (! $hasVideo && ! $existing?->video_url) {
                 throw new RuntimeException('Video URL or upload is required for video content', 422);
+            }
+        }
+
+        if ($type === Content::TYPE_ARTICLE) {
+            $body = trim((string) ($input['body'] ?? ($existing?->body ?? '')));
+            $hasPdf = filled($fileUrl) || ! empty($input['file_key']) || filled($existing?->file_url);
+            if ($body === '' && ! $hasPdf) {
+                throw new RuntimeException('Article body or PDF file is required', 422);
             }
         }
 
@@ -425,6 +451,8 @@ class ContentService
             'body' => $input['body'] ?? $existing?->body,
             'thumbnail_url' => $thumbnailUrl,
             'video_url' => $videoUrl,
+            'file_key' => $fileKey,
+            'file_url' => $fileUrl,
             'duration_sec' => $input['duration_sec'] ?? $existing?->duration_sec,
             'is_premium' => $premium,
             'status' => $status,

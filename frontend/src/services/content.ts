@@ -32,6 +32,8 @@ export type ContentItem = {
   body?: string | null;
   thumbnail_url?: string | null;
   video_url?: string | null;
+  file_key?: string | null;
+  file_url?: string | null;
   duration_sec?: number | null;
   is_premium: boolean;
   locked: boolean;
@@ -157,6 +159,27 @@ export async function adminUploadContentVideo(file: File) {
   form.append("file", file);
   const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads/video", form, {
     timeout: 120_000,
+  });
+  return data;
+}
+
+export async function adminUploadContentPdf(
+  file: File,
+  onProgress?: (percent: number) => void,
+) {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("purpose", "document");
+  const { data } = await api.post<ApiEnvelope<{ key: string; url: string }>>("/admin/uploads", form, {
+    timeout: 120_000,
+    onUploadProgress: (event) => {
+      if (!onProgress) return;
+      if (!event.total || event.total <= 0) {
+        onProgress(0);
+        return;
+      }
+      onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+    },
   });
   return data;
 }

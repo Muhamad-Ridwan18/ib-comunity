@@ -9,6 +9,7 @@ import {
   adminListCategories,
   adminListContents,
   adminPublishContent,
+  adminUploadContentPdf,
   adminUploadContentVideo,
   type Category,
   type ContentItem,
@@ -43,13 +44,18 @@ export default function AdminContentPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(0);
   const [uploadOk, setUploadOk] = useState(false);
+  const [pdfUploadOk, setPdfUploadOk] = useState(false);
   const [catName, setCatName] = useState("");
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ContentType>("article");
   const [body, setBody] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [videoKey, setVideoKey] = useState<string | null>(null);
+  const [fileUrl, setFileUrl] = useState("");
+  const [fileKey, setFileKey] = useState<string | null>(null);
   const [premium, setPremium] = useState(true);
   const [publishNow, setPublishNow] = useState(true);
   const [categoryId, setCategoryId] = useState("");
@@ -93,7 +99,11 @@ export default function AdminContentPage() {
     setBody("");
     setVideoUrl("");
     setVideoKey(null);
+    setFileUrl("");
+    setFileKey(null);
     setUploadOk(false);
+    setPdfUploadOk(false);
+    setPdfProgress(0);
     setType("article");
     setPremium(true);
     setPublishNow(true);
@@ -102,7 +112,9 @@ export default function AdminContentPage() {
 
   const canSave =
     Boolean(title.trim()) &&
-    (type === "article" ? Boolean(body.trim()) : Boolean(videoUrl.trim() || videoKey));
+    (type === "article"
+      ? Boolean(body.trim() || fileKey || fileUrl.trim())
+      : Boolean(videoUrl.trim() || videoKey));
 
   const handleVideoUpload = async (file: File) => {
     setUploadingVideo(true);
@@ -121,6 +133,28 @@ export default function AdminContentPage() {
       setError(t("admin.videoUploadFailed"));
     } finally {
       setUploadingVideo(false);
+    }
+  };
+
+  const handlePdfUpload = async (file: File) => {
+    setUploadingPdf(true);
+    setPdfProgress(0);
+    setPdfUploadOk(false);
+    setError(null);
+    try {
+      const up = await adminUploadContentPdf(file, (percent) => setPdfProgress(percent));
+      if (!up.success || !up.data) {
+        setError(up.message || t("admin.pdfUploadFailed"));
+        return;
+      }
+      setPdfProgress(100);
+      setFileKey(up.data.key);
+      setFileUrl(up.data.url);
+      setPdfUploadOk(true);
+    } catch {
+      setError(t("admin.pdfUploadFailed"));
+    } finally {
+      setUploadingPdf(false);
     }
   };
 
@@ -248,12 +282,67 @@ export default function AdminContentPage() {
               </select>
 
               {type === "article" ? (
-                <RichTextEditor
-                  value={body}
-                  onChange={setBody}
-                  placeholder={t("admin.body")}
-                  minHeightClassName="min-h-[220px]"
-                />
+                <div className="space-y-2.5">
+                  <RichTextEditor
+                    value={body}
+                    onChange={setBody}
+                    placeholder={t("admin.body")}
+                    minHeightClassName="min-h-[220px]"
+                  />
+                  <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)]/40 p-3">
+                    <label className="flex cursor-pointer flex-col items-center gap-2 text-center">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft text-accent">
+                        {uploadingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {uploadingPdf
+                          ? t("admin.pdfUploadingProgress", { n: pdfProgress })
+                          : t("admin.pdfUploadHint")}
+                      </span>
+                      <span className="text-[11px] text-muted">{t("admin.pdfUploadLimit")}</span>
+                      <input
+                        type="file"
+                        accept="application/pdf,.pdf"
+                        className="sr-only"
+                        disabled={busy || uploadingPdf}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!file) return;
+                          void handlePdfUpload(file);
+                        }}
+                      />
+                    </label>
+                    {uploadingPdf ? (
+                      <div className="mt-3 space-y-1.5">
+                        <div className="h-2 overflow-hidden rounded-full bg-[var(--border)]">
+                          <div
+                            className="h-full rounded-full bg-accent transition-[width] duration-150 ease-out"
+                            style={{ width: `${pdfProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-center text-[11px] tabular-nums text-muted">{pdfProgress}%</p>
+                      </div>
+                    ) : null}
+                    {pdfUploadOk && fileUrl ? (
+                      <p className="mt-2 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-emerald-500">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        {t("admin.pdfUploadSuccess")}
+                      </p>
+                    ) : null}
+                    {fileUrl ? (
+                      <a
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 block truncate text-center text-xs font-medium text-accent hover:underline"
+                      >
+                        {t("admin.openPdf")}
+                      </a>
+                    ) : null}
+                  </div>
+                  <p className="text-[11px] text-muted">{t("admin.pdfOrBodyHint")}</p>
+                </div>
               ) : (
                 <div className="space-y-2.5">
                   <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)]/40 p-3">
@@ -323,7 +412,7 @@ export default function AdminContentPage() {
               <button
                 type="button"
                 className="btn-primary w-full py-2.5 text-sm"
-                disabled={busy || uploadingVideo || !canSave}
+                disabled={busy || uploadingVideo || uploadingPdf || !canSave}
                 onClick={() =>
                   void (async () => {
                     setBusy(true);
@@ -342,7 +431,12 @@ export default function AdminContentPage() {
                           ? videoKey
                             ? { video_key: videoKey, video_url: videoUrl || null }
                             : { video_url: videoUrl.trim() }
-                          : { video_url: null }),
+                          : {
+                              video_url: null,
+                              ...(fileKey
+                                ? { file_key: fileKey, file_url: fileUrl || null }
+                                : { file_url: fileUrl.trim() || null, file_key: null }),
+                            }),
                       });
                       resetForm();
                       await load();
