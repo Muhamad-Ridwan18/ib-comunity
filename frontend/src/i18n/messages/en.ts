@@ -658,6 +658,7 @@ export const en = {
     reply: "Reply",
     loadFailed: "Failed to load",
     saveFailed: "Failed to save",
+    slugConflict: "That title/slug is already used. Change the title and try again.",
     actionFailed: "Action failed",
     deleteFailed: "Failed to delete",
     createFailed: "Failed to create",

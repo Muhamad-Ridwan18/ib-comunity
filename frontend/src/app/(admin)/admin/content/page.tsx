@@ -523,8 +523,14 @@ export default function AdminContentPage() {
                       }
                       resetForm();
                       await load();
-                    } catch {
-                      setError(t("admin.saveFailed"));
+                    } catch (err: unknown) {
+                      const ax = err as { response?: { data?: { message?: string }; status?: number } };
+                      const msg = ax.response?.data?.message;
+                      if (ax.response?.status === 409 || msg === "conflict") {
+                        setError(t("admin.slugConflict"));
+                      } else {
+                        setError(msg || t("admin.saveFailed"));
+                      }
                     } finally {
                       setBusy(false);
                     }

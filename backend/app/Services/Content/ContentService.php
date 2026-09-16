@@ -380,12 +380,19 @@ class ContentService
         }
 
         $slug = trim($input['slug'] ?? '') ?: $this->slugify($title);
-        $slugQuery = Content::query()->where('slug', $slug);
+        // Soft-deleted rows still occupy the unique slug index; reclaim them
+        // so re-creating the same title after delete does not 400.
+        $slugQuery = Content::withTrashed()->where('slug', $slug);
         if ($existing) {
             $slugQuery->where('id', '!=', $existing->id);
         }
-        if ($slugQuery->exists()) {
-            throw new RuntimeException('conflict', 409);
+        $slugConflict = $slugQuery->first();
+        if ($slugConflict) {
+            if ($slugConflict->trashed()) {
+                $slugConflict->forceDelete();
+            } else {
+                throw new RuntimeException('conflict', 409);
+            }
         }
 
         $status = trim($input['status'] ?? ($existing?->status ?? Content::STATUS_DRAFT));

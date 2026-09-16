@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\V1\Concerns;
 
 use App\Support\ApiResponse;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use RuntimeException;
+use Throwable;
 
 trait HandlesServiceErrors
 {
@@ -18,13 +20,19 @@ trait HandlesServiceErrors
             }
 
             return ApiResponse::ok($result, $successMessage, null, $successStatus);
+        } catch (UniqueConstraintViolationException $e) {
+            return ApiResponse::fail('conflict', 409);
         } catch (RuntimeException $e) {
-            $code = $e->getCode();
+            $code = (int) $e->getCode();
             if ($code < 400 || $code > 599) {
                 $code = 400;
             }
 
             return ApiResponse::fail($e->getMessage(), $code);
+        } catch (Throwable $e) {
+            report($e);
+
+            return ApiResponse::fail('Server error', 500);
         }
     }
 

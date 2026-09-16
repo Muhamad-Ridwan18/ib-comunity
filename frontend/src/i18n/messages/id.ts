@@ -660,6 +660,7 @@ export const id: Messages = {
     reply: "Balas",
     loadFailed: "Gagal memuat",
     saveFailed: "Gagal menyimpan",
+    slugConflict: "Judul/slug sudah dipakai konten lain. Ganti judul lalu simpan lagi.",
     actionFailed: "Aksi gagal",
     deleteFailed: "Gagal menghapus",
     createFailed: "Gagal membuat",
