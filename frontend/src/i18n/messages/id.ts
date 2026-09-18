@@ -267,6 +267,8 @@ export const id: Messages = {
     video: "Video",
     article: "Artikel",
     downloadPdf: "Unduh PDF",
+    viewPdf: "Lihat PDF",
+    pdfMobileHint: "Kalau pratinjau kosong, buka di aplikasi PDF HP.",
     noContentTitle: "Belum ada konten",
     noContentBody: "Perpustakaan ini kosong untuk filter yang dipilih.",
     tutorialBrowseDesc: "Panduan dan tutorial penggunaan desk dari admin konten.",

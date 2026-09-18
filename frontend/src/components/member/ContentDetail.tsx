@@ -11,6 +11,7 @@ import {
 } from "@/services/content";
 import { LockedNotice } from "@/components/member/ContentCard";
 import { ContentHtml } from "@/components/content/ContentHtml";
+import { ContentPdfViewer } from "@/components/content/ContentPdfViewer";
 import { ContentVideoPlayer } from "@/components/content/ContentVideoPlayer";
 import { useAuthStore } from "@/store/auth";
 import { membershipCta, isVerifiedMember } from "@/lib/membership";
@@ -68,15 +69,7 @@ export function ContentDetail({ slug, backHref }: { slug: string; backHref: stri
       ) : (
         <>
           {item.type === "video" ? <ContentVideoPlayer url={item.video_url} /> : null}
-          {item.file_url ? (
-            <div className="-mx-4 overflow-hidden border-y border-[var(--border)] bg-white md:-mx-6 lg:-mx-8">
-              <iframe
-                title={item.title}
-                src={`${item.file_url}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
-                className="block h-[calc(100vh-8rem)] w-full min-h-[40rem] border-0 bg-white"
-              />
-            </div>
-          ) : null}
+          {item.file_url ? <ContentPdfViewer url={item.file_url} title={item.title} /> : null}
           {item.body ? <ContentHtml html={item.body} /> : null}
           {verified ? (
             <button

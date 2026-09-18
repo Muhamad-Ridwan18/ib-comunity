@@ -266,6 +266,8 @@ export const en = {
     video: "Video",
     article: "Article",
     downloadPdf: "Download PDF",
+    viewPdf: "View PDF",
+    pdfMobileHint: "If the preview is blank, open it in your phone’s PDF viewer.",
     noContentTitle: "No content yet",
     noContentBody: "This library is empty for the selected filters.",
     tutorialBrowseDesc: "Desk guides and how-to tutorials from content admin.",
