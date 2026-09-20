@@ -183,11 +183,11 @@ class ContentService
     }
 
     /**
-     * Persist display order within one module + category group. $ids is top-to-bottom.
+     * Persist display order for a module. $ids is top-to-bottom.
      *
      * @param  list<string>  $ids
      */
-    public function reorderContents(string $module, array $ids, ?string $categoryId = null): void
+    public function reorderContents(string $module, array $ids): void
     {
         $this->validateModule($module);
         $ids = array_values(array_unique(array_filter($ids, fn ($id) => is_string($id) && $id !== '')));
@@ -195,14 +195,12 @@ class ContentService
             throw new RuntimeException('Validation failed', 422);
         }
 
-        $query = Content::query()->where('module', $module)->whereIn('id', $ids);
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
-        } else {
-            $query->whereNull('category_id');
-        }
+        $owned = Content::query()
+            ->where('module', $module)
+            ->whereIn('id', $ids)
+            ->pluck('id')
+            ->all();
 
-        $owned = $query->pluck('id')->all();
         if (count($owned) !== count($ids)) {
             throw new RuntimeException('Validation failed', 422);
         }
@@ -212,15 +210,9 @@ class ContentService
         }
     }
 
-    private function nextSortOrder(string $module, ?string $categoryId = null): int
+    private function nextSortOrder(string $module): int
     {
-        $query = Content::query()->where('module', $module);
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
-        } else {
-            $query->whereNull('category_id');
-        }
-        $max = $query->max('sort_order');
+        $max = Content::query()->where('module', $module)->max('sort_order');
 
         return is_numeric($max) ? ((int) $max) + 1 : 0;
     }
@@ -386,14 +378,7 @@ class ContentService
 
     private function contentQuery(array $filters): Builder
     {
-        $query = Content::query()
-            ->with('category')
-            ->leftJoin('categories', 'categories.id', '=', 'contents.category_id')
-            ->orderByRaw('CASE WHEN contents.category_id IS NULL THEN 1 ELSE 0 END')
-            ->orderBy('categories.sort_order')
-            ->orderBy('contents.sort_order')
-            ->orderByDesc('contents.published_at')
-            ->select('contents.*');
+        $query = Content::query()->with('category')->orderBy('sort_order')->orderByDesc('published_at');
 
         if (! empty($filters['module'])) {
             $query->where('module', $filters['module']);
@@ -512,10 +497,10 @@ class ContentService
 
         if (array_key_exists('sort_order', $input)) {
             $sortOrder = (int) $input['sort_order'];
-        } elseif ($existing && (string) ($existing->category_id ?? '') === (string) ($categoryId ?? '')) {
+        } elseif ($existing) {
             $sortOrder = (int) $existing->sort_order;
         } else {
-            $sortOrder = $this->nextSortOrder((string) $module, $categoryId ? (string) $categoryId : null);
+            $sortOrder = $this->nextSortOrder((string) $module);
         }
 
         $content->fill([
