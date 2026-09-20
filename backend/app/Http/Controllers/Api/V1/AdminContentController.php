@@ -101,7 +101,8 @@ class AdminContentController extends Controller
         return $this->fromService(function () use ($request) {
             $this->content->reorderContents(
                 (string) $request->input('module', ''),
-                $request->input('ids', [])
+                $request->input('ids', []),
+                $request->filled('category_id') ? (string) $request->input('category_id') : null
             );
 
             return null;

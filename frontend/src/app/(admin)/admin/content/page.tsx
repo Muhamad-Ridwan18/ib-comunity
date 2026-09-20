@@ -182,9 +182,21 @@ export default function AdminContentPage() {
       ? Boolean(body.trim() || fileKey || fileUrl.trim())
       : Boolean(videoUrl.trim() || videoKey));
 
+  const sameCategoryKey = (item: ContentItem) => item.category_id || "";
+
+  const findCategoryNeighbor = (index: number, direction: -1 | 1) => {
+    const key = sameCategoryKey(contents[index]);
+    let target = index + direction;
+    while (target >= 0 && target < contents.length) {
+      if (sameCategoryKey(contents[target]) === key) return target;
+      target += direction;
+    }
+    return -1;
+  };
+
   const moveContent = async (index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= contents.length) return;
+    const target = findCategoryNeighbor(index, direction);
+    if (target < 0) return;
     const next = [...contents];
     const tmp = next[index];
     next[index] = next[target];
@@ -193,9 +205,11 @@ export default function AdminContentPage() {
     setBusy(true);
     setError(null);
     try {
+      const categoryKey = sameCategoryKey(tmp);
       await adminReorderContents(
         module,
-        next.map((item) => item.id),
+        next.filter((item) => sameCategoryKey(item) === categoryKey).map((item) => item.id),
+        categoryKey || null,
       );
     } catch {
       setError(t("admin.reorderFailed"));
@@ -616,7 +630,7 @@ export default function AdminContentPage() {
                     <button
                       type="button"
                       className="rounded-md p-1 text-muted hover:bg-[var(--surface)] hover:text-fg disabled:opacity-30"
-                      disabled={busy || index === 0}
+                      disabled={busy || findCategoryNeighbor(index, -1) < 0}
                       aria-label={t("admin.moveUp")}
                       onClick={() => void moveContent(index, -1)}
                     >
@@ -625,7 +639,7 @@ export default function AdminContentPage() {
                     <button
                       type="button"
                       className="rounded-md p-1 text-muted hover:bg-[var(--surface)] hover:text-fg disabled:opacity-30"
-                      disabled={busy || index === contents.length - 1}
+                      disabled={busy || findCategoryNeighbor(index, 1) < 0}
                       aria-label={t("admin.moveDown")}
                       onClick={() => void moveContent(index, 1)}
                     >

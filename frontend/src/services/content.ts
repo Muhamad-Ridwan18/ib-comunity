@@ -160,8 +160,16 @@ export async function adminDeleteContent(id: string) {
   return data;
 }
 
-export async function adminReorderContents(module: ContentModule, ids: string[]) {
-  const { data } = await api.post<ApiEnvelope<null>>("/admin/contents/reorder", { module, ids });
+export async function adminReorderContents(
+  module: ContentModule,
+  ids: string[],
+  categoryId?: string | null,
+) {
+  const { data } = await api.post<ApiEnvelope<null>>("/admin/contents/reorder", {
+    module,
+    ids,
+    category_id: categoryId || null,
+  });
   return data;
 }
 
