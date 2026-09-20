@@ -182,6 +182,41 @@ class ContentService
         return $this->toDto($content->load('category'), ['verified' => true, 'is_admin' => true], true, false);
     }
 
+    /**
+     * Persist display order for a module. $ids is top-to-bottom.
+     *
+     * @param  list<string>  $ids
+     */
+    public function reorderContents(string $module, array $ids): void
+    {
+        $this->validateModule($module);
+        $ids = array_values(array_unique(array_filter($ids, fn ($id) => is_string($id) && $id !== '')));
+        if ($ids === []) {
+            throw new RuntimeException('Validation failed', 422);
+        }
+
+        $owned = Content::query()
+            ->where('module', $module)
+            ->whereIn('id', $ids)
+            ->pluck('id')
+            ->all();
+
+        if (count($owned) !== count($ids)) {
+            throw new RuntimeException('Validation failed', 422);
+        }
+
+        foreach ($ids as $index => $id) {
+            Content::query()->where('id', $id)->update(['sort_order' => $index]);
+        }
+    }
+
+    private function nextSortOrder(string $module): int
+    {
+        $max = Content::query()->where('module', $module)->max('sort_order');
+
+        return is_numeric($max) ? ((int) $max) + 1 : 0;
+    }
+
     public function listBookmarks(string $userId): array
     {
         $viewer = ['user_id' => $userId, 'verified' => true];
@@ -291,6 +326,7 @@ class ContentService
             'is_premium' => (bool) $content->is_premium,
             'locked' => $locked,
             'status' => $content->status,
+            'sort_order' => (int) $content->sort_order,
             'bookmarked' => $bookmarked,
             'created_at' => $content->created_at?->toISOString(),
         ];
@@ -342,7 +378,7 @@ class ContentService
 
     private function contentQuery(array $filters): Builder
     {
-        $query = Content::query()->with('category')->orderByDesc('published_at');
+        $query = Content::query()->with('category')->orderBy('sort_order')->orderByDesc('published_at');
 
         if (! empty($filters['module'])) {
             $query->where('module', $filters['module']);
@@ -458,6 +494,15 @@ class ContentService
         }
 
         $content = $existing ?? new Content(['id' => (string) Str::uuid(), 'created_by' => $authorId]);
+
+        if (array_key_exists('sort_order', $input)) {
+            $sortOrder = (int) $input['sort_order'];
+        } elseif ($existing) {
+            $sortOrder = (int) $existing->sort_order;
+        } else {
+            $sortOrder = $this->nextSortOrder((string) $module);
+        }
+
         $content->fill([
             'category_id' => $categoryId,
             'module' => $input['module'] ?? $existing->module,
@@ -473,6 +518,7 @@ class ContentService
             'duration_sec' => $input['duration_sec'] ?? $existing?->duration_sec,
             'is_premium' => $premium,
             'status' => $status,
+            'sort_order' => $sortOrder,
         ]);
 
         if ($status === Content::STATUS_PUBLISHED && ! $content->published_at) {

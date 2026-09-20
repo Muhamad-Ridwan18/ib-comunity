@@ -46,7 +46,7 @@ class AdminContentController extends Controller
     {
         [$page, $perPage] = PaginationMeta::normalize(
             (int) $request->query('page', 1),
-            (int) $request->query('per_page', 20)
+            (int) $request->query('per_page', 100)
         );
         $viewer = ContentService::viewerFromUser($request->user());
 
@@ -94,5 +94,17 @@ class AdminContentController extends Controller
     public function publish(string $id)
     {
         return $this->fromService(fn () => $this->content->publishContent($id), 'Content published');
+    }
+
+    public function reorder(Request $request)
+    {
+        return $this->fromService(function () use ($request) {
+            $this->content->reorderContents(
+                (string) $request->input('module', ''),
+                $request->input('ids', [])
+            );
+
+            return null;
+        }, 'Content reordered');
     }
 }

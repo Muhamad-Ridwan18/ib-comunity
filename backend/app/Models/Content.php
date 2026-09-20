@@ -53,6 +53,7 @@ class Content extends Model
         'is_premium',
         'min_plan_code',
         'status',
+        'sort_order',
         'published_at',
         'created_by',
     ];

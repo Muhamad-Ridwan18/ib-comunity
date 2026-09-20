@@ -38,6 +38,7 @@ export type ContentItem = {
   is_premium: boolean;
   locked: boolean;
   status: string;
+  sort_order?: number;
   published_at?: string | null;
   bookmarked?: boolean;
   created_at: string;
@@ -156,6 +157,11 @@ export async function adminPublishContent(id: string) {
 
 export async function adminDeleteContent(id: string) {
   const { data } = await api.delete<ApiEnvelope<null>>(`/admin/contents/${id}`);
+  return data;
+}
+
+export async function adminReorderContents(module: ContentModule, ids: string[]) {
+  const { data } = await api.post<ApiEnvelope<null>>("/admin/contents/reorder", { module, ids });
   return data;
 }
 

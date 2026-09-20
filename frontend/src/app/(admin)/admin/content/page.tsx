@@ -10,6 +10,7 @@ import {
   adminListCategories,
   adminListContents,
   adminPublishContent,
+  adminReorderContents,
   adminUpdateContent,
   adminUploadContentPdf,
   adminUploadContentVideo,
@@ -27,7 +28,7 @@ import {
 import { RichTextEditor } from "@/components/forms/RichTextEditor";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n/useT";
-import { CheckCircle2, Loader2, Upload } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Loader2, Upload } from "lucide-react";
 
 export default function AdminContentPage() {
   const { t, tr } = useT();
@@ -180,6 +181,29 @@ export default function AdminContentPage() {
     (type === "article"
       ? Boolean(body.trim() || fileKey || fileUrl.trim())
       : Boolean(videoUrl.trim() || videoKey));
+
+  const moveContent = async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= contents.length) return;
+    const next = [...contents];
+    const tmp = next[index];
+    next[index] = next[target];
+    next[target] = tmp;
+    setContents(next);
+    setBusy(true);
+    setError(null);
+    try {
+      await adminReorderContents(
+        module,
+        next.map((item) => item.id),
+      );
+    } catch {
+      setError(t("admin.reorderFailed"));
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleVideoUpload = async (file: File) => {
     setUploadingVideo(true);
@@ -558,7 +582,8 @@ export default function AdminContentPage() {
               {moduleLabel(module)} · {contents.length} {t("admin.items")}
             </p>
           </div>
-          <div className="hidden grid-cols-[1.6fr_0.6fr_0.7fr_0.7fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
+          <div className="hidden grid-cols-[auto_1.6fr_0.6fr_0.7fr_0.7fr_auto] gap-3 border-b border-[var(--border)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted md:grid md:px-6">
+            <span className="w-14">{t("admin.order")}</span>
             <span>{t("admin.contentTitleField")}</span>
             <span>{t("admin.type")}</span>
             <span>{t("admin.access")}</span>
@@ -579,14 +604,34 @@ export default function AdminContentPage() {
             />
           ) : (
             <ul className="divide-y divide-[var(--border)]">
-              {contents.map((item) => (
+              {contents.map((item, index) => (
                 <li
                   key={item.id}
                   className={cn(
-                    "grid gap-2 px-4 py-3 transition hover:bg-[var(--surface-2)] md:grid-cols-[1.6fr_0.6fr_0.7fr_0.7fr_auto] md:items-center md:gap-3 md:px-6",
+                    "grid gap-2 px-4 py-3 transition hover:bg-[var(--surface-2)] md:grid-cols-[auto_1.6fr_0.6fr_0.7fr_0.7fr_auto] md:items-center md:gap-3 md:px-6",
                     editingId === item.id && "bg-accent-soft/40",
                   )}
                 >
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      className="rounded-md p-1 text-muted hover:bg-[var(--surface)] hover:text-fg disabled:opacity-30"
+                      disabled={busy || index === 0}
+                      aria-label={t("admin.moveUp")}
+                      onClick={() => void moveContent(index, -1)}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-md p-1 text-muted hover:bg-[var(--surface)] hover:text-fg disabled:opacity-30"
+                      disabled={busy || index === contents.length - 1}
+                      aria-label={t("admin.moveDown")}
+                      onClick={() => void moveContent(index, 1)}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{item.title}</p>
                     <p className="mt-0.5 truncate text-xs text-muted">

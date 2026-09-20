@@ -144,6 +144,7 @@ Route::prefix('v1')->group(function () {
             Route::delete('/categories/{id}', [AdminContentController::class, 'deleteCategory']);
 
             Route::get('/contents', [AdminContentController::class, 'index']);
+            Route::post('/contents/reorder', [AdminContentController::class, 'reorder']);
             Route::get('/contents/{id}', [AdminContentController::class, 'show']);
             Route::post('/contents', [AdminContentController::class, 'store']);
             Route::put('/contents/{id}', [AdminContentController::class, 'update']);
