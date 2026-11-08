@@ -18,7 +18,8 @@ import {
   AdminPageHeader,
   AdminSplit,
 } from "@/components/admin/AdminChrome";
-import { cn } from "@/lib/utils";
+
+import { apiErrorMessage, cn } from "@/lib/utils";
 import { useT } from "@/i18n/useT";
 
 type Detail = {
@@ -27,7 +28,11 @@ type Detail = {
     id: string;
     email: string;
     status: string;
-    profile?: { full_name: string; phone?: string | null; telegram_username?: string | null };
+    profile?: {
+      full_name: string;
+      phone?: string | null;
+      telegram_username?: string | null;
+    };
   };
 };
 
@@ -57,7 +62,10 @@ export default function AdminVerificationsPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await listAdminVerifications({ status: status || undefined, page: 1 });
+      const res = await listAdminVerifications({
+        status: status || undefined,
+        page: 1,
+      });
       if (res.success && res.data) {
         setItems(res.data);
         if (selected && !res.data.some((i) => i.id === selected)) {
@@ -65,8 +73,8 @@ export default function AdminVerificationsPage() {
           setDetail(null);
         }
       } else setError(res.message);
-    } catch {
-      setError(t("admin.loadFailed"));
+    } catch (err) {
+      setError(apiErrorMessage(err, t("admin.loadFailed")));
     } finally {
       setLoading(false);
     }
@@ -85,8 +93,8 @@ export default function AdminVerificationsPage() {
     try {
       const res = await getAdminVerification(id);
       if (res.success && res.data) setDetail(res.data);
-    } catch {
-      setError(t("admin.loadFailed"));
+    } catch (err) {
+      setError(apiErrorMessage(err, t("admin.loadFailed")));
     }
   };
 
@@ -130,20 +138,28 @@ export default function AdminVerificationsPage() {
             {loading ? (
               <div className="space-y-2 p-4 md:p-6">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-14 animate-pulse rounded-lg bg-[var(--surface-2)]" />
+                  <div
+                    key={i}
+                    className="h-14 animate-pulse rounded-lg bg-[var(--surface-2)]"
+                  />
                 ))}
               </div>
             ) : items.length === 0 ? (
               <AdminEmpty
                 title={t("admin.noRequests")}
-                description={status === "pending" ? t("admin.pendingQueueClear") : t("admin.emptyFilter")}
+                description={
+                  status === "pending"
+                    ? t("admin.pendingQueueClear")
+                    : t("admin.emptyFilter")
+                }
               />
             ) : (
               <ul className="divide-y divide-[var(--border)]">
                 {items.map((item) => {
                   const hours =
                     item.created_at && item.status === "pending"
-                      ? (Date.now() - new Date(item.created_at).getTime()) / 36e5
+                      ? (Date.now() - new Date(item.created_at).getTime()) /
+                        36e5
                       : 0;
                   return (
                     <li key={item.id}>
@@ -154,22 +170,44 @@ export default function AdminVerificationsPage() {
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
-                            {item.user_full_name || item.user_email || t("status.member")}
+                            {item.user_full_name ||
+                              item.user_email ||
+                              t("status.member")}
                           </p>
-                          <p className="truncate text-xs text-muted">{item.user_email || "—"}</p>
+                          <p className="truncate text-xs text-muted">
+                            {item.user_email || "—"}
+                          </p>
                           {item.user_phone ? (
-                            <p className="truncate text-xs text-muted">{item.user_phone}</p>
+                            <p className="truncate text-xs text-muted">
+                              {item.user_phone}
+                            </p>
                           ) : null}
-                          <p className={cn("mt-0.5 text-[11px]", hours > 24 ? "font-medium text-[var(--danger)]" : "text-muted")}>
+                          <p
+                            className={cn(
+                              "mt-0.5 text-[11px]",
+                              hours > 24
+                                ? "font-medium text-[var(--danger)]"
+                                : "text-muted",
+                            )}
+                          >
                             {tr(item.created_at)}
                             {hours > 24 ? ` · ${t("admin.agingSuffix")}` : ""}
                           </p>
                         </div>
-                        <p className="hidden font-mono text-sm md:block">{item.mt5_account}</p>
-                        <p className="hidden truncate text-sm text-muted md:block">{item.broker_server}</p>
+                        <p className="hidden font-mono text-sm md:block">
+                          {item.mt5_account}
+                        </p>
+                        <p className="hidden truncate text-sm text-muted md:block">
+                          {item.broker_server}
+                        </p>
                         <div className="flex items-center gap-2 md:justify-self-end">
-                          <span className="font-mono text-xs text-muted md:hidden">{item.mt5_account}</span>
-                          <StatusBadge label={item.status} tone={statusTone(item.status)} />
+                          <span className="font-mono text-xs text-muted md:hidden">
+                            {item.mt5_account}
+                          </span>
+                          <StatusBadge
+                            label={item.status}
+                            tone={statusTone(item.status)}
+                          />
                         </div>
                       </AdminListRow>
                     </li>
@@ -181,7 +219,10 @@ export default function AdminVerificationsPage() {
         }
         detail={
           !detail ? (
-            <AdminEmpty title={t("admin.selectVerification")} description={t("admin.openRowHint")} />
+            <AdminEmpty
+              title={t("admin.selectVerification")}
+              description={t("admin.openRowHint")}
+            />
           ) : (
             <>
               <div className="border-b border-[var(--border)] px-5 py-4 md:px-6">
@@ -190,15 +231,22 @@ export default function AdminVerificationsPage() {
                     <p className="truncate font-display text-lg font-semibold">
                       {detail.user.profile?.full_name || t("status.member")}
                     </p>
-                    <p className="mt-0.5 truncate text-sm text-muted">{detail.user.email}</p>
+                    <p className="mt-0.5 truncate text-sm text-muted">
+                      {detail.user.email}
+                    </p>
                   </div>
-                  <StatusBadge label={detail.request.status} tone={statusTone(detail.request.status)} />
+                  <StatusBadge
+                    label={detail.request.status}
+                    tone={statusTone(detail.request.status)}
+                  />
                 </div>
               </div>
               <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 md:px-6">
                 <dl className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.phoneWhatsApp")}</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      {t("admin.phoneWhatsApp")}
+                    </dt>
                     <dd className="mt-1">
                       {detail.user.profile?.phone ? (
                         <div className="space-y-1">
@@ -225,26 +273,45 @@ export default function AdminVerificationsPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.mt5Short")}</dt>
-                    <dd className="mt-1 font-mono text-base font-medium">{detail.request.mt5_account}</dd>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      {t("admin.mt5Short")}
+                    </dt>
+                    <dd className="mt-1 font-mono text-base font-medium">
+                      {detail.request.mt5_account}
+                    </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.serverShort")}</dt>
-                    <dd className="mt-1 text-base font-medium">{detail.request.broker_server}</dd>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      {t("admin.serverShort")}
+                    </dt>
+                    <dd className="mt-1 text-base font-medium">
+                      {detail.request.broker_server}
+                    </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.accountStatus")}</dt>
-                    <dd className="mt-1 capitalize">{ts(detail.user.status)}</dd>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      {t("admin.accountStatus")}
+                    </dt>
+                    <dd className="mt-1 capitalize">
+                      {ts(detail.user.status)}
+                    </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.submitted")}</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      {t("admin.submitted")}
+                    </dt>
                     <dd className="mt-1">{tr(detail.request.created_at)}</dd>
                   </div>
                 </dl>
                 {detail.request.proof_url || detail.request.proof_key ? (
                   <div className="space-y-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t("admin.proofOnFile")}</p>
-                    {detail.request.proof_url && /\.(jpe?g|png|webp|gif)(\?|$)/i.test(detail.request.proof_url) ? (
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      {t("admin.proofOnFile")}
+                    </p>
+                    {detail.request.proof_url &&
+                    /\.(jpe?g|png|webp|gif)(\?|$)/i.test(
+                      detail.request.proof_url,
+                    ) ? (
                       <a
                         href={detail.request.proof_url}
                         target="_blank"
@@ -271,7 +338,9 @@ export default function AdminVerificationsPage() {
                         {t("admin.openProofFile")}
                       </a>
                     ) : (
-                      <p className="break-all font-mono text-xs text-muted">{detail.request.proof_key}</p>
+                      <p className="break-all font-mono text-xs text-muted">
+                        {detail.request.proof_key}
+                      </p>
                     )}
                   </div>
                 ) : (
@@ -279,13 +348,19 @@ export default function AdminVerificationsPage() {
                 )}
                 {detail.request.rejection_reason ? (
                   <div className="rounded-xl border border-[var(--danger)]/25 bg-[var(--danger)]/5 px-3 py-2.5 text-sm">
-                    <p className="font-medium text-[var(--danger)]">{t("admin.rejectionReason")}</p>
-                    <p className="mt-1 text-muted">{detail.request.rejection_reason}</p>
+                    <p className="font-medium text-[var(--danger)]">
+                      {t("admin.rejectionReason")}
+                    </p>
+                    <p className="mt-1 text-muted">
+                      {detail.request.rejection_reason}
+                    </p>
                   </div>
                 ) : null}
                 {detail.request.status === "pending" ? (
                   <label className="block space-y-1.5 text-sm">
-                    <span className="text-muted">{t("admin.rejectionReason")}</span>
+                    <span className="text-muted">
+                      {t("admin.rejectionReason")}
+                    </span>
                     <textarea
                       className="field-input min-h-[100px]"
                       value={reason}
@@ -312,8 +387,10 @@ export default function AdminVerificationsPage() {
                             setDetail(null);
                             setSelected(null);
                             await load();
-                          } catch {
-                            setError(t("admin.actionFailed"));
+                          } catch (err) {
+                            setError(
+                              apiErrorMessage(err, t("admin.actionFailed")),
+                            );
                           } finally {
                             setBusy(false);
                           }
@@ -339,8 +416,10 @@ export default function AdminVerificationsPage() {
                             setDetail(null);
                             setSelected(null);
                             await load();
-                          } catch {
-                            setError(t("admin.actionFailed"));
+                          } catch (err) {
+                            setError(
+                              apiErrorMessage(err, t("admin.actionFailed")),
+                            );
                           } finally {
                             setBusy(false);
                           }
@@ -365,8 +444,8 @@ export default function AdminVerificationsPage() {
                         setDetail(null);
                         setSelected(null);
                         await load();
-                      } catch {
-                        setError(t("admin.deleteFailed"));
+                      } catch (err) {
+                        setError(apiErrorMessage(err, t("admin.deleteFailed")));
                       } finally {
                         setBusy(false);
                       }
