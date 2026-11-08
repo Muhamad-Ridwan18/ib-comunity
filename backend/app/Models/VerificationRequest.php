@@ -10,6 +10,8 @@ class VerificationRequest extends Model
 {
     use HasUuids;
 
+    public const STATUS_DRAFT = 'draft';
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_APPROVED = 'approved';

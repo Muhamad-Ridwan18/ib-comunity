@@ -56,6 +56,9 @@ class VerificationService
 
         if ($status) {
             $query->where('status', $status);
+        } else {
+            // Hide in-progress drafts from the default admin queue.
+            $query->where('status', '!=', VerificationRequest::STATUS_DRAFT);
         }
 
         $total = (clone $query)->count();
@@ -113,6 +116,10 @@ class VerificationService
 
         if ($req->status !== VerificationRequest::STATUS_PENDING) {
             throw new RuntimeException('verification is not pending', 409);
+        }
+
+        if (! filled($req->proof_key)) {
+            throw new RuntimeException('Deposit proof is required', 422);
         }
 
         $user = User::query()->find($req->user_id);

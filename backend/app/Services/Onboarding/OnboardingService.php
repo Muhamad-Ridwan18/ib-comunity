@@ -86,13 +86,28 @@ class OnboardingService
             return $this->buildProgress($user);
         }
 
-        VerificationRequest::query()->create([
-            'id' => (string) Str::uuid(),
-            'user_id' => $user->id,
-            'mt5_account' => $mt5,
-            'broker_server' => $server,
-            'status' => VerificationRequest::STATUS_PENDING,
-        ]);
+        // Keep MT5 details as draft until deposit proof is uploaded + final submit.
+        $draft = VerificationRequest::query()
+            ->where('user_id', $user->id)
+            ->where('status', VerificationRequest::STATUS_DRAFT)
+            ->orderByDesc('created_at')
+            ->first();
+
+        if ($draft) {
+            $draft->update([
+                'mt5_account' => $mt5,
+                'broker_server' => $server,
+                'proof_key' => null,
+            ]);
+        } else {
+            VerificationRequest::query()->create([
+                'id' => (string) Str::uuid(),
+                'user_id' => $user->id,
+                'mt5_account' => $mt5,
+                'broker_server' => $server,
+                'status' => VerificationRequest::STATUS_DRAFT,
+            ]);
+        }
 
         $progress->update([
             'step3_done_at' => now(),
@@ -119,18 +134,23 @@ class OnboardingService
             throw new RuntimeException('Complete previous steps first', 409);
         }
 
+        $latest = VerificationRequest::query()
+            ->where('user_id', $user->id)
+            ->whereIn('status', [
+                VerificationRequest::STATUS_DRAFT,
+                VerificationRequest::STATUS_PENDING,
+                VerificationRequest::STATUS_REJECTED,
+            ])
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (! $latest) {
+            throw new RuntimeException('Submit MT5 details first', 409);
+        }
+
+        $latest->update(['proof_key' => $key]);
+
         if (! $progress->step4_done_at) {
-            $latest = VerificationRequest::query()
-                ->where('user_id', $user->id)
-                ->orderByDesc('created_at')
-                ->first();
-
-            if (! $latest) {
-                throw new RuntimeException('Submit MT5 details first', 409);
-            }
-
-            $latest->update(['proof_key' => $key]);
-
             $progress->update([
                 'step4_done_at' => now(),
                 'current_step' => 5,
@@ -148,8 +168,20 @@ class OnboardingService
             throw new RuntimeException('Complete previous steps first', 409);
         }
 
+        $latest = VerificationRequest::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (! $latest || ! filled($latest->proof_key)) {
+            throw new RuntimeException('Deposit proof is required', 422);
+        }
+
         if (! $progress->step5_done_at) {
             $now = now();
+            if ($latest->status === VerificationRequest::STATUS_DRAFT) {
+                $latest->update(['status' => VerificationRequest::STATUS_PENDING]);
+            }
             $progress->update([
                 'step5_done_at' => $now,
                 'completed_at' => $now,
